@@ -1,11 +1,16 @@
-import type { AWS } from '@serverless/typescript';
+import type { AWS } from "@serverless/typescript";
 
-import listAllocations from '@functions/list-allocations';
-import listProjects from '@functions/list-projects';
-import listTasks from '@functions/list-tasks';
+import listAllocationsHandler from "@functions/list-allocations";
+import listProjectsHandler from "@functions/list-projects";
+import listTasksHandler from "@functions/list-tasks";
+import listTimeEntriesHandler from "@functions/list-time-entries";
+import listProjectSprintsHandler from "@functions/list-project-sprints";
+
+import * as dotenv from "dotenv";
+dotenv.config({ path: __dirname + "/.env" });
 
 const serverlessConfiguration: AWS = {
-  service: 'timebank-lambdas',
+  service: 'home-lambdas',
   frameworkVersion: '3',
   plugins: ['serverless-esbuild'],
   provider: {
@@ -20,7 +25,13 @@ const serverlessConfiguration: AWS = {
       NODE_OPTIONS: '--enable-source-maps --stack-trace-limit=1000',
     },
   },
-  functions: { listAllocations, listProjects, listTasks },
+  functions: {
+    listAllocationsHandler,
+    listProjectsHandler,
+    listTasksHandler,
+    listTimeEntriesHandler,
+    listProjectSprintsHandler
+  },
   package: { individually: true },
   custom: {
     esbuild: {

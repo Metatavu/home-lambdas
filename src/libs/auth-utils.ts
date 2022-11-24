@@ -1,32 +1,16 @@
-/**
- * Interface for basic auth username and password pair
- */
-export interface BasicAuth {
-  username: string;
-  password: string;
-}
+import moment from "moment";
+import { AccessToken } from "src/types";
 
 /**
- * Parses bearer auth username and password from authentication header
+ * Returns true if token is valid, false otherwise
  * 
- * @param authorizationHeader authentication header
- * @returns basic auth username and password pair
+ * @param token Access token 
  */
-export const parseBearerAuth = (authorizationHeader?: string): BasicAuth | null => {
-  if (!authorizationHeader?.toLocaleLowerCase().startsWith("bearer ")) {
-    return null;
-  } 
-
-  const buffer = Buffer.from(authorizationHeader.substring(6), "base64");
-  const decoded = buffer.toString();
-  const parts = decoded.split(":");
-  
-  if (parts.length === 2) {
-    return {
-      username: parts[0],
-      password: parts[1]
-    };
+export const isTokenValid = (token: AccessToken) => {
+  if (!token) {
+    return false;
   }
 
-  return null;
+  const expiresAt = moment(token.created).add(token.expires_in, "milliseconds");
+  return expiresAt.isAfter(moment());
 }

@@ -1,0 +1,7 @@
+{
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "body": "{\"name\": \"Frederic\"}",
+    "queryStringParameters": { "startDate": "2022-11-03", "endDate": "2022-11-03" }
+}

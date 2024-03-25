@@ -20,6 +20,7 @@ import sendWeeklyMessage from "@functions/meta-assistant/send-weekly-message";
 import updatePaidHandler from "@/functions/on-call/update-paid";
 import listOnCallDataHandler from "src/functions/on-call/list-on-call-data";
 import weeklyCheckHandler from "@/functions/on-call/weekly-check";
+import getSlackUserAvatar from "src/functions/meta-assistant/slack-user-avatar";
 const serverlessConfiguration: AWS = {
   service: 'home-lambdas',
   frameworkVersion: '3',
@@ -113,7 +114,8 @@ const serverlessConfiguration: AWS = {
     weeklyCheckHandler,
     sendDailyMessage,
     sendWeeklyMessage,
-    updatePaidHandler
+    updatePaidHandler,
+    getSlackUserAvatar
   },
   package: { individually: true },
   custom: {

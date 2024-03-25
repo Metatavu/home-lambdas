@@ -93,7 +93,7 @@ const listProjectsHandler: ValidatedEventAPIGatewayProxyEvent<any> = async event
     }
     return {
       statusCode: 200,
-      body: JSON.stringify(project)
+      body: JSON.stringify([project])
     };
   }
 

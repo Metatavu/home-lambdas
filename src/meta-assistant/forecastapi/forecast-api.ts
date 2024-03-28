@@ -1,5 +1,6 @@
 import { NonProjectTime, TimeRegistrations } from "src/types/meta-assistant/index";
 import fetch, { Headers } from "node-fetch";
+import { DateTime } from "luxon";
 
 /**
  * Namespace for forecast-api
@@ -35,8 +36,9 @@ namespace ForecastApiUtilities {
    * @param date the day before yesterday
    * @returns all allocations after yesterday
    */
-  export const getTimeRegistrations = async (date: string): Promise<TimeRegistrations[]> => {
+  export const getTimeRegistrations = async (dateTime: DateTime): Promise<TimeRegistrations[]> => {
     try {
+      let date = dateTime.toISODate();
       const dateUrl = date.replace(/[-]/g, "");
       const request: any = await fetch(`${process.env.FORECAST_BASE_URL}/v3/time_registrations?date_after=${dateUrl}`, { headers: headers });
       const result: any = await request.json();

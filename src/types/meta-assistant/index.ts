@@ -77,10 +77,10 @@ export interface TimeRegistrations {
  * Interface for dates
  */
 export interface PreviousWorkdayDates {
-  today: string;
-  yesterday: string;
+  today: DateTime;
+  yesterday: DateTime;
   numberOfToday: number;
-  dayBeforeYesterday: string;
+  dayBeforeYesterday: DateTime;
 }
 
 /**

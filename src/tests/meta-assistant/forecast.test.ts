@@ -1,6 +1,7 @@
 import ForecastApiUtilities from "../../meta-assistant/forecastapi/forecast-api";
 import TestHelpers from "./utilities/test-utils";
 import { forecastMockNonProjectTimes, forecastMockTimeRegistrations, forecastMockError } from "./__mocks__/forecastMocks";
+import { DateTime } from "luxon";
 
 jest.mock("node-fetch");
 
@@ -37,7 +38,7 @@ describe("forecast api tests", () => {
     it("should return mock data", async () => {
       TestHelpers.mockForecastResponse(200, [forecastMockTimeRegistrations], false);
 
-      const results = await ForecastApiUtilities.getTimeRegistrations("2020-04-22");
+      const results = await ForecastApiUtilities.getTimeRegistrations(DateTime.fromISO("2022-04-22"));
 
       expect(results[0].person).toBe(1);
       expect(results[0].non_project_time).toBe(228255);
@@ -57,9 +58,9 @@ describe("forecast api tests", () => {
       TestHelpers.mockForecastResponse(401, forecastMockError, false);
 
       const expectedError = new Error("Error while loading time registrations, Server failed to authenticate the request.");
-
+      
       try {
-        await ForecastApiUtilities.getTimeRegistrations("2022-04-22");
+        await ForecastApiUtilities.getTimeRegistrations(DateTime.fromISO("2022-04-22"));
       } catch(error) {
         expect(error).toEqual(expectedError);
       }

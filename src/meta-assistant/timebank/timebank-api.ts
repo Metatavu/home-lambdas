@@ -1,5 +1,6 @@
 import { WeeklyCombinedData } from "src/types/meta-assistant/index";
 import { Person, DailyEntriesApi, PersonsApi, DailyEntry, Timespan, PersonTotalTime } from "src/generated/client/api";
+import { DateTime } from "luxon";
 
 /**
  * Namespace for Timebank API
@@ -40,8 +41,10 @@ namespace TimebankApi {
    * @returns Array of time entries for person
    * @param accessToken string for timebank accessToken
    */
-  export const getDailyEntries = async (id: number, before: string, after: string, accessToken: string): Promise<DailyEntry> => {
+  export const getDailyEntries = async (id: number, beforeDate: DateTime, afterDate: DateTime, accessToken: string): Promise<DailyEntry> => {
     try {
+      const before = beforeDate.toISODate();
+      const after = afterDate.toISODate();
       if (!id) throw new Error("Invalid ID was given (expecting a number)");
 
       const request = await dailyEntriesClient.listDailyEntries(id, before, after, undefined, {

@@ -16,7 +16,7 @@ namespace TimeUtilities {
   export const timeConversion = (duration: number): string => {
     const dur = Duration.fromObject({ minutes: duration });
     const time = dur.shiftTo("hours", "minutes");
-    return `${time.hours}h ${time.minutes} minutes`;
+    return time.toHuman();
   };
 
   /**
@@ -98,16 +98,16 @@ namespace TimeUtilities {
     let today = DateTime.now();
     let dayOfWeek = new Date().getDay();
 
-    let previousWorkDay = today.minus({ days: 1 }).toISODate();
-    let dayBeforePreviousWorkDay = today.minus({ days: 2 }).toISODate();
+    let previousWorkDay = today.minus({ days: 1 });
+    let dayBeforePreviousWorkDay = today.minus({ days: 2 });
 
     if (dayOfWeek === 1) {
-      previousWorkDay = today.minus({ days: 3 }).toISODate();
-      dayBeforePreviousWorkDay = today.minus({ days: 4 }).toISODate();
+      previousWorkDay = today.minus({ days: 3 });
+      dayBeforePreviousWorkDay = today.minus({ days: 4 });
     }
 
     return {
-      today: today.toISODate(),
+      today: today,
       yesterday: previousWorkDay,
       numberOfToday: dayOfWeek,
       dayBeforeYesterday: dayBeforePreviousWorkDay

@@ -1,11 +1,9 @@
-import { Allocation } from "./schemas/forecast/allocation";
 import { Project } from "./schemas/forecast/project";
 import { Task } from "./schemas/forecast/task";
 import { Workflow } from "./schemas/forecast/workflow";
 import fetch from "node-fetch";
 
 export interface ForecastApiService {
-	getAllocations: () => Promise<Allocation[]>;
 	getProjects: () => Promise<Project[]>;
 	getProject: (projectId: string) => Promise<Project>;
 	getTasksByProject: (projectId: number) => Promise<Task[]>;
@@ -22,17 +20,6 @@ export function CreateForecastApiService(): ForecastApiService {
 	const apiKey: string = process.env.FORECAST_API_KEY;
 
 	return {
-		/**
-		 * Gets all allocations from the api
-		 *
-		 * @returns List of allocations
-		 */
-		async getAllocations(): Promise<Allocation[]> {
-			const response = await fetch("https://api.forecast.it/api/v1/allocations", { headers: { "X-FORECAST-API-KEY": apiKey } });
-
-			return response.json();
-		},
-
 		/**
 		 * Gets all projects from the api
 		 *

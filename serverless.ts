@@ -10,7 +10,7 @@ import addInterestToDealHandler from "@functions/pipedrive/add-interest-to-deal"
 import addInterestToLeadHandler from "@functions/pipedrive/add-interest-to-lead";
 import removeInterestFromDealHandler from "@functions/pipedrive/remove-interest-from-deal";
 import removeInterestFromLeadHandler from "@functions/pipedrive/remove-interest-from-lead";
-import listAllocationsHandler from "src/functions/forecast/list-allocations";
+import listAllocationsHandler from "src/functions/severa/list-allocations";
 import listProjectsHandler from "src/functions/forecast/list-projects";
 import listTasksHandler from "src/functions/forecast/list-tasks";
 import listTimeEntriesHandler from "src/functions/forecast/list-time-entries";

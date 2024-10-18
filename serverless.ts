@@ -33,6 +33,7 @@ import findQuestionnaireHandler from "@/functions/questionnaire/find-questionnai
 import deleteQuestionnaireHandler from "src/functions/questionnaire/delete-questionnaire";
 import listQuestionnaireHandler from "src/functions/questionnaire/list-questionnaire";
 import updateQuestionnaireHandler from "src/functions/questionnaire/update-questionnaire";
+import getFlextimeHandler from "src/functions/severa/get-flextime-by-user";
 
 const isLocal = process.env.STAGE === "local";
 
@@ -90,6 +91,9 @@ const serverlessConfiguration: AWS = {
       SPLUNK_SCHEDULE_POLICY_NAME: env.SPLUNK_SCHEDULE_POLICY_NAME,
       SPLUNK_TEAM_ONCALL_URL: env.SPLUNK_TEAM_ONCALL_URL,
       ONCALL_WEEKLY_SCHEDULE_TIMER: env.ONCALL_WEEKLY_SCHEDULE_TIMER,
+      SEVERA_DEMO_BASE_URL: env.SEVERA_DEMO_BASE_URL,
+      SEVERA_DEMO_CLIENT_ID: env.SEVERA_DEMO_CLIENT_ID,
+      SEVERA_DEMO_CLIENT_SECRET: env.SEVERA_DEMO_CLIENT_SECRET,
       DYNAMODB_ENDPOINT: isLocal ? "http://localhost:8000" : undefined,
     },
     s3: {
@@ -159,6 +163,7 @@ const serverlessConfiguration: AWS = {
     deleteQuestionnaireHandler,
     listQuestionnaireHandler,
     updateQuestionnaireHandler,
+    getFlextimeHandler,
   },
   package: { individually: true },
   custom: {

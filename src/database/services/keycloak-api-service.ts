@@ -1,4 +1,4 @@
-import type { User } from "../schemas/keycloak/user";
+import type { User } from "../../types/keycloak/user";
 import fetch from "node-fetch";
 
 /**
@@ -6,7 +6,7 @@ import fetch from "node-fetch";
  */
 export interface KeycloakApiService {
   getUsers: () => Promise<User[]>;
-  findUser: (id: string) => Promise<User[]>;
+  findUser: (id: string) => Promise<User>;
 }
 
 /**
@@ -45,7 +45,7 @@ export const CreateKeycloakApiService = (): KeycloakApiService => {
      * @param id string
      * @returns user by Id
      */
-    findUser: async (id: string): Promise<User[]> => {
+    findUser: async (id: string): Promise<User> => {
       const response = await fetch(
         `${baseUrl}/admin/realms/${realm}/users/${id}`,
         {

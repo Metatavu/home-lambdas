@@ -1,7 +1,7 @@
 import { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway";
 import { middyfy } from "@libs/lambda";
 import { CreatePipedriveApiService, PipedriveApiService } from "src/database/services/pipedrive-api-service";
-import { Interest } from "src/database/schemas/pipedrive/interest";
+import { Interest } from "src/types/pipedrive/interest";
 
 /**
  * Parameter schema for Removing Interest from Lead

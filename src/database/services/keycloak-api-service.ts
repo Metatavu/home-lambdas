@@ -1,4 +1,4 @@
-import type { User } from "../schemas/keycloak/user";
+import type { User } from "../../types/keycloak/user";
 import fetch from "node-fetch";
 
 /**

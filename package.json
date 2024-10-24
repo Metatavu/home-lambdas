@@ -23,7 +23,7 @@
     "jsonwebtoken": "^9.0.2",
     "luxon": "^2.4.0",
     "moment": "^2.29.4",
-    "node-fetch": "^2.6.9",
+    "node-fetch": "^2.7.0",
     "request": "^2.88.2",
     "serverless-dynamodb": "^0.2.53"
   },

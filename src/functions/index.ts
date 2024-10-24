@@ -28,4 +28,5 @@ export { default as findQuestionnaireHandler } from "./questionnaire/find-questi
 export { default as deleteQuestionnaireHandler } from "./questionnaire/delete-questionnaire";
 export { default as listQuestionnaireHandler } from "./questionnaire/list-questionnaire";   
 export { default as updateQuestionnaireHandler } from "./questionnaire/update-questionnaire";
+export { default as getFlextimeHandler } from "./severa/get-flextime-by-user";
 

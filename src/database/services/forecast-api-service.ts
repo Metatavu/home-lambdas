@@ -1,7 +1,7 @@
-import { Allocation } from "../schemas/forecast/allocation";
-import { Project } from "../schemas/forecast/project";
-import { Task } from "../schemas/forecast/task";
-import { Workflow } from "../schemas/forecast/workflow";
+import { Allocation } from "../../types/forecast/allocation";
+import { Project } from "../../types/forecast/project";
+import { Task } from "../../types/forecast/task";
+import { Workflow } from "../../types/forecast/workflow";
 import fetch from "node-fetch";
 
 export interface ForecastApiService {

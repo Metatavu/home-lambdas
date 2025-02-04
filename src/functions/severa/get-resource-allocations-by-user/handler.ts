@@ -5,24 +5,32 @@ import type ResourceAllocationModel from "src/types/severa/resourceAllocation/re
 import type SeveraResponseResourceAllocation from "src/types/severa/resourceAllocation/severaResponseResourceAllocation";
 
 /**
- * Handler for getting resourceAllocation by user from Severa REST API.
+ * Handler for getting all resourceAllocation from Severa API.
  * 
- * @param event - API Gateway event containing the userId.
+ * @param event - API Gateway event containing the severaUserId as queryParams.
  */
 export const getResourceAllocationHandler: APIGatewayProxyHandler = async (event) => {
-  const {severaUserId} = event.pathParameters
-
-  if(!severaUserId) {
-    return {
-      statusCode: 400,
-      body: JSON.stringify({ message: "User Id is required" }),
-    };
-  }
+  const {severaUserId} = event.queryStringParameters || {};
 
   try {
     const api = CreateSeveraApiService();
 
-    const response = await api.getResourceAllocation(severaUserId);
+    const buildResourceAllocationUrl = (severaUserId?: string) => {
+      let endpointPath: string;
+
+      if (severaUserId) {
+        endpointPath = `users/${severaUserId}/resourceallocations/allocations`;
+      } else {
+        endpointPath = "resourceallocations";
+      }
+
+    const customUrl = new URL(`${process.env.SEVERA_DEMO_BASE_URL}/v1/${endpointPath}`);
+
+    return customUrl;
+    }
+
+    const url = buildResourceAllocationUrl(severaUserId);
+    const response = await api.getResourceAllocation(url);
 
     /**
      * Maps the Severa API response data to the ResourceAllocation model.

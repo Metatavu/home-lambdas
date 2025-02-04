@@ -21,7 +21,8 @@ export interface SeveraApiService {
   getWorkDays: (severaUserId: string) => Promise<SeveraResponseWorkDays>;
   getOptInUsers: () => Promise<SeveraResponseUser[]>;
   getResourceAllocations: () => Promise<SeveraResponseResourceAllocation>;
-  getUserByEmail: (email: string) => Promise <SeveraResponseUser>;
+  getUserByEmail: (email: string, attribute: Record<string, string[]>) => Promise<{ guid: string; isSeveraOptIn: boolean }> ;
+  getTestUser:()  => Promise<{ guid: string }>
 }
 
 /**
@@ -39,7 +40,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
     getFlextimeBySeveraUserId: async (severaUserId: string) => {
 
       const eventDateYesterday = DateTime.now().minus({ days: 1 }).toISODate();
-      
+      Promise<{ guid: string }>
       const url = `${baseUrl}/v1/users/${severaUserId}/flextime?eventdate=${eventDateYesterday}`;
 
       const response = await fetch(url, {
@@ -58,39 +59,118 @@ export const CreateSeveraApiService = (): SeveraApiService => {
       }
       return response.json();
     },
+      
+    getTestUser : async ()  => {
+      try {
+        if (!process.env.SEVERA_TEST_USER_EMAIL) {
+          throw new Error("SEVERA_TEST_USER_EMAIL environment variable is missing.");
+        }
+    
+        return {
+          guid: process.env.SEVERA_TEST_USER_EMAIL, 
+          isSeveraOptIn: ["true"],  
+        };
+      } catch (error) {
+        console.error("Error in getTestUser:", error);
+        throw error;
+      }
+    },
+
     /**
      *  Get severa user email
      * 
      * @param email severa email
      * @returns email
      */
-    getUserByEmail: async (email: string)=> {
-      const url = `${baseUrl}/v1/users?email=${encodeURIComponent(email)}`;
+    getUserByEmail: async (email: string, attribute: Record<string, string[]>) => {
+      try {
+        const url = `${baseUrl}/v1/users?email=${encodeURIComponent(email)}`;
+        const response = await fetch(url, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${await getSeveraAccessToken()}`,
+            "Client_Id": process.env.SEVERA_DEMO_CLIENT_ID,
+            "Content-Type": "application/json",
+          },
+        });
+    
+        if (!response.ok) {
+          const errorDetails = await response.text();
+          console.error(`Failed to fetch user by email: ${response.status} - ${response.statusText}`);
+          console.error("Error details:", errorDetails);
+          throw new Error(`Failed to fetch user by email: ${response.status} - ${response.statusText}`);
+        }
+    
+        const users = await response.json();
+        if (!users || users.length === 0) {
+          throw new Error(`No user found with email: ${email}`);
+        }
+    
+        const user = users[0];
+        console.log("Found Severa user:", user);
+    
+        
+        const isSeveraOptIn = attribute.isSeveraOptIn?.[0] === "true"; 
 
-      const response = await fetch(url, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${await getSeveraAccessToken()}`,
-          "Client_Id": process.env.SEVERA_DEMO_CLIENT_ID,
-          "Content-Type": "application/json",
-        },
-      });
+        const keywordsUrl = `${baseUrl}/v1/users/${user.guid}/keywords`;
+        const keywordsResponse = await fetch(keywordsUrl, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${await getSeveraAccessToken()}`,
+            "Client_Id": process.env.SEVERA_DEMO_CLIENT_ID,
+            "Content-Type": "application/json",
+          },
+        });
     
-      if (!response.ok) {
-        const errorDetails = await response.text();
-        console.error(`Failed to fetch user by email: ${response.status} - ${response.statusText}`);
-        console.error("Error details:", errorDetails);
-        throw new Error(
-          `Failed to fetch user by email: ${response.status} - ${response.statusText}`,
-        );
-      }
-      
+        if (!keywordsResponse.ok) {
+          const errorDetails = await keywordsResponse.text();
+          console.error(`Failed to fetch keywords: ${keywordsResponse.status} - ${keywordsResponse.statusText}`);
+          console.error("Error details:", errorDetails);
+          throw new Error(`Failed to fetch keywords: ${keywordsResponse.status} - ${keywordsResponse.statusText}`);
+        }
     
-      const users = await response.json();
-      if (!users || users.length === 0) {
-        throw new Error(`No user found with email: ${email}`);
+        const keywords = await keywordsResponse.json();
+        const isSeveraOptInKeyword = keywords.find((kw: { name: string }) => kw.name === "isSeveraOptIn");
+    
+        if (!isSeveraOptInKeyword) {
+          console.log("Keyword 'isSeveraOptIn' not found, creating new keyword...");
+          throw new Error("Keyword 'isSeveraOptIn' not found. Manual addition required.");
+        }
+    
+        const keywordGuid = isSeveraOptInKeyword.guid;
+    
+        const updateKeywordUrl = `${baseUrl}/v1/users/${user.guid}/keywords/${keywordGuid}`;
+        const updateResponse = await fetch(updateKeywordUrl, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${await getSeveraAccessToken()}`,
+            "Client_Id": process.env.SEVERA_DEMO_CLIENT_ID,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            value: isSeveraOptIn ? "true" : "false",
+          }),
+        });
+    
+        if (!updateResponse.ok) {
+          const errorDetails = await updateResponse.text();
+          console.error(`Failed to update Severa keyword: ${updateResponse.status} - ${updateResponse.statusText}`);
+          console.error("Error details:", errorDetails);
+          throw new Error(`Failed to update Severa keyword: ${updateResponse.status} - ${updateResponse.statusText}`);
+        }
+    
+        console.log(`Updated keyword 'isSeveraOptIn' successfully for user ${user.guid}`);
+    
+
+        return {
+          guid: user.guid,
+          isSeveraOptIn, 
+        };
+    
+      } catch (error) {
+        console.error("Error in getUserByEmailAndUpdate:", error);
+        throw new Error(error instanceof Error ? error.message : "An unknown error occurred.");
       }
-      return users[0];
     },
 
     /** 

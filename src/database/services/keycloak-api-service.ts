@@ -1,6 +1,5 @@
 import fetch from "node-fetch";
 import type { KeycloakProfile } from "keycloak-js/lib/keycloak";
-
 /**
  * Custom Interface for a user in keycloak functions with severaUserId added.
  */

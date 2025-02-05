@@ -8,7 +8,7 @@ export default {
         method: "post",
         path: "/vacationRequests",
         authorizer: {
-          name: "timebankKeycloakAuthorizer",
+          name: "homeKeycloakAuthorizer",
         },
       },
     },

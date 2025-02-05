@@ -8,7 +8,7 @@ export default {
         method: 'get',
         path: '/slack-avatar',
         authorizer: {
-          name: "timebankKeycloakAuthorizer"
+          name: "homeKeycloakAuthorizer"
         }
       },
     },

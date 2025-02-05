@@ -8,7 +8,7 @@ export default {
         method: 'post',
         path: '/software',
         authorizer: {
-          name: "timebankKeycloakAuthorizer"
+          name: "homeKeycloakAuthorizer"
         }
       },
     },

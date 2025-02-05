@@ -8,7 +8,7 @@ export default {
         method: 'get',
         path: '/salesLeads',
         authorizer: {
-          name: "timebankKeycloakAuthorizer"
+          name: "homeKeycloakAuthorizer"
         }
       },
     },

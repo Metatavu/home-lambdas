@@ -8,7 +8,7 @@ export default {
         method: 'put',
         path: '/software/{id}',
         authorizer: {
-          name: "timebankKeycloakAuthorizer"
+          name: "homeKeycloakAuthorizer"
         }
       },
     },

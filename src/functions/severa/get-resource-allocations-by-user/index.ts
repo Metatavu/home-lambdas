@@ -8,7 +8,7 @@ export default {
         method: "get",
         path: "/severa/resourceAllocations",
         authorizer: {
-          name: "timebankKeycloakAuthorizer",
+          name: "homeKeycloakAuthorizer",
         },
       },
     },

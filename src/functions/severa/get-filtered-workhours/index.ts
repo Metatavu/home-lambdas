@@ -8,7 +8,7 @@ export default {
         method: "get",
         path: "/severa/workHours",
         authorizer: {
-          name: "timebankKeycloakAuthorizer"
+          name: "homeKeycloakAuthorizer"
         }
       },
     },

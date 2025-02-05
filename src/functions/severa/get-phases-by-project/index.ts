@@ -8,7 +8,7 @@ export default {
         method: "get",
         path: "/severa/projects/{severaProjectId}/phases",
         authorizer: {
-          name: "timebankKeycloakAuthorizer"
+          name: "homeKeycloakAuthorizer"
         }
       },
     },

@@ -21,8 +21,8 @@ export interface SeveraApiService {
   getWorkDays: (severaUserId: string) => Promise<SeveraResponseWorkDays>;
   getOptInUsers: () => Promise<SeveraResponseUser[]>;
   getResourceAllocations: () => Promise<SeveraResponseResourceAllocation>;
-  getUserByEmail: (email: string, attribute: Record<string, string[]>) => Promise<{ guid: string; isSeveraOptIn: boolean }> ;
-  getTestUser:()  => Promise<{ guid: string }>
+  getUserByEmail: (email: string, attribute: Record<string, string[]>) => Promise<{ guid: string; isSeveraOptIn:string, email:string }> ;
+  getTestUser:()  => Promise<{ guid: string, email: string }>
 }
 
 /**
@@ -62,13 +62,15 @@ export const CreateSeveraApiService = (): SeveraApiService => {
       
     getTestUser : async ()  => {
       try {
-        if (!process.env.SEVERA_TEST_USER_EMAIL) {
+        if (!process.env.SEVERA_TEST_USER_EMAIL|| !process.env.SEVERA_TEST_USER_EMAIL) {
           throw new Error("SEVERA_TEST_USER_EMAIL environment variable is missing.");
         }
     
         return {
-          guid: process.env.SEVERA_TEST_USER_EMAIL, 
-          isSeveraOptIn: ["true"], 
+        email: process.env.SEVERA_TEST_USER_EMAIL,
+        guid: process.env.SEVERA_TEST_USER_ID 
+        
+    
 
         };
       } catch (error) {
@@ -109,7 +111,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
     
         const user = users[0];
         console.log("Found Severa user:", user);
-        const isSeveraOptIn = attribute.isSeveraOptIn?.[0] === "true"; 
+        const isSeveraOptIn = attribute.isSeveraOptIn?.[0] 
     
         const keywordsUrl = `${baseUrl}/v1/users/${user.guid}/keywords`;
         const keywordsResponse = await fetch(keywordsUrl, {
@@ -134,7 +136,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
         if (!isSeveraOptInKeyword) {
           console.log("Keyword 'isSeveraOptIn' not found. Fetching and adding it...");
   
-          const allKeywordsUrl = `${baseUrl}/v1/keywords?keyword=isSeveraOptIn&category=User&active=true`;
+          const allKeywordsUrl = `${baseUrl}/v1/keywords?keyword=isSeveraOptIn`;
           const allKeywordsResponse = await fetch(allKeywordsUrl, {
             method: "GET",
             headers: {
@@ -194,7 +196,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            value: isSeveraOptIn ? "true" : "false",
+            value: isSeveraOptIn
           }),
         });
     
@@ -210,6 +212,8 @@ export const CreateSeveraApiService = (): SeveraApiService => {
         return {
           guid: user.guid,
           isSeveraOptIn, 
+          email
+          
         };
     
       } catch (error) {

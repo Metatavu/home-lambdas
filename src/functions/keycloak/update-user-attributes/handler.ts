@@ -19,19 +19,19 @@ const updateUserAttributeHandler: APIGatewayProxyHandler = async (
   }
 
   const body = JSON.parse(JSON.stringify(event.body));
-  const { id, attribute } = body;
-  const email = attribute?.email; 
+  const { id, attributes } = body;
+  const email = attributes?.email; 
 
   const allowedKeys = ["isSeveraOptIn"]
 
-  if (!id || !attribute || typeof attribute !== "object") {
+  if (!id || !attributes || typeof attributes !== "object") {
     return {
       statusCode: 400,
       body: JSON.stringify({ message: "Missing or invalid parameters: 'id' or 'attribute'." }),
     };
   }
 
-  const keys = Object.keys(attribute);
+  const keys = Object.keys(attributes);
   if (!keys.every(key => allowedKeys.includes(key))) {
     return {
       statusCode: 400,
@@ -42,7 +42,7 @@ const updateUserAttributeHandler: APIGatewayProxyHandler = async (
   const api = CreateKeycloakApiService();
   const severaApi = CreateSeveraApiService()
 
-  let severaUser: { guid: string } | null = null
+  let severaUser: {email:string, guid:string } | null = null
 
  // test user
   if (process.env.NODE_ENV === "development") {
@@ -51,24 +51,26 @@ const updateUserAttributeHandler: APIGatewayProxyHandler = async (
     console.log("Using test user for development environment:", severaUser);
   } else {
     console.log("Looking up Severa by :", email);
-    severaUser = await severaApi.getUserByEmail(email, attribute);
+    severaUser = await severaApi.getUserByEmail(email, attributes);
     console.log("Found user from Severa:", severaUser);
   }
 
-  if (!severaUser || !severaUser.guid) {
+  if (!severaUser || !severaUser.email) {
     return {
       statusCode: 404,
       body: JSON.stringify({ message: "Severa user not found." }),
     };
   }
 
-  if (!attribute.isActive) {
-    attribute.isActive = ["Active"];
+  if (!attributes.isActive) {
+    attributes.isActive = ["Active"];
   }
+  attributes.severaUserid = [severaUser.guid];
+  console.log("atrributes info", attributes )
+  await api.updateUserAttribute(id, attributes);
 
-  await api.updateUserAttribute(id, attribute);
 
-  const updateResponse = await severaApi.getUserByEmail(severaUser.guid, attribute);
+  const updateResponse = await severaApi.getUserByEmail(severaUser.email, attributes);
   console.log("Update response:", updateResponse)
   return {
     statusCode: 200,

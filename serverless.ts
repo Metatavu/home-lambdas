@@ -84,6 +84,8 @@ const serverlessConfiguration: AWS = {
       NODE_OPTIONS: "--enable-source-maps --stack-trace-limit=1000",
       NODE_ENV: "development",
       SEVERA_TEST_USER_EMAIL: env.SEVERA_TEST_USER_EMAIL,
+      SEVERA_TEST_USER_ID: env.SEVERA_TEST_USER_ID,
+
 
       AUTH_ISSUER: env.AUTH_ISSUER,
       PIPEDRIVE_API_KEY: env.PIPEDRIVE_API_KEY,

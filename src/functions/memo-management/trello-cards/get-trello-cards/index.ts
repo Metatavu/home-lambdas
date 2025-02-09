@@ -8,7 +8,7 @@ export default {
         method: "get",
         path: "/trello/cards",
         authorizer: {
-          name: "timebankKeycloakAuthorizer"
+          name: "homeKeycloakAuthorizer"
         }
       }
     }

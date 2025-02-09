@@ -14,7 +14,7 @@ import type SeveraResponseUser from "src/types/severa/user/severaResponseUser";
  */
 export interface SeveraApiService {
   getFlextimeBySeveraUserId: (severaUserId: string, eventDate: string) => Promise<Flextime>;
-  getResourceAllocation: (severaUserId: string) => Promise<SeveraResponseResourceAllocation[]>;
+  getResourceAllocation: (endpointPath: URL) => Promise<SeveraResponseResourceAllocation[]>;
   getPhasesBySeveraProjectId: (severaProjectId: string) => Promise<SeveraResponsePhases[]>;
   getWorkHours: (endpointPath: URL, startDate?: string, endDate?: string) => Promise<SeveraResponseWorkHours[]>;
   getPreviousWorkHours: () => Promise<SeveraResponsePreviousWorkHours[]>;
@@ -64,24 +64,23 @@ export const CreateSeveraApiService = (): SeveraApiService => {
      * @param severaUserId Severa user id
      * @returns Resource allocation of a user
      */
-      getResourceAllocation: async (severaUserId: string) => {
-        const url: string = `${baseUrl}/v1/users/${severaUserId}/resourceallocations/allocations`;
-        const response = await fetch(url,{
-            method: "GET",
-            headers: {
-                Authorization: `Bearer ${await getSeveraAccessToken()}`,
-                "Client_Id": process.env.SEVERA_DEMO_CLIENT_ID,
-                "Content-Type": "application/json",
-            },
+      getResourceAllocation: async (endpointPath: URL) => {
+        const response = await fetch(`${endpointPath}`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${await getSeveraAccessToken()}`,
+            "Client_Id": process.env.SEVERA_DEMO_CLIENT_ID,
+            "Content-Type": "application/json",
+          },
         });
 
         if (!response.ok) {
-            throw new Error(
-                `Failed to fetch resource allocation: ${response.status} - ${response.statusText}`,
-            );
+          throw new Error(
+            `Failed to fetch resource allocation: ${response.status} - ${response.statusText}`,
+          );
         }
         return response.json();
-    },
+      },
 
     /**
      * Gets phases by projectId

@@ -49,6 +49,7 @@ import getWorkHoursHandler from "src/functions/severa/get-filtered-workhours";
 import listArticlesHandler from "src/functions/wiki-documentation/list-articles";
 
 const isLocal = process.env.STAGE === "local";
+const region = (env.AWS_DEFAULT_REGION as any) || "eu-north-1";
 
 const serverlessConfiguration: AWS = {
   service: "home-lambdas",
@@ -57,9 +58,9 @@ const serverlessConfiguration: AWS = {
   provider: {
     name: "aws",
     runtime: "nodejs16.x",
-    region: (env.AWS_DEFAULT_REGION as any) || "us-east-1",
+    region: region,
     deploymentBucket: {
-      name: isLocal ? "local-bucket" : "${self:service}-${opt:stage}-deploy"
+      name: isLocal ? "local-bucket" : `\${self:service}-\${opt:stage}-${region}-deploy`
     },
     memorySize: 256,
     timeout: 60,
@@ -70,7 +71,7 @@ const serverlessConfiguration: AWS = {
     httpApi: {
       cors: true,
       authorizers: {
-        "timebankKeycloakAuthorizer": {
+        "homeKeycloakAuthorizer": {
           identitySource: "$request.header.Authorization",
           issuerUrl: env.AUTH_ISSUER,
           audience: ["account"]

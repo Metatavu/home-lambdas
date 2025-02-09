@@ -8,7 +8,7 @@ export default {
         method: "get",
         path: "/trello/board-members",
         authorizer: {
-          name: "timebankKeycloakAuthorizer"
+          name: "homeKeycloakAuthorizer"
         }
       }
     }

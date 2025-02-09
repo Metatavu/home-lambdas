@@ -8,7 +8,7 @@ export default {
         method: 'PATCH',
         path: '/addLeadInterest/{leadId}',
         authorizer: {
-          name: "timebankKeycloakAuthorizer"
+          name: "homeKeycloakAuthorizer"
         }
       },
     },

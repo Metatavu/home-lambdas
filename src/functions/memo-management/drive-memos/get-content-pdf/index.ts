@@ -8,7 +8,7 @@ export default {
         method: "get",
         path: "/google-drive/memo-content",
         authorizer: {
-          name: "timebankKeycloakAuthorizer"
+          name: "homeKeycloakAuthorizer"
         }
       }
     }

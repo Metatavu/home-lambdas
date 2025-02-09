@@ -8,7 +8,7 @@ export default {
         method: "get",
         path: "/questionnaires/{id}",
         authorizer: {
-          name: "timebankKeycloakAuthorizer",
+          name: "homeKeycloakAuthorizer",
         },
       },
     },

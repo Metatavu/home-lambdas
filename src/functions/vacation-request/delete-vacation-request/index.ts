@@ -8,7 +8,7 @@ export default {
         method: "delete",
         path: '/vacationRequests/{id}',
         authorizer: {
-          name: "timebankKeycloakAuthorizer",
+          name: "homeKeycloakAuthorizer",
         },
       },
     },

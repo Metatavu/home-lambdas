@@ -8,7 +8,7 @@ export default {
         method: "post",
         path: "/trello/card",
         authorizer: {
-          name: "timebankKeycloakAuthorizer"
+          name: "homeKeycloakAuthorizer"
         }
       }
     }

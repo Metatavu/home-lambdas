@@ -46,6 +46,7 @@ import updateVacationRequestHandler from "src/functions/vacation-request/update-
 import getResourceAllocationHandler  from "src/functions/severa/get-resource-allocations-by-user";
 import getPhasesHandler  from "src/functions/severa/get-phases-by-project";
 import getWorkHoursHandler from "src/functions/severa/get-filtered-workhours";
+import listArticlesHandler from "src/functions/wiki-documentation/list-articles";
 
 const isLocal = process.env.STAGE === "local";
 
@@ -143,11 +144,14 @@ const serverlessConfiguration: AWS = {
               "dynamodb:PutItem",
               "dynamodb:UpdateItem",
               "dynamodb:DeleteItem",
+              "dynamodb:BatchGetItem",
             ],
             Resource: isLocal ? "*" : [
               "arn:aws:dynamodb:${self:provider.region}:*:table/SoftwareRegistry",
               "arn:aws:dynamodb:${self:provider.region}:*:table/Questionnaires",
-              "arn:aws:dynamodb:${self:provider.region}:*:table/VacationRequests"
+              "arn:aws:dynamodb:${self:provider.region}:*:table/VacationRequests",
+              "arn:aws:dynamodb:${self:provider.region}:*:table/Articles",
+              "arn:aws:dynamodb:${self:provider.region}:*:table/Articles/index/type-index"
             ]
           }
         ]
@@ -199,6 +203,7 @@ const serverlessConfiguration: AWS = {
     getResourceAllocationHandler,
     getPhasesHandler,
     getWorkHoursHandler,
+    listArticlesHandler
   },
   package: { individually: true },
   custom: {
@@ -258,6 +263,41 @@ const serverlessConfiguration: AWS = {
           TableName: "VacationRequests",
           AttributeDefinitions: [{ AttributeName: "id", AttributeType: "S" }],
           KeySchema: [{ AttributeName: "id", KeyType: "HASH" }],
+          ProvisionedThroughput: {
+            ReadCapacityUnits: 1,
+            WriteCapacityUnits: 1
+          },
+        }
+      },
+      Articles: {
+        Type: "AWS::DynamoDB::Table",
+        DeletionPolicy: "Delete",
+        Properties: {
+          TableName: "Articles",
+          AttributeDefinitions: [
+            { AttributeName: "id", AttributeType: "S" },
+            { AttributeName: "sk", AttributeType: "S" },
+            { AttributeName: "type", AttributeType: "S" }
+          ],
+          KeySchema: [
+            { AttributeName: "id", KeyType: "HASH" },
+            { AttributeName: "sk", KeyType: "RANGE" },
+          ],
+          GlobalSecondaryIndexes: [
+            {
+              IndexName: "type-index",
+              KeySchema: [
+                { AttributeName: "type", KeyType: "HASH" },
+              ],
+              Projection: {
+                ProjectionType: "ALL",
+              },
+              ProvisionedThroughput: {
+                ReadCapacityUnits: 1,
+                WriteCapacityUnits: 1,
+              },
+            },
+          ],
           ProvisionedThroughput: {
             ReadCapacityUnits: 1,
             WriteCapacityUnits: 1

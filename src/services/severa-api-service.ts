@@ -40,7 +40,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
     getFlextimeBySeveraUserId: async (severaUserId: string) => {
 
       const eventDateYesterday = DateTime.now().minus({ days: 1 }).toISODate();
-      Promise<{ guid: string }>
+  
       const url = `${baseUrl}/v1/users/${severaUserId}/flextime?eventdate=${eventDateYesterday}`;
 
       const response = await fetch(url, {

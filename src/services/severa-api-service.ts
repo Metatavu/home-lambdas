@@ -62,7 +62,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
       
     getTestUser : async ()  => {
       try {
-        if (!process.env.SEVERA_TEST_USER_EMAIL|| !process.env.SEVERA_TEST_USER_EMAIL) {
+        if (!process.env.SEVERA_TEST_USER_ID|| !process.env.SEVERA_TEST_USER_EMAIL) {
           throw new Error("SEVERA_TEST_USER_EMAIL environment variable is missing.");
         }
     

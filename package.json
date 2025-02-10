@@ -6,7 +6,9 @@
   "scripts": {
     "test": "jest",
     "test:coveralls": "jest --coverage && coveralls < coverage/lcov.info",
-    "lint": "eslint ./src --ext .ts"
+    "lint": "eslint ./src --ext .ts",
+    "postinstall": "npm run build-severa-client",
+    "build-severa-client": "openapi-generator-cli generate -i severa-API-spec/swagger.yaml -o ./src/generated/severaClient -c generator-config.json -g typescript-node"
   },
   "engines": {
     "node": ">=14.15.0"

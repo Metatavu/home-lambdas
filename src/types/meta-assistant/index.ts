@@ -1,6 +1,7 @@
 import type { ChatPostMessageResponse } from "@slack/web-api/dist/response/ChatPostMessageResponse";
 import type { DateTime } from "luxon";
 import type { PersonTotalTime } from "src/generated/client/api";
+import type { TotalTime } from "../severa/totalTime/totalTime";
 
 /**
  * Serverless schema type
@@ -109,7 +110,7 @@ export interface DailyMessageData {
  */
 export interface DisplayValues {
   totalLoggedTime: string;
-  expectedHours: string;
+  totalExpectedHours: string;
   projectTime: string;
   totalBillableTime: string;
   nonBillableProject: string;
@@ -137,7 +138,6 @@ export interface WeeklyMessageData {
   displayExpected: string;
   displayBillableProject: string;
   displayNonBillableProject: string;
-  displayInternal: string;
   billableHoursPercentage: string;
 }
 

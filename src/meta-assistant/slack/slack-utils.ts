@@ -123,6 +123,7 @@ namespace SlackUtilities {
     const week = Number(user.week);
     // TODO: minimumBillableRate should come from the user but this needs to be updated on the back end for most users, so using this for now
     const minimumBillableRate = 75;
+    console.log("User: ", user);
 
     const startDate = DateTime.fromISO(weekStart).toFormat("dd.MM.yyyy");
     const endDate = DateTime.fromISO(weekEnd).toFormat("dd.MM.yyyy");
@@ -130,7 +131,7 @@ namespace SlackUtilities {
     const {
       totalLoggedTime,
       projectTime,
-      expectedHours,
+      totalExpectedHours,
       totalBillableTime,
       nonBillableProject
     } = TimeUtilities.handleTimeFormatting(user);
@@ -138,13 +139,13 @@ namespace SlackUtilities {
     const {
       message,
       billableHoursPercentage
-    } = MessageUtilities.calculateWorkedTimeAndBillableHours(user.selectedWeek);
+    } = MessageUtilities.calculateWorkedTimeAndBillableHours(user);
 
     const customMessage = `
 Hi ${firstName},
-Last week (week: ${week}, ${startDate} - ${endDate}) you worked ${logged} with an expected time of ${expected}.
+Last week (week: ${week}, ${startDate} - ${endDate}) you worked ${totalLoggedTime} with an expected time of ${totalExpectedHours}.
 ${message}
-Logged project time: ${loggedProject}, Billable project time: ${billableProject}, Non billable project time: ${nonBillableProject}, Internal time: ${internal}.
+Logged project time: ${projectTime}, Billable project time: ${totalBillableTime}, Non billable project time: ${nonBillableProject}.
 Your percentage of billable hours was: ${billableHoursPercentage}%
 You ${+parseInt(billableHoursPercentage) >= minimumBillableRate ? `worked the target ${minimumBillableRate}% billable hours last week:+1:` : `did not work the target ${minimumBillableRate}% billable hours last week:-1:`}.
 Have a great week!
@@ -152,16 +153,15 @@ Have a great week!
 
     return {
       message: customMessage,
-      name: name,
+      name: firstName,
       week: week,
       startDate: startDate,
       endDate: endDate,
-      displayLogged: logged,
-      displayLoggedProject: loggedProject,
-      displayExpected: expected,
-      displayBillableProject: billableProject,
+      displayLogged: totalLoggedTime,
+      displayLoggedProject: projectTime,
+      displayExpected: expectedHours,
+      displayBillableProject: totalBillableTime,
       displayNonBillableProject: nonBillableProject,
-      displayInternal: internal,
       billableHoursPercentage: billableHoursPercentage
     };
   };

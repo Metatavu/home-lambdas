@@ -69,9 +69,6 @@ export const CreateSeveraApiService = (): SeveraApiService => {
         return {
         email: process.env.SEVERA_TEST_USER_EMAIL,
         guid: process.env.SEVERA_TEST_USER_ID 
-        
-    
-
         };
       } catch (error) {
         console.error("Error in getTestUser:", error);

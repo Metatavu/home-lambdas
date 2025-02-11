@@ -44,7 +44,7 @@ const updateUserAttributeHandler: APIGatewayProxyHandler = async (
 
   let severaUser: {email:string, guid:string } | null = null
 
- // test user
+ // test user 
   if (process.env.NODE_ENV === "development") {
     console.log("Current NODE_ENV:", process.env.NODE_ENV);
     severaUser = await severaApi.getTestUser();
@@ -65,7 +65,7 @@ const updateUserAttributeHandler: APIGatewayProxyHandler = async (
   if (!attributes.isActive) {
     attributes.isActive = ["Active"];
   }
-  attributes.severaUserid = [severaUser.guid];
+  attributes["severa-user-id"] = [severaUser.guid];
   console.log("atrributes info", attributes )
   await api.updateUserAttribute(id, attributes);
 

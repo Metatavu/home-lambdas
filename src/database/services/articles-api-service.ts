@@ -39,12 +39,12 @@ class ArticlesApiService {
     };
 
     const result = await this.docClient.query(params).promise();
-    const articleIds = result.Items.flatMap(item => (item.sk!=="tag" ? [{id: item.articleId, articleCreatedAt: item.articleCreatedAt}] : []));
+    const articleIds = result.Items.flatMap(item => (item.type!=="tag" ? [{id: item.articleId, articleCreatedAt: item.articleCreatedAt}] : []));
 
     const batchParams = {
       RequestItems: {
         [TABLE_NAME]: {
-          Keys: articleIds.map(item => ({ id: item.id, sk: item.articleCreatedAt }))
+          Keys: articleIds.map(item => ({ id: item.id, createdAt: item.articleCreatedAt }))
         }
       }
     };

@@ -47,6 +47,7 @@ import getResourceAllocationHandler  from "src/functions/severa/get-resource-all
 import getPhasesHandler  from "src/functions/severa/get-phases-by-project";
 import getWorkHoursHandler from "src/functions/severa/get-filtered-workhours";
 import listArticlesHandler from "src/functions/wiki-documentation/list-articles";
+import createArticleHandler from "src/functions/wiki-documentation/create-article";
 
 const isLocal = process.env.STAGE === "local";
 const region = (env.AWS_DEFAULT_REGION as any) || "eu-north-1";
@@ -204,7 +205,8 @@ const serverlessConfiguration: AWS = {
     getResourceAllocationHandler,
     getPhasesHandler,
     getWorkHoursHandler,
-    listArticlesHandler
+    listArticlesHandler,
+    createArticleHandler
   },
   package: { individually: true },
   custom: {
@@ -277,18 +279,19 @@ const serverlessConfiguration: AWS = {
           TableName: "Articles",
           AttributeDefinitions: [
             { AttributeName: "id", AttributeType: "S" },
-            { AttributeName: "sk", AttributeType: "S" },
-            { AttributeName: "type", AttributeType: "S" }
+            { AttributeName: "type", AttributeType: "S" },
+            { AttributeName: "createdAt", AttributeType: "S" }
           ],
           KeySchema: [
             { AttributeName: "id", KeyType: "HASH" },
-            { AttributeName: "sk", KeyType: "RANGE" },
+            { AttributeName: "createdAt", KeyType: "RANGE" },
           ],
           GlobalSecondaryIndexes: [
             {
               IndexName: "type-index",
               KeySchema: [
                 { AttributeName: "type", KeyType: "HASH" },
+                { AttributeName: "createdAt", KeyType: "RANGE" },
               ],
               Projection: {
                 ProjectionType: "ALL",

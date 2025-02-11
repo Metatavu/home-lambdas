@@ -1,10 +1,10 @@
-interface User {
+export interface User {
   id: string,
   firstName: string,
   lastName: string
 }
 
-interface Tag {
+export interface Tag {
   id: string,
   name: string,
   color: string
@@ -15,7 +15,6 @@ interface Tag {
  */
 export interface ArticleModel {
   id: string;
-  sk: string;
   title: string;
   description?: string;
   content: string;

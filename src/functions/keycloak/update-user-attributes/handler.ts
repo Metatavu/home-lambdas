@@ -45,14 +45,11 @@ const updateUserAttributeHandler: APIGatewayProxyHandler = async (
 
 
   if (process.env.NODE_ENV === "development") {
-    console.log("Current NODE_ENV:", process.env.NODE_ENV);
     severaUser = await severaApi.getTestUser();
-    console.log("Using test user for development environment:", severaUser);
+    
   } else {
-    console.log("Looking up Severa by :", email);
     severaUser = await severaApi.getUserByEmail(email, attributes);
   }
-
   if (!severaUser || !severaUser.email) {
     return {
       statusCode: 404,
@@ -66,7 +63,7 @@ const updateUserAttributeHandler: APIGatewayProxyHandler = async (
   attributes["severa-user-id"] = [severaUser.guid];
 
   await api.updateUserAttribute(id, attributes);
-  
+
   await severaApi.getUserByEmail(severaUser.email, attributes);
   
   return {

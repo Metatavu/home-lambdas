@@ -46,7 +46,6 @@ const updateUserAttributeHandler: APIGatewayProxyHandler = async (
 
   if (process.env.NODE_ENV === "development") {
     severaUser = await severaApi.getTestUser();
-    
   } else {
     severaUser = await severaApi.getUserByEmail(email, attributes);
   }

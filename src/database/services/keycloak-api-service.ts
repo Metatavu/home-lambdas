@@ -90,7 +90,6 @@ export const CreateKeycloakApiService = (): KeycloakApiService => {
     updateUserAttribute: async (
       id: string,
       attributes: Record<string, string[]>
-      
     ): Promise<void> => {
       try {
         const userDetailsResponse = await fetch(
@@ -124,7 +123,7 @@ export const CreateKeycloakApiService = (): KeycloakApiService => {
           attributes: updatedAttributes,
           email: existingEmail, 
         };
-        console.log("Updating user with attributes:", attributes);
+
         const updateResponse = await fetch(
           `${baseUrl}/admin/realms/${realm}/users/${id}`,
           {
@@ -143,9 +142,8 @@ export const CreateKeycloakApiService = (): KeycloakApiService => {
             `Failed to update user attributes: ${updateResponse.status} - ${updateResponse.statusText}. Details: ${errorText}`
           );
         }
-        console.log("User attributes updated successfully.");
+
       } catch (error) {
-        console.error("Error updating user attributes:", error);
         throw new Error(
           error instanceof Error
             ? error.message
@@ -155,7 +153,7 @@ export const CreateKeycloakApiService = (): KeycloakApiService => {
     },
     
   /**
-   * removes user attributes
+   * Remove user attributes  
    * 
    * @param id  string
    * @param attributeName string
@@ -185,7 +183,6 @@ export const CreateKeycloakApiService = (): KeycloakApiService => {
 
       delete currentAttributes[attributeName];
   
-      
       const bodyContent = {
         email: existingEmail,
         attributes: currentAttributes,

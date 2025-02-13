@@ -85,8 +85,6 @@ const serverlessConfiguration: AWS = {
       NODE_ENV: "development",
       SEVERA_TEST_USER_EMAIL: env.SEVERA_TEST_USER_EMAIL,
       SEVERA_TEST_USER_ID: env.SEVERA_TEST_USER_ID,
-
-
       AUTH_ISSUER: env.AUTH_ISSUER,
       PIPEDRIVE_API_KEY: env.PIPEDRIVE_API_KEY,
       PIPEDRIVE_API_URL: env.PIPEDRIVE_API_URL,
@@ -122,7 +120,6 @@ const serverlessConfiguration: AWS = {
       TRELLO_MANAGEMENT_BOARD_ID: env.TRELLO_MANAGEMENT_BOARD_ID,
       CHANNEL_ID: env.CHANNEL_ID,
       OPENAI_API_KEY: env.OPENAI_API_KEY,
-      
     },
     s3: {
       "on-call": {

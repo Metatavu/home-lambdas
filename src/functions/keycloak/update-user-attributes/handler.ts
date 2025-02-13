@@ -3,7 +3,6 @@ import { CreateKeycloakApiService } from "src/database/services/keycloak-api-ser
 import { middyfy } from "src/libs/lambda";
 import { CreateSeveraApiService } from "src/services/severa-api-service";
 
-
 /**
  * Lambda handler to update a user's attributes
  * 
@@ -44,8 +43,7 @@ const updateUserAttributeHandler: APIGatewayProxyHandler = async (
 
   let severaUser: {email:string, guid:string } | null = null
 
-// If in development environment, use the test user defined in environment variables
-// To make this work, add SEVERA_TEST_USER_EMAIL and SEVERA_TEST_USER_ID to your .env file
+
   if (process.env.NODE_ENV === "development") {
     console.log("Current NODE_ENV:", process.env.NODE_ENV);
     severaUser = await severaApi.getTestUser();
@@ -66,12 +64,11 @@ const updateUserAttributeHandler: APIGatewayProxyHandler = async (
     attributes.isActive = ["Active"];
   }
   attributes["severa-user-id"] = [severaUser.guid];
-  console.log("atrributes info", attributes )
+
   await api.updateUserAttribute(id, attributes);
-
-
-  const updateResponse = await severaApi.getUserByEmail(severaUser.email, attributes);
-  console.log("Update response:", updateResponse)
+  
+  await severaApi.getUserByEmail(severaUser.email, attributes);
+  
   return {
     statusCode: 200,
     body: JSON.stringify({ message: "IsSeveraOptin has already been updated in Severa, and severaId will be added to Keycloak." }),
@@ -83,7 +80,7 @@ const updateUserAttributeHandler: APIGatewayProxyHandler = async (
     body: JSON.stringify({ message: error.message, stack: error.stack }),
   };
 }
-  
+
 };
 
 export const main = middyfy(updateUserAttributeHandler);

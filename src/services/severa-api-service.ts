@@ -22,7 +22,7 @@ export interface SeveraApiService {
   getOptInUsers: () => Promise<SeveraResponseUser[]>;
   getResourceAllocations: () => Promise<SeveraResponseResourceAllocation>;
   getUserByEmail: (email: string, attribute: Record<string, string[]>) => Promise<{ guid: string; isSeveraOptIn:string, email:string }> ;
-  getTestUser:()  => Promise<{ guid: string, email: string }>
+  getTestUser:() => Promise<{ guid: string, email: string }>  
 }
 
 /**
@@ -111,7 +111,6 @@ export const CreateSeveraApiService = (): SeveraApiService => {
         }
     
         const user = users[0];
-        console.log("Found Severa user:", user);
     
         const isSeveraOptIn = attribute.isSeveraOptIn?.[0]; 
     
@@ -133,9 +132,8 @@ export const CreateSeveraApiService = (): SeveraApiService => {
         const isSeveraOptInKeyword = keywords.find((kw: { keyword: string }) => kw.keyword === "isSeveraOptIn");
     
         if (isSeveraOptInKeyword) {
-          console.log("isSeveraOptIn keyword already exists in Severa, skipping update.");
+      
         } else {
-          console.log("Keyword 'isSeveraOptIn' not found. Fetching and adding it...");
           const allKeywordsUrl = `${baseUrl}/v1/keywords?keyword=isSeveraOptIn`;
           const allKeywordsResponse = await fetch(allKeywordsUrl, {
             method: "GET",
@@ -154,7 +152,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
           let keywordToAdd = allKeywords.find((kw: { keyword: string }) => kw.keyword === "isSeveraOptIn");
 
           if (!keywordToAdd) {
-            console.log("Keyword 'isSeveraOptIn' not found in all keywords. Creating it now...");
+
             const createKeywordUrl = `${baseUrl}/v1/keywords`;
             const createKeywordResponse = await fetch(createKeywordUrl, {
               method: "POST",
@@ -175,8 +173,8 @@ export const CreateSeveraApiService = (): SeveraApiService => {
             }
     
             keywordToAdd = await createKeywordResponse.json();
-            console.log("Keyword 'isSeveraOptIn' created:", keywordToAdd);
           }
+
           if (keywordToAdd) {
             const updateKeywordUrl = `${baseUrl}/v1/users/${user.guid}/keywords/${keywordToAdd.guid}`;
             const updateResponse = await fetch(updateKeywordUrl, {
@@ -194,18 +192,17 @@ export const CreateSeveraApiService = (): SeveraApiService => {
             if (!updateResponse.ok) {
               throw new Error(`Failed to update Severa keyword: ${updateResponse.status} - ${updateResponse.statusText}`);
             }
-    
-            console.log(`Updated keyword 'isSeveraOptIn' successfully for user ${user.guid}`);
           }
         }
         return {
           guid: user.guid,
           isSeveraOptIn, 
           email,
+
         };
     
       } catch (error) {
-        console.error("Error in getUserByEmail:", error);
+
         throw new Error(error instanceof Error ? error.message : "An unknown error occurred.");
       }
     },

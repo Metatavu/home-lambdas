@@ -44,7 +44,8 @@ const updateUserAttributeHandler: APIGatewayProxyHandler = async (
 
   let severaUser: {email:string, guid:string } | null = null
 
- // test user 
+// If in development environment, use the test user defined in environment variables
+// To make this work, add SEVERA_TEST_USER_EMAIL and SEVERA_TEST_USER_ID to your .env file
   if (process.env.NODE_ENV === "development") {
     console.log("Current NODE_ENV:", process.env.NODE_ENV);
     severaUser = await severaApi.getTestUser();
@@ -52,7 +53,6 @@ const updateUserAttributeHandler: APIGatewayProxyHandler = async (
   } else {
     console.log("Looking up Severa by :", email);
     severaUser = await severaApi.getUserByEmail(email, attributes);
-    console.log("Found user from Severa:", severaUser);
   }
 
   if (!severaUser || !severaUser.email) {
@@ -74,7 +74,7 @@ const updateUserAttributeHandler: APIGatewayProxyHandler = async (
   console.log("Update response:", updateResponse)
   return {
     statusCode: 200,
-    body: JSON.stringify({ message: "User attribute updated successfully." }),
+    body: JSON.stringify({ message: "IsSeveraOptin has already been updated in Severa, and severaId will be added to Keycloak." }),
   };
 } catch (error) {
   return {

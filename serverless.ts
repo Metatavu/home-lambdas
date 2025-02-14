@@ -46,8 +46,11 @@ import updateVacationRequestHandler from "src/functions/vacation-request/update-
 import getResourceAllocationHandler  from "src/functions/severa/get-resource-allocations-by-user";
 import getPhasesHandler  from "src/functions/severa/get-phases-by-project";
 import getWorkHoursHandler from "src/functions/severa/get-filtered-workhours";
-import listArticlesHandler from "src/functions/wiki-documentation/list-articles";
-import createArticleHandler from "src/functions/wiki-documentation/create-article";
+import { 
+  listArticlesHandler, 
+  findArticleHandler, 
+  createArticleHandler 
+} from "src/functions";
 
 const isLocal = process.env.STAGE === "local";
 const region = (env.AWS_DEFAULT_REGION as any) || "eu-north-1";
@@ -145,15 +148,14 @@ const serverlessConfiguration: AWS = {
               "dynamodb:GetItem",
               "dynamodb:PutItem",
               "dynamodb:UpdateItem",
-              "dynamodb:DeleteItem",
-              "dynamodb:BatchGetItem",
+              "dynamodb:DeleteItem"
             ],
             Resource: isLocal ? "*" : [
               "arn:aws:dynamodb:${self:provider.region}:*:table/SoftwareRegistry",
               "arn:aws:dynamodb:${self:provider.region}:*:table/Questionnaires",
               "arn:aws:dynamodb:${self:provider.region}:*:table/VacationRequests",
               "arn:aws:dynamodb:${self:provider.region}:*:table/Articles",
-              "arn:aws:dynamodb:${self:provider.region}:*:table/Articles/index/type-index"
+              "arn:aws:dynamodb:${self:provider.region}:*:table/Articles/index/GSI_Path"
             ]
           }
         ]
@@ -206,7 +208,7 @@ const serverlessConfiguration: AWS = {
     getPhasesHandler,
     getWorkHoursHandler,
     listArticlesHandler,
-    createArticleHandler
+    findArticleHandler
   },
   package: { individually: true },
   custom: {
@@ -279,33 +281,24 @@ const serverlessConfiguration: AWS = {
           TableName: "Articles",
           AttributeDefinitions: [
             { AttributeName: "id", AttributeType: "S" },
-            { AttributeName: "type", AttributeType: "S" },
-            { AttributeName: "createdAt", AttributeType: "S" }
+            { AttributeName: "path", AttributeType: "S" }
           ],
-          KeySchema: [
-            { AttributeName: "id", KeyType: "HASH" },
-            { AttributeName: "createdAt", KeyType: "RANGE" },
-          ],
+          KeySchema: [{ AttributeName: "id", KeyType: "HASH" }],
           GlobalSecondaryIndexes: [
             {
-              IndexName: "type-index",
-              KeySchema: [
-                { AttributeName: "type", KeyType: "HASH" },
-                { AttributeName: "createdAt", KeyType: "RANGE" },
-              ],
-              Projection: {
-                ProjectionType: "ALL",
-              },
+              IndexName: "GSI_Path",
+              KeySchema: [{ AttributeName: "path", KeyType: "HASH" }],
+              Projection: { ProjectionType: "ALL" },
               ProvisionedThroughput: {
                 ReadCapacityUnits: 1,
-                WriteCapacityUnits: 1,
-              },
-            },
+                WriteCapacityUnits: 1
+              }
+            }
           ],
           ProvisionedThroughput: {
             ReadCapacityUnits: 1,
             WriteCapacityUnits: 1
-          },
+          }
         }
       },
     },

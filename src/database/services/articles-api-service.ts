@@ -2,56 +2,27 @@ import { DocumentClient } from "aws-sdk/clients/dynamodb";
 import { ArticleModel } from "../models/article";
 
 const TABLE_NAME = "Articles";
-const GSI = "type-index";
+const GSI = "GSI_Path";
 
 class ArticlesApiService {
   constructor(private readonly docClient: DocumentClient) {}
 
-  public listArticles = async(idAttribute?: string): Promise<ArticleModel[]> => {
-    if (!idAttribute) {
-      const params = {
-        TableName: TABLE_NAME,
-        IndexName: GSI,
-        KeyConditionExpression: "#type = :articleType",
-        ExpressionAttributeNames: {
-          "#type": "type"
-        },
-        ExpressionAttributeValues: {
-          ":articleType": "article"
-        },
-        ScanIndexForward: false
-      };
-      const result = await this.docClient.query(params).promise();
-      const articles = result.Items;
-      return articles as ArticleModel[];
+  public listArticles = async(path?: string): Promise<ArticleModel[]> => {
+    const params: AWS.DynamoDB.DocumentClient.ScanInput = {
+      TableName: TABLE_NAME,
+      ExpressionAttributeNames: {
+        "#path": "path",
+      },
+      ProjectionExpression: "id, title, description, #path, coverImage, createdBy, createdAt, lastUpdatedBy, lastUpdatedAt, tags, readBy"
+    };
+
+    if (path) {
+      params.FilterExpression = "begins_with(#path, :path)";
+      params.ExpressionAttributeValues = { ":path": path };
     }
 
-    const params = {
-      TableName: TABLE_NAME,
-      KeyConditionExpression: "#id = :idValue",
-      ExpressionAttributeNames: {
-        "#id": "id"
-      },
-      ExpressionAttributeValues: {
-        ":idValue": idAttribute
-      },
-      ScanIndexForward: false
-    };
-
-    const result = await this.docClient.query(params).promise();
-    const articleIds = result.Items.flatMap(item => (item.type!=="tag" ? [{id: item.articleId, articleCreatedAt: item.articleCreatedAt}] : []));
-
-    const batchParams = {
-      RequestItems: {
-        [TABLE_NAME]: {
-          Keys: articleIds.map(item => ({ id: item.id, createdAt: item.articleCreatedAt }))
-        }
-      }
-    };
-
-    const batchResult = await this.docClient.batchGet(batchParams).promise();
-    const articles = batchResult.Responses[TABLE_NAME];
-    return articles as ArticleModel[];
+    const articles = await this.docClient.scan(params).promise();
+    return articles.Items as ArticleModel[];
   };
 
   public createArticle = async(article: ArticleModel): Promise<ArticleModel> => {
@@ -62,6 +33,35 @@ class ArticlesApiService {
       })
       .promise();
 
+    return article;
+  }
+
+  public deleteArticle = async(id: string) => {
+    return this.docClient
+      .delete({
+        TableName: TABLE_NAME,
+        Key: {
+          id: id
+        },
+      })
+      .promise();
+  }
+
+  public findArticle = async(path: string) => {
+    const params = {
+      TableName: TABLE_NAME,
+      IndexName: GSI,
+      KeyConditionExpression: "#path = :path",
+      ExpressionAttributeNames: {
+        "#path": "path"
+      },
+      ExpressionAttributeValues: {
+        ":path": path
+      }
+    };
+
+    const result = await this.docClient.query(params).promise();
+    const article = result.Items.length !== 0 ? result.Items[0] : undefined;
     return article;
   }
 }

@@ -6,7 +6,7 @@ interface SeveraResponseUser {
   name: string;
   firstName: string;
   lastName: string;
-  email: string,
+  email: string;
   workContract: {
     dailyHours: number;
   }

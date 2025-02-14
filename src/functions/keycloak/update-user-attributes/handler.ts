@@ -43,7 +43,6 @@ const updateUserAttributeHandler: APIGatewayProxyHandler = async (
 
   let severaUser: {email:string, guid:string } | null = null
 
-
   if (process.env.NODE_ENV === "development") {
     severaUser = await severaApi.getTestUser();
   } else {
@@ -76,7 +75,6 @@ const updateUserAttributeHandler: APIGatewayProxyHandler = async (
     body: JSON.stringify({ message: error.message, stack: error.stack }),
   };
 }
-
 };
 
 export const main = middyfy(updateUserAttributeHandler);

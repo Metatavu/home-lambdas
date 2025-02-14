@@ -67,28 +67,23 @@ export const CreateSeveraApiService = (): SeveraApiService => {
     * @throws Error if the required environment variables (SEVERA_TEST_USER_ID or SEVERA_TEST_USER_EMAIL) are not set.
     */
     getTestUser : async ()  => {
-      try {
-        if (!process.env.SEVERA_TEST_USER_ID|| !process.env.SEVERA_TEST_USER_EMAIL) {
-          throw new Error("SEVERA_TEST_USER_EMAIL environment variable is missing.");
-        }
-    
-        return {
-        email: process.env.SEVERA_TEST_USER_EMAIL,
-        guid: process.env.SEVERA_TEST_USER_ID 
-        };
-      } catch (error) {
-        console.error("Error in getTestUser:", error);
-        throw error;
+      if (!process.env.SEVERA_TEST_USER_ID|| !process.env.SEVERA_TEST_USER_EMAIL) {
+        throw new Error("SEVERA_TEST_USER_EMAIL environment variable is missing.");
       }
+      return {
+      email: process.env.SEVERA_TEST_USER_EMAIL,
+      guid: process.env.SEVERA_TEST_USER_ID 
+      };
     },
 
     /**
-     * Fetches a Severa user by their email address and checks/updates the 'isSeveraOptIn' status.
+    * Fetches a Severa user by their email address and checks/updates the 'isSeveraOptIn' status.
     * 
     * @param email The email address of the user to be retrieved.
     * @param attribute Attributes to be checked/updated for the user.
+    * 
     * @returns The user's Severa GUID, 'isSeveraOptIn' status, and email.
-     */
+    */
     getUserByEmail: async (email: string, attribute: Record<string, string[]>) => {
       try {
         const url = `${baseUrl}/v1/users?email=${encodeURIComponent(email)}`;
@@ -198,11 +193,9 @@ export const CreateSeveraApiService = (): SeveraApiService => {
           guid: user.guid,
           isSeveraOptIn, 
           email,
-
         };
     
       } catch (error) {
-
         throw new Error(error instanceof Error ? error.message : "An unknown error occurred.");
       }
     },

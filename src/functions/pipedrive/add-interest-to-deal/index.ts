@@ -8,7 +8,7 @@ export default {
         method: 'PUT',
         path: '/addDealInterest/{dealId}',
         authorizer: {
-          name: "timebankKeycloakAuthorizer"
+          name: "homeKeycloakAuthorizer"
         }
       },
     },

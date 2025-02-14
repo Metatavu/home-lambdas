@@ -1,0 +1,3 @@
+[submodule "severa-API-spec"]
+	path = severa-API-spec
+	url = https://github.com/Metatavu/severa-API-spec

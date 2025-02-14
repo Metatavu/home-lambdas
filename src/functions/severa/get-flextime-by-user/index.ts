@@ -8,7 +8,7 @@ export default {
         method: "get",
         path: "/severa/users/{severaUserId}/flextime",
         authorizer: {
-          name: "timebankKeycloakAuthorizer"
+          name: "homeKeycloakAuthorizer"
         }
       },
     },

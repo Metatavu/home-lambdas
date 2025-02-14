@@ -8,7 +8,7 @@ namespace Auth {
   const { KEYCLOAK_BASE_URL, KEYCLOAK_REALM, KEYCLOAK_USERNAME, KEYCLOAK_PASSWORD, KEYCLOAK_CLIENT, KEYCLOAK_CLIENT_SECRET } = process.env;
 
   /**
-   * Get severa access token from keycloak
+   * Get access token from keycloak
    */
   export const getAccessToken = async (): Promise<ParsedAccessToken> => {
     const headers = {};

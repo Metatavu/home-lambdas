@@ -8,7 +8,7 @@ export default {
         method: "get",
         path: "/users",
         authorizer: {
-          name: "timebankKeycloakAuthorizer"
+          name: "homeKeycloakAuthorizer"
         }
       }
     }

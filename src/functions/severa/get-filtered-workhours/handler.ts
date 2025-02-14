@@ -11,8 +11,7 @@ import type SeveraResponseWorkHours from "src/types/severa/workHour/severaRespon
  * @param event - API Gateway event containing the userId, projectId, and phaseId.
  */
 export const getWorkHoursHandler: APIGatewayProxyHandler = async (event) => {
-  const { severaUserId, severaPhaseId } = event.pathParameters || {};
-  const { startDate, endDate, severaProjectId } = event.queryStringParameters || {};
+  const { startDate, endDate, severaProjectId, severaPhaseId, severaUserId } = event.queryStringParameters || {};
 
   try {
     const api = CreateSeveraApiService();

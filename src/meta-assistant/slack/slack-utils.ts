@@ -12,7 +12,7 @@ import type { NotificationMessageResult } from "src/types/trello-notification";
 namespace SlackUtilities {
 
   export const client = new WebClient(process.env.METATAVU_BOT_TOKEN, {
-    logLevel: LogLevel.DEBUG
+    logLevel: LogLevel.WARN
   });
 
   const slackOverride = process.env.SLACK_USER_OVERRIDE ? process.env.SLACK_USER_OVERRIDE.split(",") : undefined;

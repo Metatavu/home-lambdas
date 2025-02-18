@@ -23,6 +23,7 @@ export interface SeveraApiService {
   getResourceAllocations: () => Promise<SeveraResponseResourceAllocation>;
   getUserByEmail: (email: string, attribute: Record<string, string[]>) => Promise<{ guid: string; isSeveraOptIn:string, email:string }> ;
   getTestUser:() => Promise<{ guid: string, email: string }>  
+  
 }
 
 /**
@@ -76,6 +77,9 @@ export const CreateSeveraApiService = (): SeveraApiService => {
       };
     },
 
+
+
+    
     /**
     * Fetches a Severa user by their email address and checks/updates the 'isSeveraOptIn' status.
     * 
@@ -101,7 +105,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
         }
     
         const users = await response.json();
-        if (!users || users.length === 0) {
+        if (!users?.length) {
           throw new Error(`No user found with email: ${email}`);
         }
     
@@ -109,8 +113,8 @@ export const CreateSeveraApiService = (): SeveraApiService => {
     
         const isSeveraOptIn = attribute.isSeveraOptIn?.[0]; 
     
-        const keywordsUrl = `${baseUrl}/v1/users/${user.guid}/keywords`;
-        const keywordsResponse = await fetch(keywordsUrl, {
+        const userkeywordsUrl = `${baseUrl}/v1/users/${user.guid}/keywords`;
+        const keywordsResponse = await fetch(userkeywordsUrl, {
           method: "GET",
           headers: {
             Authorization: `Bearer ${await getSeveraAccessToken()}`,
@@ -129,8 +133,8 @@ export const CreateSeveraApiService = (): SeveraApiService => {
         if (isSeveraOptInKeyword) {
       
         } else {
-          const allKeywordsUrl = `${baseUrl}/v1/keywords?keyword=isSeveraOptIn`;
-          const allKeywordsResponse = await fetch(allKeywordsUrl, {
+          const KeywordsUrl = `${baseUrl}/v1/keywords?keyword=isSeveraOptIn`;
+          const allKeywordsResponse = await fetch(KeywordsUrl, {
             method: "GET",
             headers: {
               Authorization: `Bearer ${await getSeveraAccessToken()}`,

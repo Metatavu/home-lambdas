@@ -13,7 +13,7 @@ const updateUserAttributeHandler: APIGatewayProxyHandler = async (
   event: APIGatewayProxyEvent
   ) => { 
   try {
-  if (!event.body) {
+    if (!event.body) {
     throw new Error("Request body is missing.");
   }
 

@@ -41,14 +41,14 @@ const updateUserAttributeHandler: APIGatewayProxyHandler = async (
   const api = CreateKeycloakApiService();
   const severaApi = CreateSeveraApiService()
 
-  let severaUser: {email:string, guid:string } | null = null
+  let severaUser: { email:string, guid:string } | null = null 
 
   if (process.env.NODE_ENV === "development") {
     severaUser = await severaApi.getTestUser();
   } else {
     severaUser = await severaApi.getUserByEmail(email, attributes);
   }
-  if (!severaUser || !severaUser.email) {
+  if (!severaUser?.email || !severaUser?.guid) {  
     return {
       statusCode: 404,
       body: JSON.stringify({ message: "Severa user not found." }),
@@ -66,15 +66,17 @@ const updateUserAttributeHandler: APIGatewayProxyHandler = async (
   
   return {
     statusCode: 200,
-    body: JSON.stringify({ message: "IsSeveraOptin has already been updated in Severa, and severaId will be added to Keycloak." }),
-  };
+    body: JSON.stringify({ 
+      message: `Severa user updated with: ${JSON.stringify({attributes})}, Keycloak attributes updated: ${JSON.stringify(attributes)}`
+    }),
+};
 } catch (error) {
   return {
     statusCode: 500,
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ message: error.message, stack: error.stack }),
   };
-}
+  }
 };
 
 export const main = middyfy(updateUserAttributeHandler);

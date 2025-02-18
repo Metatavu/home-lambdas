@@ -77,9 +77,6 @@ export const CreateSeveraApiService = (): SeveraApiService => {
       };
     },
 
-
-
-    
     /**
     * Fetches a Severa user by their email address and checks/updates the 'isSeveraOptIn' status.
     * 
@@ -110,11 +107,12 @@ export const CreateSeveraApiService = (): SeveraApiService => {
         }
     
         const user = users[0];
-    
         const isSeveraOptIn = attribute.isSeveraOptIn?.[0]; 
+
+        const isSeveraOptInKeyword = await checkKeywordExists("isSeveraOptIn");
     
-        const userkeywordsUrl = `${baseUrl}/v1/users/${user.guid}/keywords`;
-        const keywordsResponse = await fetch(userkeywordsUrl, {
+        const userKeywordsUrl = `${baseUrl}/v1/users/${user.guid}/keywords`;
+        const keywordsResponse = await fetch(userKeywordsUrl, {
           method: "GET",
           headers: {
             Authorization: `Bearer ${await getSeveraAccessToken()}`,
@@ -124,75 +122,31 @@ export const CreateSeveraApiService = (): SeveraApiService => {
         });
     
         if (!keywordsResponse.ok) {
-          throw new Error(`Failed to fetch keywords: ${keywordsResponse.status} - ${keywordsResponse.statusText}`);
+          throw new Error(`Failed to fetch keywords for user: ${keywordsResponse.status} - ${keywordsResponse.statusText}`);
         }
     
         const keywords = await keywordsResponse.json();
-        const isSeveraOptInKeyword = keywords.find((kw: { keyword: string }) => kw.keyword === "isSeveraOptIn");
-    
-        if (isSeveraOptInKeyword) {
-      
-        } else {
-          const KeywordsUrl = `${baseUrl}/v1/keywords?keyword=isSeveraOptIn`;
-          const allKeywordsResponse = await fetch(KeywordsUrl, {
-            method: "GET",
+        const existingKeywordForUser = keywords.find((kw: { keyword: string }) => kw.keyword === "isSeveraOptIn");
+
+        if (!existingKeywordForUser) {
+          const updateKeywordUrl = `${baseUrl}/v1/users/${user.guid}/keywords/${isSeveraOptInKeyword.guid}`;
+          const updateResponse = await fetch(updateKeywordUrl, {
+            method: "POST",
             headers: {
               Authorization: `Bearer ${await getSeveraAccessToken()}`,
               "Client_Id": process.env.SEVERA_DEMO_CLIENT_ID,
               "Content-Type": "application/json",
             },
+            body: JSON.stringify({
+              value: isSeveraOptIn,
+            }),
           });
     
-          if (!allKeywordsResponse.ok) {
-            throw new Error(`Failed to fetch all keywords: ${allKeywordsResponse.status} - ${allKeywordsResponse.statusText}`);
-          }
-    
-          const allKeywords = await allKeywordsResponse.json();
-          let keywordToAdd = allKeywords.find((kw: { keyword: string }) => kw.keyword === "isSeveraOptIn");
-
-          if (!keywordToAdd) {
-
-            const createKeywordUrl = `${baseUrl}/v1/keywords`;
-            const createKeywordResponse = await fetch(createKeywordUrl, {
-              method: "POST",
-              headers: {
-                Authorization: `Bearer ${await getSeveraAccessToken()}`,
-                "Client_Id": process.env.SEVERA_DEMO_CLIENT_ID,
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                keyword: "isSeveraOptIn",
-                category: "User",
-                isActive: true,
-              }),
-            });
-    
-            if (!createKeywordResponse.ok) {
-              throw new Error(`Failed to create 'isSeveraOptIn' keyword: ${createKeywordResponse.status} - ${createKeywordResponse.statusText}`);
-            }
-    
-            keywordToAdd = await createKeywordResponse.json();
-          }
-
-          if (keywordToAdd) {
-            const updateKeywordUrl = `${baseUrl}/v1/users/${user.guid}/keywords/${keywordToAdd.guid}`;
-            const updateResponse = await fetch(updateKeywordUrl, {
-              method: "POST",
-              headers: {
-                Authorization: `Bearer ${await getSeveraAccessToken()}`,
-                "Client_Id": process.env.SEVERA_DEMO_CLIENT_ID,
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                value: isSeveraOptIn,
-              }),
-            });
-    
-            if (!updateResponse.ok) {
-              throw new Error(`Failed to update Severa keyword: ${updateResponse.status} - ${updateResponse.statusText}`);
-            }
+          if (!updateResponse.ok) {
+            throw new Error(`Failed to update Severa keyword for user: ${updateResponse.status} - ${updateResponse.statusText}`);
           }
         }
+    
         return {
           guid: user.guid,
           isSeveraOptIn, 
@@ -425,4 +379,55 @@ const getSeveraAccessToken = async (): Promise<string> => {
   } catch (error) {
     throw new Error(`Failed to get Severa access token: ${error.message}`);
   }
+};
+
+
+
+const checkKeywordExists = async (keyword: string) => {
+
+  const baseUrl: string = process.env.SEVERA_DEMO_BASE_URL;
+  const KeywordsUrl = `${baseUrl}/v1/keywords?keyword=${keyword}`;
+
+  const allKeywordsResponse = await fetch(KeywordsUrl, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${await getSeveraAccessToken()}`,
+      "Client_Id": process.env.SEVERA_DEMO_CLIENT_ID,
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!allKeywordsResponse.ok) {
+    throw new Error(`Failed to fetch keywords: ${allKeywordsResponse.status} - ${allKeywordsResponse.statusText}`);
+  }
+
+  const allKeywords = await allKeywordsResponse.json();
+  const existingKeyword = allKeywords.find((kw: { keyword: string }) => kw.keyword === keyword);
+
+  if (existingKeyword) {
+    return existingKeyword;
+  }
+
+  const createKeywordUrl = `${baseUrl}/v1/keywords`;
+  const createKeywordResponse = await fetch(createKeywordUrl, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${await getSeveraAccessToken()}`,
+      "Client_Id": process.env.SEVERA_DEMO_CLIENT_ID,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      keyword: "isSeveraOptIn", 
+      category: "User",
+      isActive: true,
+    }),
+  });
+
+  if (!createKeywordResponse.ok) {
+    throw new Error(`Failed to create keyword '${keyword}': ${createKeywordResponse.status} - ${createKeywordResponse.statusText}`);
+  }
+
+  const newKeyword = await createKeywordResponse.json();
+
+  return newKeyword;
 };

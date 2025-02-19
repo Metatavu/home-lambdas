@@ -1,4 +1,4 @@
-import type { CalculateWorkedTimeAndBillableHoursResponse, DailyCombinedData } from "src/types/meta-assistant";
+import type { CalculateWorkedTimeAndBillableHoursResponse, DailyCombinedData, WeeklyCombinedData } from "src/types/meta-assistant";
 import TimeUtilities from "src/meta-assistant/generic/time-utils";
 import type { TotalTime } from "src/types/severa/totalTime/totalTime";
 
@@ -29,6 +29,30 @@ namespace MessageUtilities {
     if (totalOverTime < 0) {
       message = `Undertime: ${undertime}`;
     }
+
+    return {
+      message: message,
+      billableHoursPercentage: billableHoursPercentage
+    };
+  };
+
+  export const calculateWorkedTimeAndBillableHoursWeekly = (user: WeeklyCombinedData): CalculateWorkedTimeAndBillableHoursResponse => {
+    const { totalEnteredHours, totalExpectedHours, minimumBillableRate } = user;
+
+    const billableHoursPercentage = totalEnteredHours === 0 ? "0" : (minimumBillableRate/totalEnteredHours * 100).toFixed(0);
+    // const totalOverTime = totalLoggedTime - expectedHours;
+
+    // const undertime = TimeUtilities.timeConversion(totalOverTime * -1);
+    // const overtime = TimeUtilities.timeConversion(totalOverTime);
+
+    let message = "You worked the expected amount of time";
+    // if (totalOverTime > 0) {
+    //   message = `Overtime: ${overtime}`;
+    // }
+
+    // if (totalOverTime < 0) {
+    //   message = `Undertime: ${undertime}`;
+    // }
 
     return {
       message: message,

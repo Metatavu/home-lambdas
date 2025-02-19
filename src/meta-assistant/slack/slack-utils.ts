@@ -143,13 +143,13 @@ namespace SlackUtilities {
     console.log("Total billable time: ", totalBillableTime);
     console.log("Non billable project: ", nonBillableProject);
 
-    // const {
-    //   message,
-    //   billableHoursPercentage
-    // } = MessageUtilities.calculateWorkedTimeAndBillableHours(user);
+    const {
+      message,
+      billableHoursPercentage
+    } = MessageUtilities.calculateWorkedTimeAndBillableHoursWeekly(user);
 
-    const message = "You worked the expected amount of time";
-    const billableHoursPercentage = "0";
+    // const message = "You worked the expected amount of time";
+    // const billableHoursPercentage = "0";
 
     console.log("Message: ", message);
     console.log("Billable hours percentage: ", billableHoursPercentage);

@@ -89,6 +89,7 @@ namespace SlackUtilities {
     } = MessageUtilities.calculateWorkedTimeAndBillableHours(user);
 
     const displayDate = DateTime.fromISO(date).toFormat("dd.MM.yyyy");
+    console.log("Type:" ,typeof displayDate);
     
     const customMessage = `
       Hi ${firstName},
@@ -117,13 +118,14 @@ namespace SlackUtilities {
    * @param weekEnd date for data
    * @returns message
    */
-  const constructWeeklySummaryMessage = (user: WeeklyCombinedData, weekStart: string, weekEnd: string, vacationTime: number): WeeklyMessageData => {
+  const constructWeeklySummaryMessage = (user: WeeklyCombinedData, weekStart: string, weekEnd: string): WeeklyMessageData => {
     const { firstName } = user;
-    user.totalExpectedHours -= vacationTime;
+    console.log("User first name: ", firstName);
+    // user.totalExpectedHours -= vacationTime;
     const week = Number(user.week);
     // TODO: minimumBillableRate should come from the user but this needs to be updated on the back end for most users, so using this for now
     const minimumBillableRate = 75;
-    console.log("User: ", user);
+    // console.log("User: ", user);
 
     const startDate = DateTime.fromISO(weekStart).toFormat("dd.MM.yyyy");
     const endDate = DateTime.fromISO(weekEnd).toFormat("dd.MM.yyyy");
@@ -134,12 +136,23 @@ namespace SlackUtilities {
       totalExpectedHours,
       totalBillableTime,
       nonBillableProject
-    } = TimeUtilities.handleTimeFormatting(user);
+    } = TimeUtilities.handleTimeFormattingWeekly(user);
+    console.log("Total logged time: ", totalLoggedTime);
+    console.log("Project time: ", projectTime);
+    console.log("Total expected hours: ", totalExpectedHours);
+    console.log("Total billable time: ", totalBillableTime);
+    console.log("Non billable project: ", nonBillableProject);
 
-    const {
-      message,
-      billableHoursPercentage
-    } = MessageUtilities.calculateWorkedTimeAndBillableHours(user);
+    // const {
+    //   message,
+    //   billableHoursPercentage
+    // } = MessageUtilities.calculateWorkedTimeAndBillableHours(user);
+
+    const message = "You worked the expected amount of time";
+    const billableHoursPercentage = "0";
+
+    console.log("Message: ", message);
+    console.log("Billable hours percentage: ", billableHoursPercentage);
 
     const customMessage = `
 Hi ${firstName},
@@ -159,7 +172,7 @@ Have a great week!
       endDate: endDate,
       displayLogged: totalLoggedTime,
       displayLoggedProject: projectTime,
-      displayExpected: expectedHours,
+      displayExpected: totalExpectedHours,
       displayBillableProject: totalBillableTime,
       displayNonBillableProject: nonBillableProject,
       billableHoursPercentage: billableHoursPercentage
@@ -212,6 +225,7 @@ Have a great week!
     const messageResults: DailyMessageResult[] = [];
     for (const userData of dailyCombinedData) {
       const { slackId } = userData;
+      console.log("User data: ", userData);
       const message = constructDailyMessage(userData, numberOfToday);
         if (!slackOverride) {
           messageResults.push({
@@ -251,17 +265,18 @@ Have a great week!
     const messageResults: WeeklyMessageResult[] = [];
 
     for (const userData of weeklyCombinedData) {
-      const { slackId, personId, expected } = userData;
+      const { userId, personId, expected } = userData;
+      console.log("User data: ", userData);
       // const vacationTime = TimeUtilities.checkIfVacationCaseExists(personId, weekStartDate, weekEndDate);
       // const isAway = TimeUtilities.checkIfUserShouldRecieveMessage(personId, expected, today.toISODate());
       // const firstDayBack = TimeUtilities.checkIfUserShouldRecieveMessage(personId, expected, yesterday.toISODate());
       const message = constructWeeklySummaryMessage(userData, weekStartDate.toISODate(), weekEndDate.toISODate());
-
+      console.log("Message hereeeeeeeeeeeee: ", message);
       // if (!isAway && !firstDayBack) {
       if (!slackOverride) {
         messageResults.push({
           message: message,
-          response: await sendMessage(slackId, message.message)
+          response: await sendMessage(userId, message.message)
         });
       } else {
         for (const stagingid of slackOverride) {

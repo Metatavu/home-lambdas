@@ -53,10 +53,28 @@ namespace TimeUtilities {
 
     return {
       totalLoggedTime: displayTotalLoggedTime,
-      expectedHours: displayExpectedHours,
       projectTime: displayProjectTime,
+      expectedHours: displayExpectedHours,
       totalBillableTime: displayTotalBillableTime,
-      nonBillableProject: displayNonBillableProject
+      nonBillableProject: displayNonBillableProject,
+    };
+  };
+
+  export const handleTimeFormattingWeekly = (user: TotalTime): DisplayValues => {
+    const { totalLoggedTime, totalExpectedHours, projectTime, totalBillableTime, nonBillableProject } = user;
+
+    const displayTotalLoggedTime = TimeUtilities.timeConversion(totalLoggedTime);
+    const displayExpectedHours = TimeUtilities.timeConversion(totalExpectedHours);
+    const displayProjectTime = TimeUtilities.timeConversion(projectTime);
+    const displayTotalBillableTime = TimeUtilities.timeConversion(totalBillableTime);
+    const displayNonBillableProject = TimeUtilities.timeConversion(nonBillableProject);
+
+    return {
+      totalLoggedTime: displayTotalLoggedTime,
+      projectTime: displayProjectTime,
+      totalExpectedHours: displayExpectedHours,
+      totalBillableTime: displayTotalBillableTime,
+      nonBillableProject: displayNonBillableProject,
     };
   };
 

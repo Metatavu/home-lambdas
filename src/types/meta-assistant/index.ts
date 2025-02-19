@@ -35,15 +35,17 @@ export interface DailyCombinedData {
  * WeeklyCombinedData interface
  */
 export interface WeeklyCombinedData {
+  userId: string;
   firstName: string;
-  slackId?: string;
   totalExpectedHours: number;
+  // totalExpectedHours: number;
   totalEnteredHours: number;
   minimumBillableRate: number;
   projectTime: number;
   week?: number;
   startDate?: string;
   endDate?: string;
+
 }
 
 /**
@@ -110,8 +112,8 @@ export interface DailyMessageData {
  */
 export interface DisplayValues {
   totalLoggedTime: string;
-  totalExpectedHours: string;
   projectTime: string;
+  totalExpectedHours: string;
   totalBillableTime: string;
   nonBillableProject: string;
 }

@@ -49,7 +49,10 @@ import getWorkHoursHandler from "src/functions/severa/get-filtered-workhours";
 import { 
   listArticlesHandler, 
   findArticleHandler, 
-  createArticleHandler 
+  createArticleHandler,
+  updateArticleHandler,
+  deleteArticleHndler,
+  readArticleHandler
 } from "src/functions";
 
 const isLocal = process.env.STAGE === "local";
@@ -208,7 +211,11 @@ const serverlessConfiguration: AWS = {
     getPhasesHandler,
     getWorkHoursHandler,
     listArticlesHandler,
-    findArticleHandler
+    findArticleHandler,
+    createArticleHandler,
+    updateArticleHandler,
+    deleteArticleHndler,
+    readArticleHandler
   },
   package: { individually: true },
   custom: {

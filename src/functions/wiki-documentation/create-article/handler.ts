@@ -1,42 +1,53 @@
 import { APIGatewayProxyEvent, APIGatewayProxyHandler } from "aws-lambda";
 import { DocumentClient } from "aws-sdk/clients/dynamodb";
 import { ArticleModel } from "src/database/models/article";
-import ArticlesApiService from "src/database/services/articles-api-service";
 import { middyfy } from "src/libs/lambda";
 import { v4 as uuidv4 } from "uuid";
+import ArticlesApiService from "src/database/services/articles-api-service";
 
 const dynamoDb = new DocumentClient();
 const articleService = new ArticlesApiService(dynamoDb);
 
 export const createArticleHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
+  if (!event.body) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ error: 'Request body is required.' }),
+    };
+  }
+
+  const {
+    path,
+    title,
+    content,
+    createdBy,
+    description,
+    coverImage,
+    tags,
+  } = (typeof event.body === "string" ? JSON.parse(event.body) : event.body);
+
+  if (!path || !title || !content || !createdBy) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ error: "Some required data is missing." })
+    };
+  }
+
   try {
-    if (!event.body) {
-      console.log('Request body is missing');
+    const articleExistsWithPath = await articleService.findArticleByPath(path);
+    if (articleExistsWithPath) {
       return {
-        statusCode: 400,
-        body: JSON.stringify({ error: 'Request body is required.' }),
-      };
+        statusCode: 409,
+        body: JSON.stringify({
+          message: `Article with the path ${path} already exists.`
+        })
+      }
     }
 
-    const {
-      title,
-      description,
-      content,
-      createdBy,
-      createdAt,
-      coverImage,
-      tags
-    } = (typeof event.body === "string" ? JSON.parse(event.body) : event.body);
-
-    if (!title || !content || !createdBy || !createdAt) {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ error: "Some required data is missing." })
-      };
-    }
-
+    const createdAt = new Date().toISOString();
     const newArticle: ArticleModel = {
       id: uuidv4(),
+      path: path,
       title: title,
       description: description,
       content: content,
@@ -45,12 +56,11 @@ export const createArticleHandler: APIGatewayProxyHandler = async (event: APIGat
       createdAt: createdAt,
       lastUpdatedBy: createdBy,
       lastUpdatedAt: createdAt,
-      tags: tags,
-      type: "article"
+      lastReadAt: createdAt,
+      tags: tags || [],
     };
 
     const articleCreated = await articleService.createArticle(newArticle);
-
     return {
       statusCode: 200,
       body: JSON.stringify(articleCreated),
@@ -58,7 +68,10 @@ export const createArticleHandler: APIGatewayProxyHandler = async (event: APIGat
   } catch (error) {
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: 'Failed to create new article entry.', details: error.message }),
+      body: JSON.stringify({ 
+        error: "Failed to create new article.", 
+        message: error.message 
+      })
     };
   }
 };

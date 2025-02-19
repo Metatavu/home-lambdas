@@ -17,7 +17,7 @@ export const findArticleHandler: APIGatewayProxyHandler = async (event: APIGatew
   }
 
   try {
-    const foundArticle = await articleService.findArticle(path);
+    const foundArticle = await articleService.findArticleByPath(path);
 
     if (!foundArticle) {
       return {
@@ -35,7 +35,7 @@ export const findArticleHandler: APIGatewayProxyHandler = async (event: APIGatew
       statusCode: 500,
       body: JSON.stringify({
         error: "Failed to retrieve an article.",
-        details: error.message,
+        message: error.message,
       }),
     };
   }

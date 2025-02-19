@@ -1,5 +1,5 @@
 import { DocumentClient } from "aws-sdk/clients/dynamodb";
-import { ArticleModel } from "../models/article";
+import { ArticleMetadataModel, ArticleModel } from "../models/article";
 
 const TABLE_NAME = "Articles";
 const GSI = "GSI_Path";
@@ -7,13 +7,13 @@ const GSI = "GSI_Path";
 class ArticlesApiService {
   constructor(private readonly docClient: DocumentClient) {}
 
-  public listArticles = async(path?: string): Promise<ArticleModel[]> => {
+  public listArticles = async(path?: string): Promise<ArticleMetadataModel[]> => {
     const params: AWS.DynamoDB.DocumentClient.ScanInput = {
       TableName: TABLE_NAME,
       ExpressionAttributeNames: {
         "#path": "path",
       },
-      ProjectionExpression: "id, title, description, #path, coverImage, createdBy, createdAt, lastUpdatedBy, lastUpdatedAt, tags, readBy"
+      ProjectionExpression: "id, title, description, #path, coverImage, createdBy, createdAt, lastUpdatedBy, lastUpdatedAt, tags, readBy, lastReadAt"
     };
 
     if (path) {
@@ -22,7 +22,31 @@ class ArticlesApiService {
     }
 
     const articles = await this.docClient.scan(params).promise();
-    return articles.Items as ArticleModel[];
+    return articles.Items as ArticleMetadataModel[];
+  };
+
+  public findArticleByPath = async(path: string): Promise<ArticleModel | null> => {
+    const params = {
+      TableName: TABLE_NAME,
+      IndexName: GSI,
+      KeyConditionExpression: "#path = :path",
+      ExpressionAttributeNames: { "#path": "path" },
+      ExpressionAttributeValues: { ":path": path }
+    };
+
+    const result = await this.docClient.query(params).promise();
+    const article = result.Items.length !== 0 ? result.Items[0] : undefined;
+    return article as ArticleModel;
+  };
+
+  public findArticleById = async(id: string): Promise<ArticleModel | null> => {
+    const articles = await this.docClient
+      .get({
+        TableName: TABLE_NAME,
+        Key: { id: id },
+      }).promise();
+
+    return articles.Item as ArticleModel;
   };
 
   public createArticle = async(article: ArticleModel): Promise<ArticleModel> => {
@@ -30,40 +54,40 @@ class ArticlesApiService {
       .put({
         TableName: TABLE_NAME,
         Item: article
-      })
-      .promise();
+      }).promise();
 
     return article;
-  }
+  };
 
   public deleteArticle = async(id: string) => {
     return this.docClient
       .delete({
         TableName: TABLE_NAME,
-        Key: {
-          id: id
-        },
-      })
-      .promise();
-  }
+        Key: { id: id },
+      }).promise();
+  };
 
-  public findArticle = async(path: string) => {
+  public updateArticle = async(article: ArticleModel) => {
+    await this.docClient
+      .put({
+        TableName: TABLE_NAME,
+        Item: article
+      }).promise();
+  };
+
+  public updateArticleReadBy = async(id: string, userId: string) => {
     const params = {
       TableName: TABLE_NAME,
-      IndexName: GSI,
-      KeyConditionExpression: "#path = :path",
-      ExpressionAttributeNames: {
-        "#path": "path"
-      },
+      Key: { id: id },
+      UpdateExpression: "ADD readBy :userId SET lastReadAt=:newDate",
       ExpressionAttributeValues: {
-        ":path": path
+        ":userId": this.docClient.createSet([userId]),
+        ":newDate": new Date().toISOString()
       }
     };
 
-    const result = await this.docClient.query(params).promise();
-    const article = result.Items.length !== 0 ? result.Items[0] : undefined;
-    return article;
-  }
+    await this.docClient.update(params).promise();
+  };
 }
 
 export default ArticlesApiService;

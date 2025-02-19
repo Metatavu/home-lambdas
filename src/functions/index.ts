@@ -39,3 +39,6 @@ export { default as getResourceAllocationHandler } from "./severa/get-resource-a
 export { default as listArticlesHandler } from "./wiki-documentation/list-articles";
 export { default as findArticleHandler } from "./wiki-documentation/find-article";
 export { default as createArticleHandler } from "./wiki-documentation/create-article";
+export { default as updateArticleHandler } from "./wiki-documentation/update-article";
+export { default as deleteArticleHndler } from "./wiki-documentation/delete-article";
+export { default as readArticleHandler } from "./wiki-documentation/read-article";

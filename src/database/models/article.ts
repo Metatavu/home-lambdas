@@ -1,15 +1,21 @@
 /**
  * Interface for an article.
  */
-export interface ArticleModel {
+export interface ArticleMetadataModel {
   id: string;
+  path: string;
   title: string;
-  description?: string;
+  description: string;
   coverImage?: string;
   createdBy: string;
-  createdAt: string;
+  createdAt?: string;
   lastUpdatedBy?: string;
   lastUpdatedAt?: string;
-  tags: string[];
-  readBy: string[];
+  lastReadAt: string;
+  tags?: string[];
+  readBy?: string[];
+}
+
+export interface ArticleModel extends ArticleMetadataModel{
+  content: string;
 }

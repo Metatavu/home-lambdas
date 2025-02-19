@@ -1,0 +1,42 @@
+import { APIGatewayProxyEvent, APIGatewayProxyHandler } from "aws-lambda";
+import { DocumentClient } from "aws-sdk/clients/dynamodb";
+import { middyfy } from "src/libs/lambda";
+import ArticlesApiService from "src/database/services/articles-api-service";
+
+const dynamoDb = new DocumentClient();
+const articleService = new ArticlesApiService(dynamoDb);
+
+export const readArticleHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
+  if (!event.body) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ error: 'Request body is required.' }),
+    };
+  }
+
+  const { pathParameters, body } = event;
+  const { userId } = (typeof body === "string" ? JSON.parse(body) : body);
+  const id = pathParameters?.id;
+
+  try {
+    const existedArticle = await articleService.findArticleById(id);
+    if (!existedArticle) {
+      return {
+        statusCode: 404,
+        body: JSON.stringify({ error: `Article ${id} not found.` })
+      }
+    }
+
+    await articleService.updateArticleReadBy(id, userId);
+  } catch (error) {
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ 
+        error: "Failed to update readBy list for an article.", 
+        message: error.message 
+      })
+    };
+  }
+};
+
+export const main = middyfy(readArticleHandler);

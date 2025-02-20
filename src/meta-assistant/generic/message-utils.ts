@@ -14,7 +14,8 @@ namespace MessageUtilities {
    */
   export const calculateWorkedTimeAndBillableHours = (user: TotalTime| DailyCombinedData): CalculateWorkedTimeAndBillableHoursResponse => {
     const { totalLoggedTime, expectedHours, totalBillableTime } = user;
-
+    
+    // console.log("user here", user);
     const billableHoursPercentage = totalLoggedTime === 0 ? "0" : (totalBillableTime/totalLoggedTime * 100).toFixed(0);
     const totalOverTime = totalLoggedTime - expectedHours;
 
@@ -37,22 +38,28 @@ namespace MessageUtilities {
   };
 
   export const calculateWorkedTimeAndBillableHoursWeekly = (user: WeeklyCombinedData): CalculateWorkedTimeAndBillableHoursResponse => {
-    const { totalEnteredHours, totalExpectedHours, minimumBillableRate } = user;
+    const { totalEnteredHours, totalExpectedHours, enteredTimeEntries } = user;
+    // console.log("user here", user);
 
-    const billableHoursPercentage = totalEnteredHours === 0 ? "0" : (minimumBillableRate/totalEnteredHours * 100).toFixed(0);
-    // const totalOverTime = totalLoggedTime - expectedHours;
+    // const billableHoursPercentage = totalEnteredHours === 0 ? "0" : (minimumBillableRate/totalEnteredHours * 100).toFixed(0);
+    // const totalOverTime = totalEnteredHours - totalExpectedHours;
+    const billableHoursPercentage = "0";
+    const totalOverTime = 0;
+
+    const undertime = 0;
+    const overtime = 0;
 
     // const undertime = TimeUtilities.timeConversion(totalOverTime * -1);
     // const overtime = TimeUtilities.timeConversion(totalOverTime);
 
     let message = "You worked the expected amount of time";
-    // if (totalOverTime > 0) {
-    //   message = `Overtime: ${overtime}`;
-    // }
+    if (totalOverTime > 0) {
+      message = `Overtime: ${overtime}`;
+    }
 
-    // if (totalOverTime < 0) {
-    //   message = `Undertime: ${undertime}`;
-    // }
+    if (totalOverTime < 0) {
+      message = `Undertime: ${undertime}`;
+    }
 
     return {
       message: message,

@@ -124,45 +124,46 @@ namespace SlackUtilities {
     // user.totalExpectedHours -= vacationTime;
     const week = Number(user.week);
     // TODO: minimumBillableRate should come from the user but this needs to be updated on the back end for most users, so using this for now
-    const minimumBillableRate = 75;
+    // const minimumBillableRate = 75;
     // console.log("User: ", user);
 
     const startDate = DateTime.fromISO(weekStart).toFormat("dd.MM.yyyy");
     const endDate = DateTime.fromISO(weekEnd).toFormat("dd.MM.yyyy");
 
     const {
-      totalLoggedTime,
+      totalEnteredHours,
       projectTime,
       totalExpectedHours,
-      totalBillableTime,
-      nonBillableProject
+      enteredTimeEntries,
+      // totalBillableTime,
+      // nonBillableProject,
+      // minimumBillableRate
     } = TimeUtilities.handleTimeFormattingWeekly(user);
-    console.log("Total logged time: ", totalLoggedTime);
-    console.log("Project time: ", projectTime);
-    console.log("Total expected hours: ", totalExpectedHours);
-    console.log("Total billable time: ", totalBillableTime);
-    console.log("Non billable project: ", nonBillableProject);
-
+    
     const {
       message,
       billableHoursPercentage
     } = MessageUtilities.calculateWorkedTimeAndBillableHoursWeekly(user);
 
-    // const message = "You worked the expected amount of time";
-    // const billableHoursPercentage = "0";
-
-    console.log("Message: ", message);
-    console.log("Billable hours percentage: ", billableHoursPercentage);
+    // const customMessage = `
+    //   Hi ${firstName},
+    //   Last week (week: ${week}, ${startDate} - ${endDate}) you worked ${totalEnteredHours} with an expected time of ${totalExpectedHours}.
+    //   ${message}
+    //   Logged project time: ${projectTime}, Billable project time: ${totalBillableTime}, Non billable project time: ${nonBillableProject}.
+    //   Your percentage of billable hours was: ${billableHoursPercentage}%
+    //   You ${+parseInt(billableHoursPercentage) >= minimumBillableRate ? `worked the target ${minimumBillableRate}% billable hours last week:+1:` : `did not work the target ${minimumBillableRate}% billable hours last week:-1:`}.
+    //   Have a great week!
+    // `;
 
     const customMessage = `
-Hi ${firstName},
-Last week (week: ${week}, ${startDate} - ${endDate}) you worked ${totalLoggedTime} with an expected time of ${totalExpectedHours}.
-${message}
-Logged project time: ${projectTime}, Billable project time: ${totalBillableTime}, Non billable project time: ${nonBillableProject}.
-Your percentage of billable hours was: ${billableHoursPercentage}%
-You ${+parseInt(billableHoursPercentage) >= minimumBillableRate ? `worked the target ${minimumBillableRate}% billable hours last week:+1:` : `did not work the target ${minimumBillableRate}% billable hours last week:-1:`}.
-Have a great week!
+      Hi ${firstName},
+      Last week (week: ${week}, ${startDate} - ${endDate}) you worked ${totalEnteredHours} with an expected time of ${totalExpectedHours}.
+      ${message}
+      Logged project time: ${projectTime}. InternalTime: ${enteredTimeEntries}.
+      Your percentage of billable hours was: ${billableHoursPercentage}%
+      Have a great week!
     `;
+    
 
     return {
       message: customMessage,
@@ -170,12 +171,13 @@ Have a great week!
       week: week,
       startDate: startDate,
       endDate: endDate,
-      displayLogged: totalLoggedTime,
+      displayLogged: totalEnteredHours,
       displayLoggedProject: projectTime,
       displayExpected: totalExpectedHours,
-      displayBillableProject: totalBillableTime,
-      displayNonBillableProject: nonBillableProject,
-      billableHoursPercentage: billableHoursPercentage
+      // displayBillableProject: totalBillableTime,
+      // displayNonBillableProject: nonBillableProject,
+      billableHoursPercentage: billableHoursPercentage,
+      enteredTimeEntries: enteredTimeEntries
     };
   };
 
@@ -271,7 +273,7 @@ Have a great week!
       // const isAway = TimeUtilities.checkIfUserShouldRecieveMessage(personId, expected, today.toISODate());
       // const firstDayBack = TimeUtilities.checkIfUserShouldRecieveMessage(personId, expected, yesterday.toISODate());
       const message = constructWeeklySummaryMessage(userData, weekStartDate.toISODate(), weekEndDate.toISODate());
-      console.log("Message hereeeeeeeeeeeee: ", message);
+      // console.log("Message hereeeeeeeeeeeee: ", message);
       // if (!isAway && !firstDayBack) {
       if (!slackOverride) {
         messageResults.push({

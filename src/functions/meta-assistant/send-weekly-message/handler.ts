@@ -30,15 +30,19 @@ export const sendWeeklyMessageHandler = async (): Promise<WeeklyHandlerResponse>
 
     for (const severaUser of severaUsers) {
       const workWeek = await severaApi.getWorkWeek(severaUser.guid);
+      console.log("workWeek", workWeek);
       const workWeekHours = await severaApi.getPreviousWeekHours(severaUser.guid)
+      console.log("workWeekHours", workWeekHours);
 
       let totalWorkHours = 0;
       let totalExpectedHours = 0;
       let totalProjectTime = 0;
+      let enteredTimeEntries = 0;
       if (workWeek) {
         for (const day of workWeek) {
           totalWorkHours += day.enteredHours;
           totalExpectedHours += day.expectedHours;
+          enteredTimeEntries += day.enteredTimeEntries;
         }
         for (const day of workWeekHours) {
           totalProjectTime += day.quantity;
@@ -48,7 +52,8 @@ export const sendWeeklyMessageHandler = async (): Promise<WeeklyHandlerResponse>
           firstName: severaUser.firstName,
           totalExpectedHours: totalExpectedHours,
           totalEnteredHours: totalWorkHours,
-          minimumBillableRate: 75,
+          enteredTimeEntries: enteredTimeEntries,
+          // minimumBillableRate: 75,
           projectTime: totalProjectTime,
           week: weekStartDate.weekNumber,
           startDate: weekStartDate.toISODate(),
@@ -57,12 +62,12 @@ export const sendWeeklyMessageHandler = async (): Promise<WeeklyHandlerResponse>
       }
     }
 
-    console.log("personTotalTimes", personTotalTimes);
+    // console.log("personTotalTimes", personTotalTimes);
     // console.log("previousWorkDays", previousWorkDays);
 
     const messagesSent = await SlackUtilities.postWeeklyMessageToUsers(personTotalTimes, previousWorkDays);
 
-    console.log("messagesSent", messagesSent);
+    // console.log("messagesSent", messagesSent);
 
     const errors = messagesSent.filter(messageSent => messageSent.response.error);
 

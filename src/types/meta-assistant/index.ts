@@ -40,7 +40,8 @@ export interface WeeklyCombinedData {
   totalExpectedHours: number;
   // totalExpectedHours: number;
   totalEnteredHours: number;
-  minimumBillableRate: number;
+  // minimumBillableRate: number;
+  enteredTimeEntries: number;
   projectTime: number;
   week?: number;
   startDate?: string;
@@ -116,6 +117,9 @@ export interface DisplayValues {
   totalExpectedHours: string;
   totalBillableTime: string;
   nonBillableProject: string;
+  totalEnteredHours: string;
+  minimumBillableRate: number;
+  enteredTimeEntries: string;
 }
 
 /**
@@ -138,9 +142,11 @@ export interface WeeklyMessageData {
   displayLogged: string;
   displayLoggedProject: string;
   displayExpected: string;
-  displayBillableProject: string;
-  displayNonBillableProject: string;
+  // displayBillableProject: string;
+  // displayNonBillableProject: string;
   billableHoursPercentage: string;
+  // displayTimeEntries: string;
+  enteredTimeEntries: string;
 }
 
 /**

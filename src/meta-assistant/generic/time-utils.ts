@@ -61,20 +61,24 @@ namespace TimeUtilities {
   };
 
   export const handleTimeFormattingWeekly = (user: TotalTime): DisplayValues => {
-    const { totalLoggedTime, totalExpectedHours, projectTime, totalBillableTime, nonBillableProject } = user;
+    const { totalEnteredHours, totalExpectedHours, projectTime, enteredTimeEntries   } = user;
+    console.log("user here handleTimeFormattingWeekly", user);
 
-    const displayTotalLoggedTime = TimeUtilities.timeConversion(totalLoggedTime);
+    const displayTotalLoggedTime = TimeUtilities.timeConversion(totalEnteredHours);
     const displayExpectedHours = TimeUtilities.timeConversion(totalExpectedHours);
     const displayProjectTime = TimeUtilities.timeConversion(projectTime);
-    const displayTotalBillableTime = TimeUtilities.timeConversion(totalBillableTime);
-    const displayNonBillableProject = TimeUtilities.timeConversion(nonBillableProject);
+    // const displayTotalBillableTime = TimeUtilities.timeConversion(totalBillableTime);
+    // const displayNonBillableProject = TimeUtilities.timeConversion(nonBillableProject);
+    const displayTimeEntries = TimeUtilities.timeConversion(enteredTimeEntries);
 
     return {
-      totalLoggedTime: displayTotalLoggedTime,
+      totalEnteredHours: displayTotalLoggedTime,
       projectTime: displayProjectTime,
       totalExpectedHours: displayExpectedHours,
-      totalBillableTime: displayTotalBillableTime,
-      nonBillableProject: displayNonBillableProject,
+      // totalBillableTime: displayTotalBillableTime,
+      // nonBillableProject: displayNonBillableProject,
+      enteredTimeEntries: displayTimeEntries
+      
     };
   };
 

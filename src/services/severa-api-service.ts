@@ -8,6 +8,8 @@ import type SeveraResponseResourceAllocation from "src/types/severa/resourceAllo
 import type SeveraResponsePreviousWorkHours from "src/types/severa/previousWorkHours/severaResponsePreviousWorkHours";
 import type SeveraResponseWorkDays from "src/types/severa/workDays/severaResponseWorkDays";
 import type SeveraResponseUser from "src/types/severa/user/severaResponseUser";
+import Config from "src/app/config";
+import dotenv from 'dotenv';
 
 /**
  * Interface for a SeveraApiService.
@@ -22,8 +24,6 @@ export interface SeveraApiService {
   getOptInUsers: () => Promise<SeveraResponseUser[]>;
   getResourceAllocations: () => Promise<SeveraResponseResourceAllocation>;
   getUserByEmail: (email: string, attribute: Record<string, string[]>) => Promise<{ guid: string; isSeveraOptIn:string, email:string }> ;
-  getTestUser:() => Promise<{ guid: string, email: string }>  
-  
 }
 
 /**
@@ -60,22 +60,6 @@ export const CreateSeveraApiService = (): SeveraApiService => {
       }
       return response.json();
     },
-      
-    /**
-    * Retrieves the test user information from environment variables.
-    * 
-    * @returns An object containing the test user's email and GUID (ID).
-    * @throws Error if the required environment variables (SEVERA_TEST_USER_ID or SEVERA_TEST_USER_EMAIL) are not set.
-    */
-    getTestUser : async ()  => {
-      if (!process.env.SEVERA_TEST_USER_ID|| !process.env.SEVERA_TEST_USER_EMAIL) {
-        throw new Error("SEVERA_TEST_USER_EMAIL environment variable is missing.");
-      }
-      return {
-      email: process.env.SEVERA_TEST_USER_EMAIL,
-      guid: process.env.SEVERA_TEST_USER_ID 
-      };
-    },
 
     /**
     * Fetches a Severa user by their email address and checks/updates the 'isSeveraOptIn' status.
@@ -86,7 +70,17 @@ export const CreateSeveraApiService = (): SeveraApiService => {
     * @returns The user's Severa GUID, 'isSeveraOptIn' status, and email.
     */
     getUserByEmail: async (email: string, attribute: Record<string, string[]>) => {
-      try {
+      dotenv.config();  
+      const isLocal = process.env.STAGE === "local"
+      
+      try { 
+      if (isLocal) {
+        return {
+          email: Config.get().testUser.email,
+          guid: Config.get().testUser.id,
+          isSeveraOptIn: "isSeveraOptIn", 
+      };
+    }
         const url = `${baseUrl}/v1/users?email=${encodeURIComponent(email)}`;
         const response = await fetch(url, {
           method: "GET",
@@ -431,3 +425,4 @@ const checkKeywordExists = async (keyword: string) => {
 
   return newKeyword;
 };
+

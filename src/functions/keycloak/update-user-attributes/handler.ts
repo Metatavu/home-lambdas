@@ -41,13 +41,8 @@ const updateUserAttributeHandler: APIGatewayProxyHandler = async (
   const api = CreateKeycloakApiService();
   const severaApi = CreateSeveraApiService()
 
-  let severaUser: { email:string, guid:string } | null = null 
+  const severaUser = await severaApi.getUserByEmail(email, attributes);
 
-  if (process.env.NODE_ENV === "development") {
-    severaUser = await severaApi.getTestUser();
-  } else {
-    severaUser = await severaApi.getUserByEmail(email, attributes);
-  }
   if (!severaUser?.email || !severaUser?.guid) {  
     return {
       statusCode: 404,

@@ -22,7 +22,7 @@ const removeUserAttributeHandler: APIGatewayProxyHandler = async (
       };
     }
     
-    if (attributeName !== 'isSeveraOptIn') {
+    if (attributeName !== "isSeveraOptIn") {
       return {
         statusCode: 403,
         body: JSON.stringify({message: 'Attribute "${attributeName}" cannot be removed. Only isSeveraOptin is allowed.'})

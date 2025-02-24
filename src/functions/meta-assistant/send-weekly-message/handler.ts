@@ -32,7 +32,7 @@ export const sendWeeklyMessageHandler = async (): Promise<WeeklyHandlerResponse>
       const workWeek = await severaApi.getWorkWeek(severaUser.guid);
       console.log("workWeek", workWeek);
       const workWeekHours = await severaApi.getPreviousWeekHours(severaUser.guid)
-      console.log("workWeekHours", workWeekHours);
+      // console.log("workWeekHours", workWeekHours);
 
       let totalWorkHours = 0;
       let totalExpectedHours = 0;
@@ -40,6 +40,7 @@ export const sendWeeklyMessageHandler = async (): Promise<WeeklyHandlerResponse>
       let enteredTimeEntries = 0;
       if (workWeek) {
         for (const day of workWeek) {
+          console.log("day", day.enteredHours);
           totalWorkHours += day.enteredHours;
           totalExpectedHours += day.expectedHours;
           enteredTimeEntries += day.enteredTimeEntries;

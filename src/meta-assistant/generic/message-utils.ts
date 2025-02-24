@@ -38,19 +38,21 @@ namespace MessageUtilities {
   };
 
   export const calculateWorkedTimeAndBillableHoursWeekly = (user: WeeklyCombinedData): CalculateWorkedTimeAndBillableHoursResponse => {
-    const { totalEnteredHours, totalExpectedHours, enteredTimeEntries } = user;
+    const { totalEnteredHours, totalExpectedHours, projectTime } = user;
     // console.log("user here", user);
 
     // const billableHoursPercentage = totalEnteredHours === 0 ? "0" : (minimumBillableRate/totalEnteredHours * 100).toFixed(0);
-    // const totalOverTime = totalEnteredHours - totalExpectedHours;
-    const billableHoursPercentage = "0";
-    const totalOverTime = 0;
+    const totalOverTime = totalEnteredHours - totalExpectedHours;
+    // const billableHoursPercentage = "0";
+    // const totalOverTime = 0;
 
-    const undertime = 0;
-    const overtime = 0;
+    const billableHoursPercentage = totalEnteredHours === 0 ? "0" : (totalEnteredHours/projectTime * 100).toFixed(0);
 
-    // const undertime = TimeUtilities.timeConversion(totalOverTime * -1);
-    // const overtime = TimeUtilities.timeConversion(totalOverTime);
+    // const undertime = 0;
+    // const overtime = 0;
+
+    const undertime = TimeUtilities.timeConversion(totalOverTime * -1);
+    const overtime = TimeUtilities.timeConversion(totalOverTime);
 
     let message = "You worked the expected amount of time";
     if (totalOverTime > 0) {

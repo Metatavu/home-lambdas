@@ -89,7 +89,6 @@ namespace SlackUtilities {
     } = MessageUtilities.calculateWorkedTimeAndBillableHours(user);
 
     const displayDate = DateTime.fromISO(date).toFormat("dd.MM.yyyy");
-    console.log("Type:" ,typeof displayDate);
     
     const customMessage = `
       Hi ${firstName},
@@ -159,7 +158,7 @@ namespace SlackUtilities {
       Hi ${firstName},
       Last week (week: ${week}, ${startDate} - ${endDate}) you worked ${totalEnteredHours} with an expected time of ${totalExpectedHours}.
       ${message}
-      Logged project time: ${projectTime}. InternalTime: ${enteredTimeEntries}.
+      Logged project time: ${projectTime}.
       Your percentage of billable hours was: ${billableHoursPercentage}%
       Have a great week!
     `;
@@ -268,7 +267,7 @@ namespace SlackUtilities {
 
     for (const userData of weeklyCombinedData) {
       const { userId, personId, expected } = userData;
-      console.log("User data: ", userData);
+      // console.log("User data: ", userData);
       // const vacationTime = TimeUtilities.checkIfVacationCaseExists(personId, weekStartDate, weekEndDate);
       // const isAway = TimeUtilities.checkIfUserShouldRecieveMessage(personId, expected, today.toISODate());
       // const firstDayBack = TimeUtilities.checkIfUserShouldRecieveMessage(personId, expected, yesterday.toISODate());

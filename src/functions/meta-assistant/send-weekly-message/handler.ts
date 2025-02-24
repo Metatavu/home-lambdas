@@ -5,7 +5,6 @@ import { CreateSeveraApiService } from "src/services/severa-api-service";
 import type SeveraResponseUser from "src/types/severa/user/severaResponseUser";
 import type schema from "src/types/meta-assistant/index";
 import type { WeeklyCombinedData } from "src/types/meta-assistant/index";
-import { Timespan } from "src/generated/client/api";
 
 /**
  * Handler for sendWeeklyMessage
@@ -17,11 +16,10 @@ export const sendWeeklyMessageHandler = async (): Promise<WeeklyHandlerResponse>
     const severaApi = CreateSeveraApiService();
     const severaUsers = await severaApi.getOptInUsers() as SeveraResponseUser[];
     const previousWorkDays = TimeUtilities.getPreviousTwoWorkdays();
-
+    
     const { dayBeforeYesterday } = previousWorkDays;
     const { weekStartDate, weekEndDate } = TimeUtilities.getlastWeeksDates(dayBeforeYesterday);
 
-    const slackUsers = await SlackUtilities.getSlackUsers();
     if (!severaUsers) {
       throw new Error("No users retrieved from Severa");
     }
@@ -30,14 +28,13 @@ export const sendWeeklyMessageHandler = async (): Promise<WeeklyHandlerResponse>
 
     for (const severaUser of severaUsers) {
       const workWeek = await severaApi.getWorkWeek(severaUser.guid);
-      // console.log("workWeek", workWeek);
       const workWeekHours = await severaApi.getPreviousWeekHours(severaUser.guid)
-      // console.log("workWeekHours", workWeekHours);
 
       let totalWorkHours = 0;
       let totalExpectedHours = 0;
       let totalProjectTime = 0;
       let enteredTimeEntries = 0;
+
       if (workWeek) {
         for (const day of workWeek) {
           console.log("day", day.enteredHours);
@@ -63,30 +60,21 @@ export const sendWeeklyMessageHandler = async (): Promise<WeeklyHandlerResponse>
       }
     }
 
-    // console.log("personTotalTimes", personTotalTimes);
-    // console.log("previousWorkDays", previousWorkDays);
-
-    const messagesSent = await SlackUtilities.postWeeklyMessageToUsers(personTotalTimes, previousWorkDays);
-
-    // console.log("messagesSent", messagesSent);
-
+    const messagesSent = await SlackUtilities.postWeeklyMessageToUsers(personTotalTimes);
     const errors = messagesSent.filter(messageSent => messageSent.response.error);
 
     if (errors.length) {
       let errorMessage = "Error while posting slack messages, ";
-
       errors.forEach(error => {
         errorMessage += `${error.response.error}\n`;
       });
       console.error(errorMessage);
     }
-
     return {
       message: "Everything went well sending the weekly, see data for message breakdown...",
       data: messagesSent
     };
   } catch (error) {
-    console.error(error.toString());
     return {
       message: `Error while sending slack message: ${error}`
     };

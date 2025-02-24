@@ -72,16 +72,10 @@ export const CreateSeveraApiService = (): SeveraApiService => {
     getUserByEmail: async (email: string, attribute: Record<string, string[]>) => {
       dotenv.config();  
       const isLocal = process.env.STAGE === "local"
+      const testEmail = isLocal ? Config.get().testUser.email : email;
       
-      try { 
-      if (isLocal) {
-        return {
-          email: Config.get().testUser.email,
-          guid: Config.get().testUser.id,
-          isSeveraOptIn: "isSeveraOptIn", 
-      };
-    }
-        const url = `${baseUrl}/v1/users?email=${encodeURIComponent(email)}`;
+        try {   
+        const url = `${baseUrl}/v1/users?email=${encodeURIComponent(testEmail)}`;
         const response = await fetch(url, {
           method: "GET",
           headers: {
@@ -97,12 +91,12 @@ export const CreateSeveraApiService = (): SeveraApiService => {
     
         const users = await response.json();
         if (!users?.length) {
-          throw new Error(`No user found with email: ${email}`);
+          throw new Error(`No user found with email: ${testEmail}`);
         }
-    
+
         const user = users[0];
         const isSeveraOptIn = attribute.isSeveraOptIn?.[0]; 
-
+    
         const isSeveraOptInKeyword = await checkKeywordExists("isSeveraOptIn");
     
         const userKeywordsUrl = `${baseUrl}/v1/users/${user.guid}/keywords`;
@@ -139,16 +133,22 @@ export const CreateSeveraApiService = (): SeveraApiService => {
           if (!updateResponse.ok) {
             throw new Error(`Failed to update Severa keyword for user: ${updateResponse.status} - ${updateResponse.statusText}`);
           }
+          const updatedKeyword = await updateResponse.json();
+
+          return {
+            guid: user.guid,
+            isSeveraOptIn: updatedKeyword.value,
+            email:testEmail,
+          };
         }
     
-        return {
-          guid: user.guid,
-          isSeveraOptIn, 
-          email,
-        };
-    
       } catch (error) {
-        throw new Error(error instanceof Error ? error.message : "An unknown error occurred.");
+          const errorMessage =
+          error instanceof Error
+            ? error.message
+            : "An unknown error occurred while processing the user request.";
+
+        throw new Error(`Error in getUserByEmail: ${errorMessage}`);
       }
     },
 
@@ -375,7 +375,11 @@ const getSeveraAccessToken = async (): Promise<string> => {
   }
 };
 
-
+/**
+ * 
+ * @param keyword 
+ * @returns 
+ */
 
 const checkKeywordExists = async (keyword: string) => {
 

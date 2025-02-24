@@ -44,7 +44,6 @@ namespace TimeUtilities {
    */
   export const handleTimeFormatting = (user: TotalTime): DisplayValues => {
     const { totalLoggedTime, expectedHours, projectTime, totalBillableTime, nonBillableProject  } = user;
-
     const displayTotalLoggedTime = TimeUtilities.timeConversion(totalLoggedTime);
     const displayExpectedHours = TimeUtilities.timeConversion(expectedHours);
     const displayProjectTime = TimeUtilities.timeConversion(projectTime);
@@ -60,6 +59,13 @@ namespace TimeUtilities {
     };
   };
 
+  /**
+   * Handle formatting multiple time variables for weekly data
+   *
+   * @param user data from severa
+   * 
+   * @returns human friendly time formats
+   */
   export const handleTimeFormattingWeekly = (user: TotalTimeWeekly): DisplayValuesWeekly => {
     const { totalEnteredHours, totalExpectedHours, projectTime   } = user;
     const displayTotalLoggedTime = TimeUtilities.timeConversion(totalEnteredHours);

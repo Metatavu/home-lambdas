@@ -206,8 +206,8 @@ namespace SlackUtilities {
     const messageResults: DailyMessageResult[] = [];
     for (const userData of dailyCombinedData) {
       const { slackId } = userData;
-      console.log("User data: ", userData);
       const message = constructDailyMessage(userData, numberOfToday);
+
         if (!slackOverride) {
           messageResults.push({
             message: message,
@@ -236,24 +236,14 @@ namespace SlackUtilities {
    */
   export const postWeeklyMessageToUsers = async (
     weeklyCombinedData: WeeklyCombinedData[],
-    // timeRegistrations:TimeRegistrations[],
-    previousWorkDays: PreviousWorkdayDates,
-    // nonProjectTimes: NonProjectTime[]
   ): Promise<WeeklyMessageResult[]> => {
     const { weekStartDate, weekEndDate } = TimeUtilities.getlastWeeksDates();
-    const { yesterday, today } = previousWorkDays;
-
     const messageResults: WeeklyMessageResult[] = [];
 
     for (const userData of weeklyCombinedData) {
       const { userId } = userData;
-      // console.log("User data: ", userData);
-      // const vacationTime = TimeUtilities.checkIfVacationCaseExists(personId, weekStartDate, weekEndDate);
-      // const isAway = TimeUtilities.checkIfUserShouldRecieveMessage(personId, expected, today.toISODate());
-      // const firstDayBack = TimeUtilities.checkIfUserShouldRecieveMessage(personId, expected, yesterday.toISODate());
       const message = constructWeeklySummaryMessage(userData, weekStartDate.toISODate(), weekEndDate.toISODate());
-      // console.log("Message hereeeeeeeeeeeee: ", message);
-      // if (!isAway && !firstDayBack) {
+
       if (!slackOverride) {
         messageResults.push({
           message: message,

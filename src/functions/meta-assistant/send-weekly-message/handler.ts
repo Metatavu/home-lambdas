@@ -30,7 +30,7 @@ export const sendWeeklyMessageHandler = async (): Promise<WeeklyHandlerResponse>
 
     for (const severaUser of severaUsers) {
       const workWeek = await severaApi.getWorkWeek(severaUser.guid);
-      console.log("workWeek", workWeek);
+      // console.log("workWeek", workWeek);
       const workWeekHours = await severaApi.getPreviousWeekHours(severaUser.guid)
       // console.log("workWeekHours", workWeekHours);
 
@@ -54,7 +54,7 @@ export const sendWeeklyMessageHandler = async (): Promise<WeeklyHandlerResponse>
           totalExpectedHours: totalExpectedHours,
           totalEnteredHours: totalWorkHours,
           enteredTimeEntries: enteredTimeEntries,
-          // minimumBillableRate: 75,
+          minimumBillableRate: 75,
           projectTime: totalProjectTime,
           week: weekStartDate.weekNumber,
           startDate: weekStartDate.toISODate(),

@@ -1,6 +1,6 @@
-import type { Dates, TimeRegistrations, PreviousWorkdayDates, NonProjectTime, DisplayValues } from "src/types/meta-assistant/index";
+import type { Dates, TimeRegistrations, PreviousWorkdayDates, NonProjectTime, DisplayValues, DisplayValuesWeekly } from "src/types/meta-assistant/index";
 import { DateTime, Duration } from "luxon";
-import type { TotalTime } from "src/types/severa/totalTime/totalTime";
+import type { TotalTime, TotalTimeWeekly } from "src/types/severa/totalTime/totalTime";
 
 /**
  * Namespace for time utilities
@@ -43,10 +43,10 @@ namespace TimeUtilities {
    * @returns human friendly time formats
    */
   export const handleTimeFormatting = (user: TotalTime): DisplayValues => {
-    const { totalLoggedTime, totalExpectedHours, projectTime, totalBillableTime, nonBillableProject } = user;
+    const { totalLoggedTime, expectedHours, projectTime, totalBillableTime, nonBillableProject  } = user;
 
     const displayTotalLoggedTime = TimeUtilities.timeConversion(totalLoggedTime);
-    const displayExpectedHours = TimeUtilities.timeConversion(totalExpectedHours);
+    const displayExpectedHours = TimeUtilities.timeConversion(expectedHours);
     const displayProjectTime = TimeUtilities.timeConversion(projectTime);
     const displayTotalBillableTime = TimeUtilities.timeConversion(totalBillableTime);
     const displayNonBillableProject = TimeUtilities.timeConversion(nonBillableProject);
@@ -60,25 +60,16 @@ namespace TimeUtilities {
     };
   };
 
-  export const handleTimeFormattingWeekly = (user: TotalTime): DisplayValues => {
-    const { totalEnteredHours, totalExpectedHours, projectTime, enteredTimeEntries   } = user;
-    console.log("user here handleTimeFormattingWeekly", user);
-
+  export const handleTimeFormattingWeekly = (user: TotalTimeWeekly): DisplayValuesWeekly => {
+    const { totalEnteredHours, totalExpectedHours, projectTime   } = user;
     const displayTotalLoggedTime = TimeUtilities.timeConversion(totalEnteredHours);
     const displayExpectedHours = TimeUtilities.timeConversion(totalExpectedHours);
     const displayProjectTime = TimeUtilities.timeConversion(projectTime);
-    // const displayTotalBillableTime = TimeUtilities.timeConversion(totalBillableTime);
-    // const displayNonBillableProject = TimeUtilities.timeConversion(nonBillableProject);
-    const displayTimeEntries = TimeUtilities.timeConversion(enteredTimeEntries);
 
     return {
       totalEnteredHours: displayTotalLoggedTime,
       projectTime: displayProjectTime,
       totalExpectedHours: displayExpectedHours,
-      // totalBillableTime: displayTotalBillableTime,
-      // nonBillableProject: displayNonBillableProject,
-      enteredTimeEntries: displayTimeEntries
-      
     };
   };
 
@@ -90,8 +81,8 @@ namespace TimeUtilities {
    */
   export const checkIfVacationCaseExists = (
     personId: number,
-    // timeRegistrations: TimeRegistrations[],
-    // nonProjectTimes: NonProjectTime[],
+    timeRegistrations: TimeRegistrations[],
+    nonProjectTimes: NonProjectTime[],
     startDate: DateTime,
     endDate: DateTime
   ) => {  
@@ -120,11 +111,11 @@ namespace TimeUtilities {
    * @returns false if can't find a time registration
    */
   export const checkIfUserShouldRecieveMessage = (
-    // timeRegistrations: TimeRegistrations[],
+    timeRegistrations: TimeRegistrations[],
     personId: number,
     expected: number,
     date: string,
-    // nonProjectTimes: NonProjectTime[]
+    nonProjectTimes: NonProjectTime[]
   ): boolean => {
     const personsTimeRegistration = timeRegistrations.find(timeRegistration =>
       timeRegistration.person === personId

@@ -29,6 +29,8 @@ export interface DailyCombinedData {
   totalBillableTime: number;
   nonBillableProject: number;
   slackId?: string;
+  enteredHours: number;
+  totalExpectedHours: number;
 }
 
 /**
@@ -40,7 +42,7 @@ export interface WeeklyCombinedData {
   totalExpectedHours: number;
   // totalExpectedHours: number;
   totalEnteredHours: number;
-  // minimumBillableRate: number;
+  minimumBillableRate: number;
   enteredTimeEntries: number;
   projectTime: number;
   week?: number;
@@ -105,21 +107,25 @@ export interface DailyMessageData {
   displayDate?: string;
   displayTotalLoggedTime: string;
   displayExpected: string;
-  displayNonBillableProject: string;
 }
 
 /**
- * Interface for DisplayValues
+ * Interface for DisplayValuesDaily
  */
 export interface DisplayValues {
   totalLoggedTime: string;
   projectTime: string;
-  totalExpectedHours: string;
+  expectedHours: string;
   totalBillableTime: string;
   nonBillableProject: string;
+}
+/**
+ * Interface for DisplayValuesWeekly
+ */
+export interface DisplayValuesWeekly {
   totalEnteredHours: string;
-  minimumBillableRate: number;
-  enteredTimeEntries: string;
+  projectTime: string;
+  totalExpectedHours: string;
 }
 
 /**
@@ -142,11 +148,7 @@ export interface WeeklyMessageData {
   displayLogged: string;
   displayLoggedProject: string;
   displayExpected: string;
-  // displayBillableProject: string;
-  // displayNonBillableProject: string;
   billableHoursPercentage: string;
-  // displayTimeEntries: string;
-  enteredTimeEntries: string;
 }
 
 /**

@@ -105,7 +105,6 @@ namespace SlackUtilities {
       displayDate: displayDate,
       displayTotalLoggedTime: totalLoggedTime,
       displayExpected: expectedHours,
-      displayNonBillableProject: nonBillableProject,
     };
   };
 
@@ -119,12 +118,9 @@ namespace SlackUtilities {
    */
   const constructWeeklySummaryMessage = (user: WeeklyCombinedData, weekStart: string, weekEnd: string): WeeklyMessageData => {
     const { firstName } = user;
-    console.log("User first name: ", firstName);
-    // user.totalExpectedHours -= vacationTime;
     const week = Number(user.week);
     // TODO: minimumBillableRate should come from the user but this needs to be updated on the back end for most users, so using this for now
-    // const minimumBillableRate = 75;
-    // console.log("User: ", user);
+    const minimumBillableRate = 75;
 
     const startDate = DateTime.fromISO(weekStart).toFormat("dd.MM.yyyy");
     const endDate = DateTime.fromISO(weekEnd).toFormat("dd.MM.yyyy");
@@ -133,10 +129,6 @@ namespace SlackUtilities {
       totalEnteredHours,
       projectTime,
       totalExpectedHours,
-      enteredTimeEntries,
-      // totalBillableTime,
-      // nonBillableProject,
-      // minimumBillableRate
     } = TimeUtilities.handleTimeFormattingWeekly(user);
     
     const {
@@ -144,26 +136,17 @@ namespace SlackUtilities {
       billableHoursPercentage
     } = MessageUtilities.calculateWorkedTimeAndBillableHoursWeekly(user);
 
-    // const customMessage = `
-    //   Hi ${firstName},
-    //   Last week (week: ${week}, ${startDate} - ${endDate}) you worked ${totalEnteredHours} with an expected time of ${totalExpectedHours}.
-    //   ${message}
-    //   Logged project time: ${projectTime}, Billable project time: ${totalBillableTime}, Non billable project time: ${nonBillableProject}.
-    //   Your percentage of billable hours was: ${billableHoursPercentage}%
-    //   You ${+parseInt(billableHoursPercentage) >= minimumBillableRate ? `worked the target ${minimumBillableRate}% billable hours last week:+1:` : `did not work the target ${minimumBillableRate}% billable hours last week:-1:`}.
-    //   Have a great week!
-    // `;
-
     const customMessage = `
       Hi ${firstName},
       Last week (week: ${week}, ${startDate} - ${endDate}) you worked ${totalEnteredHours} with an expected time of ${totalExpectedHours}.
       ${message}
       Logged project time: ${projectTime}.
       Your percentage of billable hours was: ${billableHoursPercentage}%
+      You ${+parseInt(billableHoursPercentage) >= minimumBillableRate ? `worked the target ${minimumBillableRate}% billable hours last week:+1:` : `did not work the target ${minimumBillableRate}% billable hours last week:-1:`}.
+
       Have a great week!
     `;
     
-
     return {
       message: customMessage,
       name: firstName,
@@ -173,10 +156,7 @@ namespace SlackUtilities {
       displayLogged: totalEnteredHours,
       displayLoggedProject: projectTime,
       displayExpected: totalExpectedHours,
-      // displayBillableProject: totalBillableTime,
-      // displayNonBillableProject: nonBillableProject,
       billableHoursPercentage: billableHoursPercentage,
-      enteredTimeEntries: enteredTimeEntries
     };
   };
 
@@ -266,7 +246,7 @@ namespace SlackUtilities {
     const messageResults: WeeklyMessageResult[] = [];
 
     for (const userData of weeklyCombinedData) {
-      const { userId, personId, expected } = userData;
+      const { userId } = userData;
       // console.log("User data: ", userData);
       // const vacationTime = TimeUtilities.checkIfVacationCaseExists(personId, weekStartDate, weekEndDate);
       // const isAway = TimeUtilities.checkIfUserShouldRecieveMessage(personId, expected, today.toISODate());

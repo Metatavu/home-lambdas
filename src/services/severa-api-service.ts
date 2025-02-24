@@ -72,8 +72,10 @@ export const CreateSeveraApiService = (): SeveraApiService => {
     getUserByEmail: async (email: string, attribute: Record<string, string[]>) => {
       dotenv.config();  
       const isLocal = process.env.STAGE === "local"
+    
       const testEmail = isLocal ? Config.get().testUser.email : email;
-      
+      const testUserId = isLocal ? Config.get().testUser.id : null;
+
         try {   
         const url = `${baseUrl}/v1/users?email=${encodeURIComponent(testEmail)}`;
         const response = await fetch(url, {
@@ -92,6 +94,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
         const users = await response.json();
         if (!users?.length) {
           throw new Error(`No user found with email: ${testEmail}`);
+          
         }
 
         const user = users[0];
@@ -141,6 +144,12 @@ export const CreateSeveraApiService = (): SeveraApiService => {
             email:testEmail,
           };
         }
+        return {
+          guid: user.guid,
+          isSeveraOptIn: existingKeywordForUser.value,
+          email: testEmail,
+          testUserId: testUserId,
+        };
     
       } catch (error) {
           const errorMessage =

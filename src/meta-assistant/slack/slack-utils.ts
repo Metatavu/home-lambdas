@@ -1,4 +1,4 @@
-import type { DailyCombinedData, WeeklyCombinedData, TimeRegistrations, PreviousWorkdayDates, DailyMessageData, DailyMessageResult, WeeklyMessageData, WeeklyMessageResult } from "src/types/meta-assistant/index";
+import type { DailyCombinedData, WeeklyCombinedData, PreviousWorkdayDates, DailyMessageData, DailyMessageResult, WeeklyMessageData, WeeklyMessageResult } from "src/types/meta-assistant/index";
 import { type ChatPostMessageResponse, LogLevel, WebClient } from "@slack/web-api";
 import type { Member } from "@slack/web-api/dist/response/UsersListResponse";
 import { DateTime } from "luxon";

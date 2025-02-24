@@ -1,7 +1,5 @@
 import type { ChatPostMessageResponse } from "@slack/web-api/dist/response/ChatPostMessageResponse";
 import type { DateTime } from "luxon";
-import type { PersonTotalTime } from "src/generated/client/api";
-import type { TotalTime } from "../severa/totalTime/totalTime";
 
 /**
  * Serverless schema type

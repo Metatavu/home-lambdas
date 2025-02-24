@@ -2,7 +2,6 @@ import { type ValidatedAPIGatewayProxyEvent, type ValidatedEventAPIGatewayProxyE
 import TimeUtilities from "src/meta-assistant/generic/time-utils";
 import SlackUtilities from "src/meta-assistant/slack/slack-utils";
 import { CreateSeveraApiService } from "src/services/severa-api-service";
-import type SeveraResponseUser from "src/types/severa/user/severaResponseUser";
 import type schema from "src/types/meta-assistant/index";
 import type { WeeklyCombinedData } from "src/types/meta-assistant/index";
 
@@ -14,9 +13,9 @@ import type { WeeklyCombinedData } from "src/types/meta-assistant/index";
 export const sendWeeklyMessageHandler = async (): Promise<WeeklyHandlerResponse> => {
   try {
     const severaApi = CreateSeveraApiService();
-    const severaUsers = await severaApi.getOptInUsers() as SeveraResponseUser[];
+    const severaUsers = await severaApi.getOptInUsers();
     const previousWorkDays = TimeUtilities.getPreviousTwoWorkdays();
-    
+
     const { dayBeforeYesterday } = previousWorkDays;
     const { weekStartDate, weekEndDate } = TimeUtilities.getlastWeeksDates(dayBeforeYesterday);
 

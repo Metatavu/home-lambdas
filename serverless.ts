@@ -52,7 +52,8 @@ import {
   createArticleHandler,
   updateArticleHandler,
   deleteArticleHndler,
-  readArticleHandler
+  readArticleHandler,
+  uploadFileHandler
 } from "src/functions";
 
 const isLocal = process.env.STAGE === "local";
@@ -67,7 +68,7 @@ const serverlessConfiguration: AWS = {
     runtime: "nodejs16.x",
     region: region,
     deploymentBucket: {
-      name: isLocal ? "local-bucket" : `\${self:service}-\${opt:stage}-${region}-deploy`
+      name: isLocal ? "local-bucket" : `\${self:service}-\${opt:stage}-${region}-deploy-1`
     },
     memorySize: 256,
     timeout: 60,
@@ -123,6 +124,8 @@ const serverlessConfiguration: AWS = {
       TRELLO_MANAGEMENT_BOARD_ID: env.TRELLO_MANAGEMENT_BOARD_ID,
       CHANNEL_ID: env.CHANNEL_ID,
       OPENAI_API_KEY: env.OPENAI_API_KEY,
+      HOME_BUCKET_NAME: "${self:custom.s3BucketName.${opt:stage}}",
+      HOME_BUCKET_REGION: region
     },
     s3: {
       "on-call": {
@@ -141,6 +144,14 @@ const serverlessConfiguration: AWS = {
             Effect: "Allow",
             Action: ["s3:PutObject"],
             Resource: isLocal ? "*" : "arn:aws:s3:::${opt:stage}-on-call-data/*"
+          },
+          {
+            Effect: "Allow",
+            Action: [
+              "s3:GetObject",
+              "s3:PutObject"
+            ],
+            Resource: isLocal ? "*" : "arn:aws:s3:::${self:custom.s3BucketName.${opt:stage}}/*"
           },
           {
             Effect: "Allow",
@@ -215,10 +226,15 @@ const serverlessConfiguration: AWS = {
     createArticleHandler,
     updateArticleHandler,
     deleteArticleHndler,
-    readArticleHandler
+    readArticleHandler,
+    uploadFileHandler
   },
   package: { individually: true },
   custom: {
+    s3BucketName: {
+      dev: "home-staging",
+      production: "home"
+    },
     esbuild: {
       bundle: true,
       minify: false,

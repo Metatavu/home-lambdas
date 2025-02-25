@@ -2,6 +2,7 @@ import { APIGatewayProxyEvent, APIGatewayProxyHandler } from "aws-lambda";
 import { DocumentClient } from "aws-sdk/clients/dynamodb";
 import ArticlesApiService from "src/database/services/articles-api-service";
 import { middyfy } from "src/libs/lambda";
+import { injectPresignedUrls } from "src/libs/parse-utils";
 
 const dynamoDb = new DocumentClient();
 const articleService = new ArticlesApiService(dynamoDb);
@@ -26,9 +27,11 @@ export const findArticleHandler: APIGatewayProxyHandler = async (event: APIGatew
       };
     };
 
+    const renderArticleContent = await injectPresignedUrls(foundArticle.content);
+    const article = {...foundArticle, content: renderArticleContent}
     return {
       statusCode: 200,
-      body: JSON.stringify(foundArticle),
+      body: JSON.stringify(article),
     };
   } catch (error) {
     return {

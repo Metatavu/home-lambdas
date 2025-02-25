@@ -42,3 +42,4 @@ export { default as createArticleHandler } from "./wiki-documentation/create-art
 export { default as updateArticleHandler } from "./wiki-documentation/update-article";
 export { default as deleteArticleHndler } from "./wiki-documentation/delete-article";
 export { default as readArticleHandler } from "./wiki-documentation/read-article";
+export { default as uploadFileHandler } from "./wiki-documentation/upload-file";

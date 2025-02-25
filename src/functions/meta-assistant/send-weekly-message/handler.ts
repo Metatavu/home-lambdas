@@ -23,7 +23,7 @@ export const sendWeeklyMessageHandler = async (): Promise<WeeklyHandlerResponse>
       throw new Error("No users retrieved from Severa");
     }
 
-    const personTotalTimes: WeeklyCombinedData[] = [];
+    const userTotalTimes: WeeklyCombinedData[] = [];
 
     for (const severaUser of severaUsers) {
       const workWeek = await severaApi.getWorkWeek(severaUser.guid);
@@ -36,7 +36,6 @@ export const sendWeeklyMessageHandler = async (): Promise<WeeklyHandlerResponse>
 
       if (workWeek) {
         for (const day of workWeek) {
-          console.log("day", day.enteredHours);
           totalWorkHours += day.enteredHours;
           totalExpectedHours += day.expectedHours;
           enteredTimeEntries += day.enteredTimeEntries;
@@ -44,7 +43,7 @@ export const sendWeeklyMessageHandler = async (): Promise<WeeklyHandlerResponse>
         for (const day of workWeekHours) {
           totalProjectTime += day.quantity;
         }
-        personTotalTimes.push({
+        userTotalTimes.push({
           userId: severaUser.guid,
           firstName: severaUser.firstName,
           totalExpectedHours: totalExpectedHours,
@@ -59,7 +58,7 @@ export const sendWeeklyMessageHandler = async (): Promise<WeeklyHandlerResponse>
       }
     }
 
-    const messagesSent = await SlackUtilities.postWeeklyMessageToUsers(personTotalTimes);
+    const messagesSent = await SlackUtilities.postWeeklyMessageToUsers(userTotalTimes);
     const errors = messagesSent.filter(messageSent => messageSent.response.error);
 
     if (errors.length) {

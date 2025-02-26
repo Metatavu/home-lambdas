@@ -1,11 +1,13 @@
 import fetch from "node-fetch";
 import type { KeycloakProfile } from "keycloak-js/lib/keycloak";
+
 /**
  * Custom Interface for a user in keycloak functions with severaUserId added.
  */
 export interface CustomKeycloakProfile extends KeycloakProfile {
   severaUserId: string;
 }
+
 /**
  * Interface for a KeycloakApiService.
  */
@@ -143,7 +145,6 @@ export const CreateKeycloakApiService = (): KeycloakApiService => {
             `Failed to update user attributes: ${updateResponse.status} - ${updateResponse.statusText}. Details: ${errorText}`
           );
         }
-
       } catch (error) {
         throw new Error(
           error instanceof Error

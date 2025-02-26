@@ -42,6 +42,5 @@ export default class Config {
       email: env.SEVERA_TEST_USER_EMAIL,
       id: env.SEVERA_TEST_USER_ID,
     }
-  
   });
 }

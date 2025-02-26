@@ -141,7 +141,7 @@ const serverlessConfiguration: AWS = {
           {
             Effect: "Allow",
             Action: [
-              "dynamodb:DescribeTable",
+              "dynamodb:DescribeTable",aws
               "dynamodb:Query",
               "dynamodb:Scan",
               "dynamodb:GetItem",

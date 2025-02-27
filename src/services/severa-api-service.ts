@@ -23,7 +23,7 @@ export interface SeveraApiService {
   getWorkDays: (severaUserId: string) => Promise<SeveraResponseWorkDays>;
   getOptInUsers: () => Promise<SeveraResponseUser[]>;
   getResourceAllocations: () => Promise<SeveraResponseResourceAllocation>;
-  getUserByEmail: ( email: string, attribute: Record<string, string[]>) => Promise<{ guid: string; isSeveraOptIn: string; email: string }>;
+  getUserByEmail: ( email: string, keyword: Record<string, string[]>) => Promise<{ guid: string; isSeveraOptIn: string; email: string }>;
 }
 
 /**
@@ -70,11 +70,10 @@ export const CreateSeveraApiService = (): SeveraApiService => {
       dotenv.config();
       const isLocal = process.env.STAGE === "local";
 
-      const testEmail = isLocal ? Config.get().testUser.email : email;
-      const testUserId = isLocal ? Config.get().testUser.id : null;
+      const userEmail = isLocal ? Config.get().testUser.email : email;
 
       try {
-        const user = await fetchUserByEmail(testEmail);
+        const user = await fetchUserByEmail(userEmail);
         const isSeveraOptIn = keyword.isSeveraOptIn?.[0];
         const isSeveraOptInKeyword = await checkKeywordExists("isSeveraOptIn");
 
@@ -96,14 +95,13 @@ export const CreateSeveraApiService = (): SeveraApiService => {
           return {
             guid: user.guid,
             isSeveraOptIn: updatedKeyword.value,
-            email: testEmail
+            email: userEmail
           };
         }
         return {
           guid: user.guid,
           isSeveraOptIn: existingKeywordForUser.value,
-          email: testEmail,
-          testUserId: testUserId
+          email: userEmail
         };
       } catch (error) {
         const errorMessage =

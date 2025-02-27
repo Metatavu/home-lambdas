@@ -18,7 +18,6 @@ const updateUserAttributeHandler: APIGatewayProxyHandler = async (event: APIGate
     const body = JSON.parse(JSON.stringify(event.body));
     const { id, attributes } = body;
     const email = attributes?.email;
-    const attributeName = event.pathParameters?.attributeName;
     const allowedKeys = ["isSeveraOptIn"];
 
     if (!id || !attributes || typeof attributes !== "object") {
@@ -39,13 +38,6 @@ const updateUserAttributeHandler: APIGatewayProxyHandler = async (event: APIGate
     const api = CreateKeycloakApiService();
     const severaApi = CreateSeveraApiService();
 
-    if (!Object.prototype.hasOwnProperty.call(attributes, attributeName)) {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ message: `Attribute ${attributeName} is missing in request body.` })
-      };
-    }
-
     const severaUser = await severaApi.getUserByEmail(email, attributes);
 
     if (!severaUser?.email || !severaUser?.guid) {
@@ -60,14 +52,15 @@ const updateUserAttributeHandler: APIGatewayProxyHandler = async (event: APIGate
     }
     attributes["severa-user-id"] = [severaUser.guid];
 
-    await api.updateUserAttribute(id, attributes);
-
-    await severaApi.getUserByEmail(severaUser.email, attributes);
+    const updateResponse = await api.updateUserAttribute(id, attributes);
 
     return {
       statusCode: 200,
       body: JSON.stringify({
-        message: `Severa user updated with: ${JSON.stringify({ attributes })}, Keycloak attributes updated: ${JSON.stringify(attributes)}`
+        message: "Severa user and Keycloak attributes updated",
+        severaUser: severaUser,
+        updatedAttributes: attributes,
+        keycloakResponse: updateResponse
       })
     };
   } catch (error) {

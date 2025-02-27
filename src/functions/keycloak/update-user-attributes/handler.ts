@@ -1,7 +1,7 @@
 import type { APIGatewayProxyEvent, APIGatewayProxyHandler } from "aws-lambda";
 import { CreateKeycloakApiService } from "src/database/services/keycloak-api-service";
 import { middyfy } from "src/libs/lambda";
-import { CreateSeveraApiService } from "src/services/severa-api-service";
+import { optInSeveraUser } from "src/utils/severa";
 
 /**
  * Lambda handler to update a user's attributes
@@ -36,9 +36,8 @@ const updateUserAttributeHandler: APIGatewayProxyHandler = async (event: APIGate
     }
 
     const api = CreateKeycloakApiService();
-    const severaApi = CreateSeveraApiService();
 
-    const severaUser = await severaApi.getUserByEmail(email, attributes);
+    const severaUser = await optInSeveraUser(email, attributes);
 
     if (!severaUser?.email || !severaUser?.guid) {
       return {

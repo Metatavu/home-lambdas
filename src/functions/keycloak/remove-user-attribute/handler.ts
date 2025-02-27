@@ -4,13 +4,11 @@ import { middyfy } from "src/libs/lambda";
 
 /**
  * Lambda handler to remove a user's attribute
- * 
+ *
  * @param event API Gateway event
  * @returns Response message as JSON string
  */
-const removeUserAttributeHandler: APIGatewayProxyHandler = async (
-  event: APIGatewayProxyEvent
-) => {
+const removeUserAttributeHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
   try {
     const id = event.pathParameters?.id;
     const attributeName = event.pathParameters?.attributeName;
@@ -18,15 +16,19 @@ const removeUserAttributeHandler: APIGatewayProxyHandler = async (
     if (!id || !attributeName) {
       return {
         statusCode: 400,
-        body: JSON.stringify({ message: "Missing required path parameters: 'id' or  valid 'attributeName'." }),
+        body: JSON.stringify({
+          message: "Missing required path parameters: 'id' or  valid 'attributeName'."
+        })
       };
     }
-    
+
     if (attributeName !== "isSeveraOptIn") {
       return {
         statusCode: 403,
-        body: JSON.stringify({message: 'Attribute "${attributeName}" cannot be removed. Only isSeveraOptin is allowed.'})
-      }
+        body: JSON.stringify({
+          message: 'Attribute "${attributeName}" cannot be removed. Only isSeveraOptin is allowed.'
+        })
+      };
     }
 
     const api = CreateKeycloakApiService();
@@ -35,12 +37,12 @@ const removeUserAttributeHandler: APIGatewayProxyHandler = async (
 
     return {
       statusCode: 204,
-      body: JSON.stringify({ message: `User attribute "${attributeName}" removed successfully.` }),
+      body: JSON.stringify({ message: `User attribute "${attributeName}" removed successfully.` })
     };
   } catch (error) {
     return {
       statusCode: 500,
-      body: JSON.stringify({ message: error.message, stack: error.stack }),
+      body: JSON.stringify({ message: error.message, stack: error.stack })
     };
   }
 };

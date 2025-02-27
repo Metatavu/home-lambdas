@@ -8,8 +8,6 @@ import type SeveraResponseResourceAllocation from "src/types/severa/resourceAllo
 import type SeveraResponsePreviousWorkHours from "src/types/severa/previousWorkHours/severaResponsePreviousWorkHours";
 import type SeveraResponseWorkDays from "src/types/severa/workDays/severaResponseWorkDays";
 import type SeveraResponseUser from "src/types/severa/user/severaResponseUser";
-import Config from "src/app/config";
-import dotenv from "dotenv";
 
 /**
  * Interface for a SeveraApiService.
@@ -18,12 +16,11 @@ export interface SeveraApiService {
   getFlextimeBySeveraUserId: (severaUserId: string, eventDate: string) => Promise<Flextime>;
   getResourceAllocation: (endpointPath: URL) => Promise<SeveraResponseResourceAllocation[]>;
   getPhasesBySeveraProjectId: (severaProjectId: string) => Promise<SeveraResponsePhases[]>;
-  getWorkHours: (endpointPath: URL, startDate?: string,endDate?: string) => Promise<SeveraResponseWorkHours[]>;
+  getWorkHours: (endpointPath: URL,startDate?: string,endDate?: string ) => Promise<SeveraResponseWorkHours[]>;
   getPreviousWorkHours: () => Promise<SeveraResponsePreviousWorkHours[]>;
   getWorkDays: (severaUserId: string) => Promise<SeveraResponseWorkDays>;
   getOptInUsers: () => Promise<SeveraResponseUser[]>;
   getResourceAllocations: () => Promise<SeveraResponseResourceAllocation>;
-  getUserByEmail: ( email: string, keyword: Record<string, string[]>) => Promise<{ guid: string; isSeveraOptIn: string; email: string }>;
 }
 
 /**
@@ -56,60 +53,6 @@ export const CreateSeveraApiService = (): SeveraApiService => {
         throw new Error(`Failed to fetch flextime: ${response.status} - ${response.statusText}`);
       }
       return response.json();
-    },
-
-    /**
-     * Fetches a Severa user by their email address and checks/updates the 'isSeveraOptIn' status.
-     *
-     * @param email The email address of the user to be retrieved.
-     * @param keyword Keywords to be checked/updated for the user.
-     *
-     * @returns The user's Severa GUID, 'isSeveraOptIn' status, and email.
-     */
-    getUserByEmail: async (email: string, keyword: Record<string, string[]>) => {
-      dotenv.config();
-      const isLocal = process.env.STAGE === "local";
-
-      const userEmail = isLocal ? Config.get().testUser.email : email;
-
-      try {
-        const user = await fetchUserByEmail(userEmail);
-        const isSeveraOptIn = keyword.isSeveraOptIn?.[0];
-        const isSeveraOptInKeyword = await checkKeywordExists("isSeveraOptIn");
-
-        if (!isSeveraOptInKeyword?.guid) {
-          throw new Error("No 'isSeveraOptIn' keyword found.");
-        }
-
-        const keywords = await getUserKeywords(user.guid);
-        const existingKeywordForUser = keywords.find(
-          (kw: { keyword: string }) => kw.keyword === "isSeveraOptIn"
-        );
-
-        if (!existingKeywordForUser) {
-          const updatedKeyword = await updateSeveraOptInKeyword(
-            user.guid,
-            isSeveraOptIn,
-            isSeveraOptInKeyword.guid
-          );
-          return {
-            guid: user.guid,
-            isSeveraOptIn: updatedKeyword.value,
-            email: userEmail
-          };
-        }
-        return {
-          guid: user.guid,
-          isSeveraOptIn: existingKeywordForUser.value,
-          email: userEmail
-        };
-      } catch (error) {
-        const errorMessage =
-          error instanceof Error
-            ? error.message
-            : "An unknown error occurred while processing the user request.";
-        throw new Error(`Error in getUserByEmail: ${errorMessage}`);
-      }
     },
 
     /**
@@ -330,7 +273,7 @@ const getSeveraAccessToken = async (): Promise<string> => {
  * @param keyword The keyword to check or create.
  * @returns The existing or newly created keyword object.
  */
-const checkKeywordExists = async (keyword: string) => {
+export const checkKeywordExists = async (keyword: string) => {
   const baseUrl: string = process.env.SEVERA_DEMO_BASE_URL;
   const KeywordsUrl = `${baseUrl}/v1/keywords?keyword=${keyword}`;
 
@@ -388,7 +331,7 @@ const checkKeywordExists = async (keyword: string) => {
  * @param email The email address of the user to retrieve.
  * @returns The user object if found.
  */
-const fetchUserByEmail = async (email: string) => {
+export const fetchUserByEmail = async (email: string) => {
   const baseUrl: string = process.env.SEVERA_DEMO_BASE_URL;
   const url = `${baseUrl}/v1/users?email=${encodeURIComponent(email)}`;
   const response = await fetch(url, {
@@ -418,7 +361,7 @@ const fetchUserByEmail = async (email: string) => {
  * @param userGuid The GUID of the user whose keywords are being fetched.
  * @returns A list of keywords for the user.
  */
-const getUserKeywords = async (userGuid: string) => {
+export const getUserKeywords = async (userGuid: string) => {
   const baseUrl: string = process.env.SEVERA_DEMO_BASE_URL;
   const userKeywordsUrl = `${baseUrl}/v1/users/${userGuid}/keywords`;
   const keywordsResponse = await fetch(userKeywordsUrl, {
@@ -447,7 +390,7 @@ const getUserKeywords = async (userGuid: string) => {
  * @param isSeveraOptInKeywordGuid The GUID of the 'isSeveraOptIn' keyword.
  * @returns The updated keyword response.
  */
-const updateSeveraOptInKeyword = async (
+export const updateSeveraOptInKeyword = async (
   userGuid: string,
   isSeveraOptIn: string,
   isSeveraOptInKeywordGuid: string

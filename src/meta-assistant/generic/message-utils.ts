@@ -9,11 +9,11 @@ namespace MessageUtilities {
   /**
    * Calculates worked time and billable hours
    *
-   * @param user data from severa
+   * @param user data from severa with type TotalTime or DailyCombinedData  
    * 
    * @returns a message based on the worked time and the percentage of billable hours
    */
-  export const calculateWorkedTimeAndBillableHours = (user: TotalTime| DailyCombinedData): CalculateWorkedTimeAndBillableHoursResponse => {
+  export const calculateWorkedTimeAndBillableHours = (user: TotalTime | DailyCombinedData): CalculateWorkedTimeAndBillableHoursResponse => {
     const { totalLoggedTime, expectedHours, totalBillableTime } = user;    
     const billableHoursPercentage = totalLoggedTime === 0 ? "0" : (totalBillableTime/totalLoggedTime * 100).toFixed(0);
     const totalOverTime = totalLoggedTime - expectedHours;

@@ -10,7 +10,6 @@ import type { NotificationMessageResult } from "src/types/trello-notification";
  * Namespace for Slack utilities
  */
 namespace SlackUtilities {
-
   export const client = new WebClient(process.env.METATAVU_BOT_TOKEN, {
     logLevel: LogLevel.WARN
   });

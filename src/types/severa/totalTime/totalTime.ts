@@ -10,6 +10,9 @@ export interface TotalTime {
   minimumBillableRate: number;
 }
 
+/**
+ * Interface for the TotalTimeWeekly object
+ */
 export interface TotalTimeWeekly {
   totalExpectedHours: number;
   totalEnteredHours: number;

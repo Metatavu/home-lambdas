@@ -60,8 +60,8 @@ export const CreateKeycloakApiService = (): KeycloakApiService => {
      */
     findUser: async (id: string): Promise<CustomKeycloakProfile> => {
       try { 
-      const response = await fetch(
-        `${baseUrl}/admin/realms/${realm}/users/${id}`,
+        const response = await fetch(
+          `${baseUrl}/admin/realms/${realm}/users/${id}`,
         {
           method: "GET",
           headers: {

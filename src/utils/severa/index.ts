@@ -1,4 +1,4 @@
-import dotenv from "dotenv";
+
 import Config from "src/app/config";
 import {fetchUserByEmail, getUserKeywords, checkKeywordExists,updateSeveraOptInKeyword
 } from "src/services/severa-api-service";
@@ -11,8 +11,7 @@ import {fetchUserByEmail, getUserKeywords, checkKeywordExists,updateSeveraOptInK
  * @returns The user's Severa GUID, 'isSeveraOptIn' status, and email.
  */
 export const optInSeveraUser = async (email: string, keyword: Record<string, string[]>) => {
-  dotenv.config();
-  const isLocal = process.env.STAGE === "local";
+const isLocal = process.env.STAGE === "local" || !process.env.STAGE;
 
   const userEmail = isLocal ? Config.get().testUser.email : email;
 
@@ -52,6 +51,6 @@ export const optInSeveraUser = async (email: string, keyword: Record<string, str
       error instanceof Error
         ? error.message
         : "An unknown error occurred while processing the user request.";
-    throw new Error(`Error in getUserByEmail: ${errorMessage}`);
+        throw new Error(`Error while updating severa opt in: ${errorMessage}`);
   }
 };

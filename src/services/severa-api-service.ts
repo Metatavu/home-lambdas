@@ -16,7 +16,7 @@ export interface SeveraApiService {
   getFlextimeBySeveraUserId: (severaUserId: string, eventDate: string) => Promise<Flextime>;
   getResourceAllocation: (endpointPath: URL) => Promise<SeveraResponseResourceAllocation[]>;
   getPhasesBySeveraProjectId: (severaProjectId: string) => Promise<SeveraResponsePhases[]>;
-  getWorkHours: (endpointPath: URL,startDate?: string,endDate?: string ) => Promise<SeveraResponseWorkHours[]>;
+  getWorkHours: (endpointPath: URL, startDate?: string, endDate?: string ) => Promise<SeveraResponseWorkHours[]>;  
   getPreviousWorkHours: () => Promise<SeveraResponsePreviousWorkHours[]>;
   getWorkDays: (severaUserId: string) => Promise<SeveraResponseWorkDays>;
   getOptInUsers: () => Promise<SeveraResponseUser[]>;

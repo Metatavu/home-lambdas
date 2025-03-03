@@ -8,7 +8,7 @@ export default {
         method: "delete",
         path: "/users/{id}/attributes/{attributeName}",
         authorizer: {
-          name: "timebankKeycloakAuthorizer"
+          name: "homeKeycloakAuthorizer"
         }
       }
     }

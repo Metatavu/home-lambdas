@@ -8,7 +8,7 @@ export default {
         method: "put",
         path: "/users/{id}/attributes/{attributeName}",
         authorizer: {
-          name: "timebankKeycloakAuthorizer",
+          name: "homeKeycloakAuthorizer",
         },
       },
     },

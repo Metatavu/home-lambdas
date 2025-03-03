@@ -1,4 +1,3 @@
-import { VacationRequestStatus } from "@generated/client/model/vacationRequestStatus";
 
 /**
  * DynamoDB model for vacation request
@@ -11,7 +10,6 @@ interface VacationRequestModel {
   endDate: string;
   days: number;
   type: VacationType;
-  status: VacationRequestStatus[];
   createdBy: string;
   createdAt: string;
   updatedAt: string;

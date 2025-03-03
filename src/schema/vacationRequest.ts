@@ -1,11 +1,10 @@
 import { Type } from "@sinclair/typebox";
-import { VacationRequestStatuses } from "@generated/client/model/vacationRequestStatuses";
+
 
 /**
  * Schema for each individual status entry in a vacation request
  */
 const vacationRequestStatusSchema = Type.Object({
-  status: Type.Enum(VacationRequestStatuses),
   createdBy: Type.String(),
   updatedAt: Type.String()
 });

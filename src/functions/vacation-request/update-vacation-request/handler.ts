@@ -8,21 +8,12 @@ import type vacationRequestSchema from "src/schema/vacationRequest";
  *
  * @param event event
  */
-const updateVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<typeof vacationRequestSchema> = async event => {
+const updateVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
+  typeof vacationRequestSchema
+> = async (event) => {
   const { pathParameters, body } = event;
-  const {
-    createdAt,
-    createdBy,
-    days,
-    draft,
-    endDate,
-    message,
-    startDate,
-    status,
-    type,
-    updatedAt,
-    userId
-  } = body;
+  const { createdAt, createdBy, days, draft, endDate, startDate, status, type, updatedAt, userId } =
+    body;
   const id = pathParameters?.id;
 
   if (!id) {
@@ -32,11 +23,21 @@ const updateVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<typeof va
     };
   }
 
-  if(!userId || !startDate || !endDate || !days || !type || !status || !message || !createdBy || !createdAt || !updatedAt) {
+  if (
+    !userId ||
+    !startDate ||
+    !endDate ||
+    !days ||
+    !type ||
+    !status ||
+    !createdBy ||
+    !createdAt ||
+    !updatedAt
+  ) {
     return {
       statusCode: 400,
       body: "Invalid request body. Some data is missing."
-    }
+    };
   }
 
   const existingVacationRequest = await vacationRequestService.findVacationRequest(id);
@@ -56,14 +57,14 @@ const updateVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<typeof va
     days: days,
     type: type,
     status: status,
-    message: message,
     createdBy: existingVacationRequest.createdBy,
     createdAt: existingVacationRequest.createdAt,
     updatedAt: updatedAt
   };
 
   try {
-    const updatedVacationRequest = await vacationRequestService.updateVacationRequest(vacationRequestUpdates);
+    const updatedVacationRequest =
+      await vacationRequestService.updateVacationRequest(vacationRequestUpdates);
     return {
       statusCode: 200,
       body: JSON.stringify(updatedVacationRequest)

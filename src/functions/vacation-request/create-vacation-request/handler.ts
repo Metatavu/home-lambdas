@@ -1,7 +1,7 @@
-import {middyfy} from "src/libs/lambda";
-import {vacationRequestService} from "src/database/services";
-import {v4 as uuidv4} from "uuid";
-import type {ValidatedEventAPIGatewayProxyEvent} from "src/libs/api-gateway";
+import { middyfy } from "src/libs/lambda";
+import { vacationRequestService } from "src/database/services";
+import { v4 as uuidv4 } from "uuid";
+import type { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
 import type vacationRequestSchema from "src/schema/vacationRequest";
 
 /**
@@ -10,7 +10,9 @@ import type vacationRequestSchema from "src/schema/vacationRequest";
  * @param event - API Gateway event containing the request body.
  * @returns Response object with status code
  */
-export const createVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<typeof vacationRequestSchema> = async (event) => {
+export const createVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
+  typeof vacationRequestSchema
+> = async (event) => {
   const { body } = event;
   if (!body) {
     return {
@@ -18,21 +20,20 @@ export const createVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<ty
       body: JSON.stringify({ error: "Request body is required." })
     };
   }
-  const {
-    createdAt,
-    createdBy,
-    days,
-    draft,
-    endDate,
-    message,
-    startDate,
-    status,
-    type,
-    updatedAt,
-    userId
-  } = body;
+  const { createdAt, createdBy, days, draft, endDate, startDate, status, type, updatedAt, userId } =
+    body;
 
-  if (!userId || !startDate || !endDate || !days || !type || !status || !message || !createdBy || !createdAt || !updatedAt) {
+  if (
+    !userId ||
+    !startDate ||
+    !endDate ||
+    !days ||
+    !type ||
+    !status ||
+    !createdBy ||
+    !createdAt ||
+    !updatedAt
+  ) {
     return {
       statusCode: 400,
       body: JSON.stringify({ error: "Invalid request body. Some data is missing." })
@@ -51,7 +52,6 @@ export const createVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<ty
       days: days,
       type: type,
       status: status,
-      message: message,
       createdBy: createdBy,
       createdAt: createdAt,
       updatedAt: updatedAt
@@ -65,7 +65,7 @@ export const createVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<ty
     return {
       statusCode: 500,
       body: `Failed to create vacation request entry ${error}`
-    }
+    };
   }
 };
 

@@ -35,8 +35,12 @@ class ArticlesApiService {
     };
 
     const result = await this.docClient.query(params).promise();
-    const article = result.Items.length !== 0 ? result.Items[0] : undefined;
-    return article as ArticleModel;
+    const articleRecord = result.Items.length !== 0 ? result.Items[0] : undefined;
+
+    if (articleRecord?.id) {
+      const article = await this.findArticleById(articleRecord.id);
+      return article as ArticleModel;
+    }
   };
 
   public findArticleById = async(id: string): Promise<ArticleModel | null> => {

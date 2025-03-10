@@ -68,7 +68,7 @@ const serverlessConfiguration: AWS = {
     runtime: "nodejs16.x",
     region: region,
     deploymentBucket: {
-      name: isLocal ? "local-bucket" : `\${self:service}-\${opt:stage}-${region}-deploy-1`
+      name: isLocal ? "local-bucket" : `\${self:service}-\${opt:stage}-${region}-deploy`
     },
     memorySize: 256,
     timeout: 60,
@@ -311,7 +311,7 @@ const serverlessConfiguration: AWS = {
             {
               IndexName: "GSI_Path",
               KeySchema: [{ AttributeName: "path", KeyType: "HASH" }],
-              Projection: { ProjectionType: "ALL" },
+              Projection: { ProjectionType: "KEYS_ONLY" },
               ProvisionedThroughput: {
                 ReadCapacityUnits: 1,
                 WriteCapacityUnits: 1

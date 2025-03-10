@@ -58,7 +58,8 @@ const updateArticleHandler: APIGatewayProxyHandler = async (event: APIGatewayPro
     tags: tags || existingArticle.tags,
     lastUpdatedBy: updatedBy,
     lastUpdatedAt: new Date().toISOString(),
-    lastReadAt: existingArticle.lastReadAt
+    lastReadAt: existingArticle.lastReadAt,
+    group: "article"
   };
 
   try {

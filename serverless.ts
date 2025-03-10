@@ -304,7 +304,9 @@ const serverlessConfiguration: AWS = {
           TableName: "Articles",
           AttributeDefinitions: [
             { AttributeName: "id", AttributeType: "S" },
-            { AttributeName: "path", AttributeType: "S" }
+            { AttributeName: "path", AttributeType: "S" },
+            { AttributeName: "group", AttributeType: "S" },
+            { AttributeName: "lastUpdatedAt", AttributeType: "S" }
           ],
           KeySchema: [{ AttributeName: "id", KeyType: "HASH" }],
           GlobalSecondaryIndexes: [
@@ -312,6 +314,32 @@ const serverlessConfiguration: AWS = {
               IndexName: "GSI_Path",
               KeySchema: [{ AttributeName: "path", KeyType: "HASH" }],
               Projection: { ProjectionType: "KEYS_ONLY" },
+              ProvisionedThroughput: {
+                ReadCapacityUnits: 1,
+                WriteCapacityUnits: 1
+              }
+            },
+            {
+              IndexName: "GSI_Sorting",
+              KeySchema: [
+                { AttributeName: "group", KeyType: "HASH" },
+                { AttributeName: "lastUpdatedAt", KeyType: "RANGE" }
+              ],
+              Projection: {
+                ProjectionType: "INCLUDE",
+                NonKeyAttributes: [
+                  "path",
+                  "title",
+                  "description",
+                  "coverImage",
+                  "createdBy",
+                  "lastUpdatedBy",
+                  "lastUpdatedAt",
+                  "lastReadAt",
+                  "tags",
+                  "readBy"
+                ],
+              },
               ProvisionedThroughput: {
                 ReadCapacityUnits: 1,
                 WriteCapacityUnits: 1

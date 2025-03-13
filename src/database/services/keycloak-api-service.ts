@@ -150,6 +150,7 @@ export const CreateKeycloakApiService = (): KeycloakApiService => {
           success: true, 
           updatedFields: Object.keys(attributes) 
         };
+        
       } catch (error) {
         throw new Error(
           error instanceof Error

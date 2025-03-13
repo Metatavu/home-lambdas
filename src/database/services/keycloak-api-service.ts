@@ -85,10 +85,11 @@ export const CreateKeycloakApiService = (): KeycloakApiService => {
     },
 
     /**
-     * Updates a user's attributes
-     * 
+     * Update user attributes 
+     *
      * @param id string
-     * @param attributes  Record<string, string[]>
+     * @param attributes Record<string, string[]>
+     * @returns success boolean and updated fields
      */
     updateUserAttribute: async (
       id: string,

@@ -11,9 +11,8 @@ import {fetchUserByEmail, getUserKeywords, checkKeywordExists,updateSeveraOptInK
  * @returns The user's Severa GUID, 'isSeveraOptIn' status, and email.
  */
 export const optInSeveraUser = async (email: string, keyword: Record<string, string[]>) => {
-const isLocal = process.env.STAGE === "local" || !process.env.STAGE;
 
-  const userEmail = isLocal ? Config.get().testUser.email : email;
+  const userEmail = Config.get().testUser.email || email;
 
   try {
     const user = await fetchUserByEmail(userEmail);

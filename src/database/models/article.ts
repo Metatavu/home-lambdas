@@ -5,16 +5,16 @@ export interface ArticleMetadataModel {
   id: string;
   path: string;
   title: string;
-  description: string;
-  group: "article";
+  description?: string;
   coverImage?: string;
+  group: "article";
   createdBy: string;
-  createdAt?: string;
-  lastUpdatedBy?: string;
-  lastUpdatedAt?: string;
+  createdAt: string;
+  lastUpdatedBy: string;
+  lastUpdatedAt: string;
   lastReadAt: string;
-  tags?: string[];
-  readBy?: string[];
+  readBy: string[];
+  tags: string[];
 }
 
 export interface ArticleModel extends ArticleMetadataModel{

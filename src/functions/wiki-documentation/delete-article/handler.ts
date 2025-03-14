@@ -31,7 +31,7 @@ const deleteArticleHandler: APIGatewayProxyHandler = async (event: APIGatewayPro
     await articleService.deleteArticle(id);
     return { 
       statusCode: 200,
-      body: ""
+      body: "Successfully deleted article."
     };
   } catch (error) {
     return {

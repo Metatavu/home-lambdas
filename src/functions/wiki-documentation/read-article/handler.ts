@@ -28,6 +28,10 @@ export const readArticleHandler: APIGatewayProxyHandler = async (event: APIGatew
     }
 
     await articleService.updateArticleReadBy(id, userId);
+    return {
+      statusCode: 200,
+      body: "Successfully updated article."
+    }
   } catch (error) {
     return {
       statusCode: 500,

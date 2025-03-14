@@ -14,9 +14,15 @@ export const readArticleHandler: APIGatewayProxyHandler = async (event: APIGatew
     };
   }
 
-  const { pathParameters, body } = event;
-  const { userId } = (typeof body === "string" ? JSON.parse(body) : body);
+  const { pathParameters, queryStringParameters } = event;
+  const { userId } = queryStringParameters;
   const id = pathParameters?.id;
+
+  if (!userId)
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ error: `Missing or invalid path parameter.` })
+    }
 
   try {
     const existedArticle = await articleService.findArticleById(id);
@@ -30,7 +36,7 @@ export const readArticleHandler: APIGatewayProxyHandler = async (event: APIGatew
     await articleService.updateArticleReadBy(id, userId);
     return {
       statusCode: 200,
-      body: "Successfully updated article."
+      body: "Successfully updated readBy for an article."
     }
   } catch (error) {
     return {

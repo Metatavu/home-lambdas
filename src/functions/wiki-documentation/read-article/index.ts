@@ -5,7 +5,7 @@ export default {
   events: [
     {
       httpApi: {
-        method: "post",
+        method: "put",
         path: "/articles/{id}/read",
         authorizer: {
           name: "homeKeycloakAuthorizer",

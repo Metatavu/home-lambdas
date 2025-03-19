@@ -242,7 +242,7 @@ const getSeveraAccessToken = async (): Promise<string> => {
     client_id: client_Id,
     client_secret: client_Secret,
     scope:
-      "projects:read, resourceallocations:read, hours:read, users:read, users:write, settings:write, settings:read"
+      "projects:read, resourceallocations:read, hours:read, users:read, users:write, users:delete settings:write, settings:read"
   };
 
   try {
@@ -416,4 +416,35 @@ export const updateSeveraOptInKeyword = async (
   }
 
   return await updateResponse.json();
+};
+
+/**
+ * Remove user keyword from Severa
+ * 
+ * @param userGuid  The GUID of the user whose keyword is being removed.
+ * @param keywordGuid The GUID of the keyword to be removed
+ */
+
+export const removeUserKeyword = async (userGuid: string, keywordGuid: string) => {
+  if (!userGuid || !keywordGuid) {
+    throw new Error("Invalid GUID: userGuid or keywordGuid is missing.");
+  }
+
+  const baseUrl: string = process.env.SEVERA_DEMO_BASE_URL;
+  const removeKeywordUrl = `${baseUrl}/v1/users/${userGuid}/keywords/${keywordGuid}`;
+  const removeResponse = await fetch(removeKeywordUrl, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${await getSeveraAccessToken()}`,
+      Client_Id: process.env.SEVERA_DEMO_CLIENT_ID,
+      "Content-Type": "application/json"
+    }
+  });
+
+  if (!removeResponse.ok) {
+    const errorText = await removeResponse.text(); // Lisätty tämä
+    throw new Error(
+      `Failed to remove Severa keyword for user ${userGuid}: ${removeResponse.status} - ${removeResponse.statusText}. Details: ${errorText}`
+    );
+  }
 };

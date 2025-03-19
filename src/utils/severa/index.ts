@@ -1,6 +1,10 @@
-
 import Config from "src/app/config";
-import {fetchUserByEmail, getUserKeywords, checkKeywordExists,updateSeveraOptInKeyword
+import {
+  fetchUserByEmail,
+  getUserKeywords,
+  checkKeywordExists,
+  updateSeveraOptInKeyword,
+  removeUserKeyword
 } from "src/services/severa-api-service";
 /**
  * Fetches a Severa user by their email address and checks/updates the 'isSeveraOptIn' status.
@@ -11,7 +15,7 @@ import {fetchUserByEmail, getUserKeywords, checkKeywordExists,updateSeveraOptInK
  * @returns The user's Severa GUID, 'isSeveraOptIn' status, and email.
  */
 export const optInSeveraUser = async (email: string, keyword: Record<string, string[]>) => {
-const isLocal = process.env.STAGE === "local" || !process.env.STAGE;
+  const isLocal = process.env.STAGE === "local" || !process.env.STAGE;
 
   const userEmail = isLocal ? Config.get().testUser.email : email;
 
@@ -29,6 +33,19 @@ const isLocal = process.env.STAGE === "local" || !process.env.STAGE;
       (kw: { keyword: string }) => kw.keyword === "isSeveraOptIn"
     );
 
+    if (keyword.removeUser) {
+      if (!user.guid || !isSeveraOptInKeyword.guid) {
+        throw new Error("Invalid GUID: userGuid or keywordGuid is missing.");
+      }
+
+      await removeUserKeyword(user.guid, isSeveraOptInKeyword.guid);
+      return {
+        guid: user.guid,
+        isSeveraOptIn: null,
+        email: userEmail,
+        message: `Keyword 'isSeveraOptIn' removed from user ${user.guid}`
+      };
+    }
     if (!existingKeywordForUser) {
       const updatedKeyword = await updateSeveraOptInKeyword(
         user.guid,
@@ -51,6 +68,6 @@ const isLocal = process.env.STAGE === "local" || !process.env.STAGE;
       error instanceof Error
         ? error.message
         : "An unknown error occurred while processing the user request.";
-        throw new Error(`Error while updating severa opt in: ${errorMessage}`);
+    throw new Error(`Error while updating severa opt in: ${errorMessage}`);
   }
 };

@@ -36,13 +36,15 @@ const updateUserAttributeHandler: APIGatewayProxyHandler = async (event: APIGate
     }
 
     const api = CreateKeycloakApiService();
-    
+
     if (attributes.removeUser) {
       await api.removeUserAttribute(id, attributes.removeUser);
+      const severaUser = await optInSeveraUser(email, { removeUser: ["true"] });
       return {
         statusCode: 200,
         body: JSON.stringify({
-          message: `Attribute ${attributes.removeUser} removed from user ${id}`
+          message: `Attribute ${attributes.removeUser} removed from user ${id}`,
+          severaUser: severaUser
         })
       };
     }

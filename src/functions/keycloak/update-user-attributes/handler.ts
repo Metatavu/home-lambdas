@@ -18,7 +18,7 @@ const updateUserAttributeHandler: APIGatewayProxyHandler = async (event: APIGate
     const body = JSON.parse(JSON.stringify(event.body));
     const { id, attributes } = body;
     const email = attributes?.email;
-    const allowedKeys = ["isSeveraOptIn"];
+    const allowedKeys = ["isSeveraOptIn", "removeUser"];
 
     if (!id || !attributes || typeof attributes !== "object") {
       return {
@@ -36,6 +36,16 @@ const updateUserAttributeHandler: APIGatewayProxyHandler = async (event: APIGate
     }
 
     const api = CreateKeycloakApiService();
+    
+    if (attributes.removeUser) {
+      await api.removeUserAttribute(id, attributes.removeUser);
+      return {
+        statusCode: 200,
+        body: JSON.stringify({
+          message: `Attribute ${attributes.removeUser} removed from user ${id}`
+        })
+      };
+    }
 
     const severaUser = await optInSeveraUser(email, attributes);
 

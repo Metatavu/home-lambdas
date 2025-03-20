@@ -442,7 +442,7 @@ export const removeUserKeyword = async (userGuid: string, keywordGuid: string) =
   });
 
   if (!removeResponse.ok) {
-    const errorText = await removeResponse.text(); // Lisätty tämä
+    const errorText = await removeResponse.text(); 
     throw new Error(
       `Failed to remove Severa keyword for user ${userGuid}: ${removeResponse.status} - ${removeResponse.statusText}. Details: ${errorText}`
     );

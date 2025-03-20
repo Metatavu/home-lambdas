@@ -424,7 +424,6 @@ export const updateSeveraOptInKeyword = async (
  * @param userGuid  The GUID of the user whose keyword is being removed.
  * @param keywordGuid The GUID of the keyword to be removed
  */
-
 export const removeUserKeyword = async (userGuid: string, keywordGuid: string) => {
   if (!userGuid || !keywordGuid) {
     throw new Error("Invalid GUID: userGuid or keywordGuid is missing.");

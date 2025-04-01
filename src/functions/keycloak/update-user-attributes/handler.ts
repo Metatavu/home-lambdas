@@ -51,15 +51,13 @@ const updateUserAttributeHandler: APIGatewayProxyHandler = async (event: APIGate
     }
     attributes["severa-user-id"] = [severaUser.guid];
 
-    const updateResponse = await api.updateUserAttribute(id, attributes);
+    
 
     return {
       statusCode: 200,
       body: JSON.stringify({
-        message: "Severa user and Keycloak attributes updated",
         severaUser: severaUser,
         updatedAttributes: attributes,
-        keycloakResponse: updateResponse
       })
     };
   } catch (error) {

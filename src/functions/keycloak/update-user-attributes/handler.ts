@@ -38,6 +38,7 @@ const updateUserAttributeHandler: APIGatewayProxyHandler = async (event: APIGate
     const api = CreateKeycloakApiService();
 
     const severaUser = await optInSeveraUser(email, attributes);
+    await api.updateUserAttribute(id, attributes);
 
     if (!severaUser?.email || !severaUser?.guid) {
       return {
@@ -51,13 +52,11 @@ const updateUserAttributeHandler: APIGatewayProxyHandler = async (event: APIGate
     }
     attributes["severa-user-id"] = [severaUser.guid];
 
-    
-
     return {
       statusCode: 200,
       body: JSON.stringify({
         severaUser: severaUser,
-        updatedAttributes: attributes,
+        updatedAttributes: attributes
       })
     };
   } catch (error) {

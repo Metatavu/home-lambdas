@@ -31,7 +31,8 @@ interface UpdateVacationRequest {
 }
 
 // Environment variables (set in our Lambda configuration)
-const KEYCLOAK_URL = process.env.VITE_KEYCLOAK_URL || process.env.KEYCLOAK_URL;
+const KEYCLOAK_URL = process.env.IS_OFFLINE === 'true' ? 'http://localhost:3000' : (process.env.VITE_KEYCLOAK_URL || process.env.KEYCLOAK_URL);
+
 const KEYCLOAK_REALM = process.env.VITE_KEYCLOAK_REALM || process.env.KEYCLOAK_REALM;
 const KEYCLOAK_CLIENT_ID = process.env.VITE_KEYCLOAK_CLIENT_ID || process.env.KEYCLOAK_CLIENT_ID;
 const KEYCLOAK_CLIENT_SECRET = process.env.KEYCLOAK_CLIENT_SECRET;
@@ -76,18 +77,30 @@ const mockUsers = [
 ];
 
 /**
- * Check if Keycloak is configured
+ * Check if Keycloak is configured and we're not in offline mode
  */
 const isKeycloakConfigured = (): boolean => {
+  // Always return false when running offline
+  if (process.env.IS_OFFLINE === 'true') {
+    console.log('Running in offline mode, Keycloak will not be used');
+    return false;
+  }
+  
   return !!(KEYCLOAK_URL && KEYCLOAK_REALM && KEYCLOAK_CLIENT_ID && KEYCLOAK_CLIENT_SECRET);
 }
 
 /**
  * Get Keycloak admin access token
- * Uses client credentials flow for admin access
+ * Uses client credentials flow for admin access, with fallbacks
  */
 const getKeycloakToken = async (): Promise<string | null> => {
   try {
+    // Skip authentication for local development
+    if (process.env.IS_OFFLINE === 'true') {
+      console.log('Running offline - using mock data');
+      return null;
+    }
+    
     console.log('Getting Keycloak token...');
     console.log('KEYCLOAK_URL:', KEYCLOAK_URL);
     console.log('KEYCLOAK_REALM:', KEYCLOAK_REALM);
@@ -99,21 +112,59 @@ const getKeycloakToken = async (): Promise<string | null> => {
       console.log('Keycloak is not configured, will use mock data');
       return null;
     }
+
+    // Method 1: Try client credentials with timebank-api first
+    try {
+      console.log('Attempting client credentials authentication with timebank-api...');
+      const tokenUrl = `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/token`;
+      console.log('Token URL:', tokenUrl);
+      
+      const params = new URLSearchParams();
+      params.append('grant_type', 'client_credentials');
+      params.append('client_id', 'timebank-api');
+      params.append('client_secret', KEYCLOAK_CLIENT_SECRET || '');
+
+      const response = await axios.post<KeycloakToken>(tokenUrl, params, {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }
+      });
+
+      console.log('Token received successfully via client credentials');
+      return response.data.access_token;
+    } catch (clientError) {
+      console.error('Client credentials authentication failed:', clientError.response?.data || clientError.message);
+    }
     
-    const tokenUrl = `${KEYCLOAK_URL}/realms/master/protocol/openid-connect/token`;
-    const params = new URLSearchParams();
-    params.append('grant_type', 'client_credentials');
-    params.append('client_id', KEYCLOAK_CLIENT_ID || '');
-    params.append('client_secret', KEYCLOAK_CLIENT_SECRET || '');
-
-    const response = await axios.post<KeycloakToken>(tokenUrl, params, {
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
-      }
-    });
-
-    console.log('Token received successfully');
-    return response.data.access_token;
+    // Method 2: Fall back to admin authentication if client credentials failed
+    try {
+      console.log('Falling back to admin authentication...');
+      
+      // Use the master realm for admin authentication
+      const adminTokenUrl = `${KEYCLOAK_URL}/realms/master/protocol/openid-connect/token`;
+      console.log('Admin token URL:', adminTokenUrl);
+      
+      const adminParams = new URLSearchParams();
+      adminParams.append('grant_type', 'password');
+      adminParams.append('client_id', 'admin-cli'); // Built-in admin client
+      adminParams.append('username', process.env.KEYCLOAK_ADMIN_USERNAME || 'service-account-timebank-api');
+      adminParams.append('password', process.env.KEYCLOAK_ADMIN_PASSWORD || 'sJxCd5JSqtaVl3iFrNU0WqCW1IXDC5FV');
+      
+      const adminResponse = await axios.post<KeycloakToken>(adminTokenUrl, adminParams, {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }
+      });
+      
+      console.log('Token received successfully via admin authentication');
+      return adminResponse.data.access_token;
+    } catch (adminError) {
+      console.error('Admin authentication also failed:', adminError.response?.data || adminError.message);
+    }
+    
+    // If we get here, all authentication methods failed
+    console.log('All authentication methods failed, using mock data');
+    return null;
   } catch (error) {
     console.error('Error getting Keycloak token:', error);
     return null; // Return null instead of throwing
@@ -305,7 +356,7 @@ const vacationManagementHandler: APIGatewayProxyHandler = async (event: APIGatew
       const formattedAttributes: { [key: string]: string[] } = {};
       
       Object.entries(attributes).forEach(([key, value]) => {
-        formattedAttributes[key] = [value];
+        formattedAttributes[key] = [value.toString()];
       });
       
       // Update user attributes

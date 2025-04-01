@@ -19,13 +19,15 @@ class ArticlesApiService {
     const params: AWS.DynamoDB.DocumentClient.QueryInput = {
       TableName: TABLE_NAME,
       IndexName: gsiSorting,
-      KeyConditionExpression: "group=article",
+      KeyConditionExpression: "#group = :group",
+      ExpressionAttributeNames: { "#group": "group" },
+      ExpressionAttributeValues: { ":group": "article" },
       ScanIndexForward: false
     };
 
     if (option.readBy) {
       params.FilterExpression = "contains(readBy, :readBy)";
-      params.ExpressionAttributeValues = { ":readBy": option.readBy };
+      params.ExpressionAttributeValues = { ...params.ExpressionAttributeValues, ":readBy": option.readBy };
     }
 
     if (option.path) {
@@ -33,7 +35,7 @@ class ArticlesApiService {
         ? params.FilterExpression + " AND " + "begins_with(#path, :path)"
         : "begins_with(#path, :path)";
       params.ExpressionAttributeValues = { ...params.ExpressionAttributeValues, ":path": option.path };
-      params.ExpressionAttributeNames = { "#path": "path" };
+      params.ExpressionAttributeNames = { ...params.ExpressionAttributeNames, "#path": "path" };
     }
 
     if (option.title) {
@@ -54,7 +56,7 @@ class ArticlesApiService {
       })
     }
 
-    const articles = await this.docClient.scan(params).promise();
+    const articles = await this.docClient.query(params).promise();
     return articles.Items as ArticleMetadataModel[];
   };
 

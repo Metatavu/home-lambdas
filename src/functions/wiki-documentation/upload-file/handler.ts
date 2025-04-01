@@ -17,7 +17,6 @@ const uploadFileHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyE
 
   try {
     const presignedUrl = await generatePreSignedUrl(path, "put", contentType);
-    
     return {
       statusCode: 200,
       body: JSON.stringify({ data: presignedUrl })

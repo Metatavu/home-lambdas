@@ -3,60 +3,22 @@ import { ArticleMetadataModel, ArticleModel } from "../models/article";
 
 const TABLE_NAME = "Articles";
 const gsiPath = "GSI_Path";
-const gsiSorting = "GSI_Sorting";
-
-interface FilterOption {
-  readBy?: string;
-  path?: string;
-  tags?: string;
-  title?: string;
-}
 
 class ArticlesApiService {
   constructor(private readonly docClient: DocumentClient) {}
 
-  public listArticles = async(option: FilterOption): Promise<ArticleMetadataModel[]> => {
-    const params: AWS.DynamoDB.DocumentClient.QueryInput = {
-      TableName: TABLE_NAME,
-      IndexName: gsiSorting,
-      KeyConditionExpression: "#group = :group",
-      ExpressionAttributeNames: { "#group": "group" },
-      ExpressionAttributeValues: { ":group": "article" },
-      ScanIndexForward: false
-    };
+  public listArticles = async(path: string): Promise<ArticleMetadataModel[]> => {
+    const params: AWS.DynamoDB.DocumentClient.ScanInput = { TableName: TABLE_NAME };
 
-    if (option.readBy) {
-      params.FilterExpression = "contains(readBy, :readBy)";
-      params.ExpressionAttributeValues = { ...params.ExpressionAttributeValues, ":readBy": option.readBy };
-    }
-
-    if (option.path) {
+    if (path) {
       params.FilterExpression = params.FilterExpression 
         ? params.FilterExpression + " AND " + "begins_with(#path, :path)"
         : "begins_with(#path, :path)";
-      params.ExpressionAttributeValues = { ...params.ExpressionAttributeValues, ":path": option.path };
+      params.ExpressionAttributeValues = { ...params.ExpressionAttributeValues, ":path": path };
       params.ExpressionAttributeNames = { ...params.ExpressionAttributeNames, "#path": "path" };
     }
 
-    if (option.title) {
-      params.FilterExpression = params.FilterExpression 
-        ? params.FilterExpression + " AND " + "contains(title, :title)"
-        : "contains(title, :title)";
-      params.ExpressionAttributeValues = { ...params.ExpressionAttributeValues, ":title": option.title };
-    }
-
-    if (option.tags) {
-      const tags = option.tags.split(";");
-
-      tags.map((tag, index) => {
-        params.FilterExpression = params.FilterExpression 
-          ? params.FilterExpression + " AND " + `contains(tags, :tag${index})`
-          : `contains(tags, :tag${index})`;
-        params.ExpressionAttributeValues = { ...params.ExpressionAttributeValues, [`:tag${index}`]: tag };
-      })
-    }
-
-    const articles = await this.docClient.query(params).promise();
+    const articles = await this.docClient.scan(params).promise();
     return articles.Items as ArticleMetadataModel[];
   };
 

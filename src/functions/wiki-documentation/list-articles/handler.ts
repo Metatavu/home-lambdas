@@ -9,12 +9,7 @@ const articleService = new ArticlesApiService(dynamoDb);
 export const listArticlesHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
   try {
     const { queryStringParameters } = event;
-    const articleList = await articleService.listArticles({
-      path: queryStringParameters?.path,
-      readBy: queryStringParameters?.readBy,
-      title: queryStringParameters?.title,
-      tags: queryStringParameters?.tags
-    });
+    const articleList = await articleService.listArticles(queryStringParameters?.path);
 
     return {
       statusCode: 200,

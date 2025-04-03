@@ -48,7 +48,7 @@ import updateVacationRequestHandler from "src/functions/vacation-request/update-
 import getResourceAllocationHandler  from "src/functions/severa/get-resource-allocations-by-user";
 import getPhasesHandler  from "src/functions/severa/get-phases-by-project";
 import getWorkHoursHandler from "src/functions/severa/get-filtered-workhours";
-import vacationManagementHandler from "src/functions/vacation-management";
+//import vacationManagementHandler from "src/functions/vacation-management";
 
 const isLocal = process.env.STAGE === "local";
 const region = (env.AWS_DEFAULT_REGION as any) || "eu-north-1";
@@ -207,7 +207,7 @@ const serverlessConfiguration: AWS = {
     getResourceAllocationHandler,
     getPhasesHandler,
     getWorkHoursHandler,
-    vacationManagementHandler,
+    //vacationManagementHandler,
   },
   package: { individually: true },
   custom: {

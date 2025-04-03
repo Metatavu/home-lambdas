@@ -249,3 +249,4 @@ const getAccessToken = async (): Promise<string> => {
     throw new Error(error);
   }
 };
+

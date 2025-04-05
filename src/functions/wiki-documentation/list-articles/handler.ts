@@ -2,6 +2,7 @@ import { APIGatewayProxyEvent, APIGatewayProxyHandler } from "aws-lambda";
 import { DocumentClient } from "aws-sdk/clients/dynamodb";
 import { middyfy } from "src/libs/lambda";
 import ArticlesApiService from "src/database/services/articles-api-service";
+import { generatePreSignedUrl } from "src/services/s3-file-service";
 
 const dynamoDb = new DocumentClient();
 const articleService = new ArticlesApiService(dynamoDb);
@@ -10,6 +11,13 @@ export const listArticlesHandler: APIGatewayProxyHandler = async (event: APIGate
   try {
     const { queryStringParameters } = event;
     const articleList = await articleService.listArticles(queryStringParameters?.path);
+
+    for (let i = 0; i<articleList.length; i++) {
+      if (!articleList[i].coverImage.startsWith("http")) {
+        const newUrl = await generatePreSignedUrl(articleList[i].coverImage);
+        articleList[i] = {...articleList[i], coverImage: newUrl};
+      }
+    }
 
     return {
       statusCode: 200,

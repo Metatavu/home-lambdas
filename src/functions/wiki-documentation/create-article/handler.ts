@@ -58,8 +58,7 @@ export const createArticleHandler: APIGatewayProxyHandler = async (event: APIGat
       lastUpdatedAt: createdAt,
       lastReadAt: createdAt,
       readBy: [createdBy],
-      tags: tags || [],
-      group: "article"
+      tags: tags || []
     };
 
     const articleCreated = await articleService.createArticle(newArticle);

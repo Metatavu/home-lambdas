@@ -7,15 +7,18 @@ const gsiPath = "GSI_Path";
 class ArticlesApiService {
   constructor(private readonly docClient: DocumentClient) {}
 
-  public listArticles = async(path: string): Promise<ArticleMetadataModel[]> => {
-    const params: AWS.DynamoDB.DocumentClient.ScanInput = { TableName: TABLE_NAME };
+  public listArticles = async(path?: string): Promise<ArticleMetadataModel[]> => {
+    const params: AWS.DynamoDB.DocumentClient.ScanInput = {
+      TableName: TABLE_NAME,
+      ExpressionAttributeNames: {
+        "#path": "path",
+      },
+      ProjectionExpression: "id, title, description, #path, coverImage, createdBy, createdAt, lastUpdatedBy, lastUpdatedAt, tags, readBy, lastReadAt"
+    };
 
     if (path) {
-      params.FilterExpression = params.FilterExpression 
-        ? params.FilterExpression + " AND " + "begins_with(#path, :path)"
-        : "begins_with(#path, :path)";
-      params.ExpressionAttributeValues = { ...params.ExpressionAttributeValues, ":path": path };
-      params.ExpressionAttributeNames = { ...params.ExpressionAttributeNames, "#path": "path" };
+      params.FilterExpression = "begins_with(#path, :path)";
+      params.ExpressionAttributeValues = { ":path": path };
     }
 
     const articles = await this.docClient.scan(params).promise();
@@ -80,7 +83,7 @@ class ArticlesApiService {
     const params = {
       TableName: TABLE_NAME,
       Key: { id: id },
-      UpdateExpression: "ADD readBy :userId SET lastReadAt=:newDate SET lastUpdatedAt=:newDate",
+      UpdateExpression: "ADD readBy :userId SET lastReadAt=:newDate, lastUpdatedAt = :newDate",
       ExpressionAttributeValues: {
         ":userId": this.docClient.createSet([userId]),
         ":newDate": new Date().toISOString()

@@ -7,7 +7,6 @@ export interface ArticleMetadataModel {
   title: string;
   description?: string;
   coverImage?: string;
-  group: "article";
   createdBy: string;
   createdAt: string;
   lastUpdatedBy: string;

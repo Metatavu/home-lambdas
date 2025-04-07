@@ -14,8 +14,8 @@ export const readArticleHandler: APIGatewayProxyHandler = async (event: APIGatew
     };
   }
 
-  const { pathParameters, queryStringParameters } = event;
-  const { userId } = queryStringParameters;
+  const { pathParameters, body } = event;
+  const { userId } = (typeof body === "string" ? JSON.parse(body) : body);
   const id = pathParameters?.id;
 
   if (!userId)

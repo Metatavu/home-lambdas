@@ -57,7 +57,7 @@ class ArticlesApiService {
 
     if (articleRecord?.id) {
       const article = await this.findArticleById(articleRecord.id);
-      return article as ArticleModel;
+      return article;
     }
   };
 

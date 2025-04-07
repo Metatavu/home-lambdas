@@ -1,5 +1,11 @@
 import { generatePreSignedUrl } from "src/services/s3-file-service";
 
+/**
+ * Function injects presigned urls inside article content
+ * 
+ * @param content  article content
+ * @returns changed article content
+ */
 export const injectPresignedUrls = async(content: string) => {
   const imageReferencePattern = /!\[([^\]]*)\]\(((?!http)[^)\s]+)\)/g;
   const matches = [...content.matchAll(imageReferencePattern)];

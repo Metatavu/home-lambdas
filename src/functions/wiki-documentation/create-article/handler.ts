@@ -8,6 +8,12 @@ import ArticlesApiService from "src/database/services/articles-api-service";
 const dynamoDb = new DocumentClient();
 const articleService = new ArticlesApiService(dynamoDb);
 
+/**
+ * Handler for creating a new article entry in DynamoDB.
+ *
+ * @param event - API Gateway event containing the request body.
+ * @returns Response object with status code
+ */
 export const createArticleHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
   if (!event.body) {
     return {

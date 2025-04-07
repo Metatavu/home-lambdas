@@ -2,6 +2,12 @@ import { middyfy } from "@libs/lambda";
 import { APIGatewayProxyEvent, APIGatewayProxyHandler } from "aws-lambda";
 import { generatePreSignedUrl } from "src/services/s3-file-service";
 
+/**
+ * Handler for creating a presigned url for the following file upload.
+ *
+ * @param event - API Gateway event.
+ * @returns Response object with status code.
+ */
 const uploadFileHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
   const { body } = event;
   const { path, contentType } = (typeof body === "string" ? JSON.parse(body) : body);

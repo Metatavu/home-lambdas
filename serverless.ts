@@ -48,15 +48,13 @@ import updateVacationRequestHandler from "src/functions/vacation-request/update-
 import getResourceAllocationHandler  from "src/functions/severa/get-resource-allocations-by-user";
 import getPhasesHandler  from "src/functions/severa/get-phases-by-project";
 import getWorkHoursHandler from "src/functions/severa/get-filtered-workhours";
-import { 
-  listArticlesHandler, 
-  findArticleHandler, 
-  createArticleHandler,
-  updateArticleHandler,
-  deleteArticleHndler,
-  readArticleHandler,
-  uploadFileHandler
-} from "src/functions";
+import listArticlesHandler from "src/functions/wiki-documentation/list-articles";
+import findArticleHandler from "src/functions/wiki-documentation/find-article";
+import createArticleHandler from "src/functions/wiki-documentation/create-article";
+import updateArticleHandler from "src/functions/wiki-documentation/update-article";
+import deleteArticleHndler from "src/functions/wiki-documentation/delete-article";
+import readArticleHandler from "src/functions/wiki-documentation/read-article";
+import uploadFileHandler from "src/functions/wiki-documentation/upload-file";
 
 const isLocal = process.env.STAGE === "local";
 const region = (env.AWS_DEFAULT_REGION as any) || "eu-north-1";
@@ -310,9 +308,7 @@ const serverlessConfiguration: AWS = {
           TableName: "Articles",
           AttributeDefinitions: [
             { AttributeName: "id", AttributeType: "S" },
-            { AttributeName: "path", AttributeType: "S" },
-            { AttributeName: "group", AttributeType: "S" },
-            { AttributeName: "lastUpdatedAt", AttributeType: "S" }
+            { AttributeName: "path", AttributeType: "S" }
           ],
           KeySchema: [{ AttributeName: "id", KeyType: "HASH" }],
           GlobalSecondaryIndexes: [
@@ -320,32 +316,6 @@ const serverlessConfiguration: AWS = {
               IndexName: "GSI_Path",
               KeySchema: [{ AttributeName: "path", KeyType: "HASH" }],
               Projection: { ProjectionType: "KEYS_ONLY" },
-              ProvisionedThroughput: {
-                ReadCapacityUnits: 1,
-                WriteCapacityUnits: 1
-              }
-            },
-            {
-              IndexName: "GSI_Sorting",
-              KeySchema: [
-                { AttributeName: "group", KeyType: "HASH" },
-                { AttributeName: "lastUpdatedAt", KeyType: "RANGE" }
-              ],
-              Projection: {
-                ProjectionType: "INCLUDE",
-                NonKeyAttributes: [
-                  "path",
-                  "title",
-                  "description",
-                  "coverImage",
-                  "createdBy",
-                  "lastUpdatedBy",
-                  "lastUpdatedAt",
-                  "lastReadAt",
-                  "tags",
-                  "readBy"
-                ],
-              },
               ProvisionedThroughput: {
                 ReadCapacityUnits: 1,
                 WriteCapacityUnits: 1

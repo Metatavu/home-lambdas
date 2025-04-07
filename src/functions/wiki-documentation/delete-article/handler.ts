@@ -6,6 +6,11 @@ import { middyfy } from "src/libs/lambda";
 const dynamoDb = new DocumentClient();
 const articleService = new ArticlesApiService(dynamoDb);
 
+/**
+ * Handler for deleting an article entry in DynamoDB.
+ *
+ * @param event - API Gateway event.
+ */
 const deleteArticleHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
   const { id } = event.pathParameters || {};
   if (!id) {

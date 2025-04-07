@@ -4,9 +4,21 @@ import { ArticleMetadataModel, ArticleModel } from "../models/article";
 const TABLE_NAME = "Articles";
 const gsiPath = "GSI_Path";
 
+/**
+ * Database service for article entries
+ */
 class ArticlesApiService {
+  /**
+   * Constructor
+   * @param docClient DynamoDB client
+   */
   constructor(private readonly docClient: DocumentClient) {}
 
+  /**
+   * Lists all article entries
+   *
+   * @returns list of article entries (excluding content)
+   */
   public listArticles = async(path?: string): Promise<ArticleMetadataModel[]> => {
     const params: AWS.DynamoDB.DocumentClient.ScanInput = {
       TableName: TABLE_NAME,
@@ -25,6 +37,12 @@ class ArticlesApiService {
     return articles.Items as ArticleMetadataModel[];
   };
 
+  /**
+   * Finds a single article entry by path
+   * 
+   * @param path unique article path
+   * @returns article entry or null if not found
+   */
   public findArticleByPath = async(path: string): Promise<ArticleModel | null> => {
     const params = {
       TableName: TABLE_NAME,
@@ -43,6 +61,12 @@ class ArticlesApiService {
     }
   };
 
+  /**
+   * Finds a single article entry by ID
+   * 
+   * @param id article id
+   * @returns article entry or null if not found
+   */
   public findArticleById = async(id: string): Promise<ArticleModel | null> => {
     const articles = await this.docClient
       .get({
@@ -53,6 +77,12 @@ class ArticlesApiService {
     return articles.Item as ArticleModel;
   };
 
+  /**
+   * Creates an article entry
+   * 
+   * @param article article entry
+   * @returns created article entry
+   */
   public createArticle = async(article: ArticleModel): Promise<ArticleModel> => {
     await this.docClient
       .put({
@@ -63,6 +93,11 @@ class ArticlesApiService {
     return article;
   };
 
+  /**
+   * Deletes an article entry
+   *
+   * @param id article id
+   */
   public deleteArticle = async(id: string) => {
     return this.docClient
       .delete({
@@ -71,6 +106,12 @@ class ArticlesApiService {
       }).promise();
   };
 
+  /**
+   * Updates an article entry
+   *
+   * @param article article entry to be updated
+   * @returns updated article entry
+   */
   public updateArticle = async(article: ArticleModel) => {
     await this.docClient
       .put({
@@ -79,6 +120,12 @@ class ArticlesApiService {
       }).promise();
   };
 
+  /**
+   * Updates the readBy and related read date attributes of an article entry 
+   *
+   * @param id id of article to be updated
+   * @param userId user id to include in the read list
+   */
   public updateArticleReadBy = async(id: string, userId: string) => {
     const params = {
       TableName: TABLE_NAME,

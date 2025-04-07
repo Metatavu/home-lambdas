@@ -7,6 +7,12 @@ import ArticlesApiService from "src/database/services/articles-api-service";
 const dynamoDb = new DocumentClient();
 const articleService = new ArticlesApiService(dynamoDb);
 
+/**
+ * Handler for updating an article entry in DynamoDB.
+ *
+ * @param event - API Gateway event.
+ * @returns Response object with status code
+ */
 const updateArticleHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
   const { pathParameters, body } = event;
   const {

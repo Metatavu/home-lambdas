@@ -7,6 +7,12 @@ import { generatePreSignedUrl } from "src/services/s3-file-service";
 const dynamoDb = new DocumentClient();
 const articleService = new ArticlesApiService(dynamoDb);
 
+/**
+ * Handler for listind article entries from DynamoDB.
+ *
+ * @param event - API Gateway event.
+ * @returns Response object with status code
+ */
 export const listArticlesHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
   try {
     const { queryStringParameters } = event;

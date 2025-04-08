@@ -17,17 +17,20 @@ export const listArticlesHandler: APIGatewayProxyHandler = async (event: APIGate
   try {
     const { queryStringParameters } = event;
     const articleList = await articleService.listArticles(queryStringParameters?.path);
+    const sortedArticles = articleList.sort((article1, article2) => 
+      new Date(article2.lastUpdatedAt).getTime() - new Date(article1.lastUpdatedAt).getTime()
+    )
 
-    for (let i = 0; i<articleList.length; i++) {
-      if (!articleList[i].coverImage.startsWith("http")) {
-        const newUrl = await generatePreSignedUrl(articleList[i].coverImage);
-        articleList[i] = {...articleList[i], coverImage: newUrl};
+    for (let i = 0; i < sortedArticles.length; i++) {
+      if (!sortedArticles[i].coverImage.startsWith("http")) {
+        const newUrl = await generatePreSignedUrl(sortedArticles[i].coverImage);
+        sortedArticles[i] = {...sortedArticles[i], coverImage: newUrl};
       }
     }
 
     return {
       statusCode: 200,
-      body: JSON.stringify(articleList)
+      body: JSON.stringify(sortedArticles)
     }
   } catch(error) {
     return {

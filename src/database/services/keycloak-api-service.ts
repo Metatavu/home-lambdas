@@ -14,7 +14,9 @@ export interface CustomKeycloakProfile extends KeycloakProfile {
 export interface KeycloakApiService {
   getUsers: () => Promise<CustomKeycloakProfile[]>;
   findUser: (id: string) => Promise<CustomKeycloakProfile>;
-  updateUserAttribute: (id: string, attributes: Record<string, string[]>) => Promise<void>;
+  // Changed method name from updateUserAttribute to updateUserAttributes
+  // to match the requirements and be consistent with plural form
+  updateUserAttributes: (id: string, attributes: Record<string, string[]>) => Promise<void>;
   removeUserAttribute: (id: string, attributeName:string) => Promise<void>;
 }
 
@@ -88,9 +90,12 @@ export const CreateKeycloakApiService = (): KeycloakApiService => {
      * Updates a user's attributes
      * 
      * @param id string
-     * @param attributes  Record<string, string[]>
+     * @param attributes Record<string, string[]>
+     * 
+     * Note: Method renamed from updateUserAttribute to updateUserAttributes
+     * and no longer returns "success" as specified in requirements
      */
-    updateUserAttribute: async (
+    updateUserAttributes: async (
       id: string,
       attributes: Record<string, string[]>
     ): Promise<void> => {
@@ -145,6 +150,8 @@ export const CreateKeycloakApiService = (): KeycloakApiService => {
             `Failed to update user attributes: ${updateResponse.status} - ${updateResponse.statusText}. Details: ${errorText}`
           );
         }
+
+        // No return value - removed "success" return as per requirements
       } catch (error) {
         throw new Error(
           error instanceof Error
@@ -249,4 +256,3 @@ const getAccessToken = async (): Promise<string> => {
     throw new Error(error);
   }
 };
-

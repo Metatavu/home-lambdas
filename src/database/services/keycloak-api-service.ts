@@ -6,6 +6,7 @@ import type { KeycloakProfile } from "keycloak-js/lib/keycloak";
  */
 export interface CustomKeycloakProfile extends KeycloakProfile {
   severaUserId: string;
+  vacation?: Record<string, string[]>; // Add vacation days as part of the profile
 }
 
 /**
@@ -14,8 +15,6 @@ export interface CustomKeycloakProfile extends KeycloakProfile {
 export interface KeycloakApiService {
   getUsers: () => Promise<CustomKeycloakProfile[]>;
   findUser: (id: string) => Promise<CustomKeycloakProfile>;
-  // Changed method name from updateUserAttribute to updateUserAttributes
-  // to match the requirements and be consistent with plural form
   updateUserAttributes: (id: string, attributes: Record<string, string[]>) => Promise<void>;
   removeUserAttribute: (id: string, attributeName:string) => Promise<void>;
 }
@@ -26,15 +25,15 @@ export interface KeycloakApiService {
 export const CreateKeycloakApiService = (): KeycloakApiService => {
   const baseUrl: string = process.env.KEYCLOAK_BASE_URL;
   const realm: string = process.env.KEYCLOAK_REALM;
-  
+
   return {
     /**
-     * Gets all users from keycloak
+     * Gets all users from Keycloak
      *
      * @returns List of users
      */
     getUsers: async (): Promise<CustomKeycloakProfile[]> => {
-      const response = await fetch(`${baseUrl}/admin/realms/${realm}/users`, {
+      const response = await fetch(`${baseUrl}/admin/realms/${realm}/users?briefRepresentation=false`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${await getAccessToken()}`,
@@ -48,52 +47,69 @@ export const CreateKeycloakApiService = (): KeycloakApiService => {
       }
 
       const users: KeycloakProfile[] = await response.json();
-      return users.map((user) => ({
-        ...user,
-        severaUserId: (user as CustomKeycloakProfile).severaUserId ?? undefined,
-      })) as CustomKeycloakProfile[];
+      
+      return users.map((user) => {
+        const userAttributes = user.attributes || {};
+        const vacationAttributes = Object.keys(userAttributes).filter(key => key.startsWith('vacation_'));
+        const vacation = vacationAttributes.reduce((acc, key) => {
+          acc[key] = userAttributes[key];
+          return acc;
+        }, {});
+
+        return {
+          ...user,
+          severaUserId: (user as CustomKeycloakProfile).severaUserId ?? undefined,
+          vacation,
+        } as CustomKeycloakProfile;
+      });
     },
 
     /**
-     * Find user from keycloak
+     * Find user from Keycloak
      *
      * @param id string
      * @returns user by Id
      */
     findUser: async (id: string): Promise<CustomKeycloakProfile> => {
-      try { 
+      try {
         const response = await fetch(
           `${baseUrl}/admin/realms/${realm}/users/${id}`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${await getAccessToken()}`,
-          },
-        },
-      );
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${await getAccessToken()}`,
+            },
+          }
+        );
 
-      if (!response.ok) {
-        throw new Error(`Failed to find user with id: ${id}`);
-      }
+        if (!response.ok) {
+          throw new Error(`Failed to find user with id: ${id}`);
+        }
 
-      const user: KeycloakProfile = await response.json();
-      return {
-        ...user,
-        severaUserId: (user as CustomKeycloakProfile).severaUserId ?? undefined,
-      } as CustomKeycloakProfile;
-      } catch(error) {
-        throw new Error(`An error occurred while fetching the user: ${error instanceof Error ? error.message : 'Unknown error'}`)
+        const user: KeycloakProfile = await response.json();
+        
+        // Extract vacation attributes and include them in the user object
+        const vacationAttributes = Object.keys(user.attributes || {}).filter(key => key.startsWith('vacation_'));
+        const vacation = vacationAttributes.reduce((acc, key) => {
+          acc[key] = user.attributes[key];
+          return acc;
+        }, {});
+
+        return {
+          ...user,
+          severaUserId: (user as CustomKeycloakProfile).severaUserId ?? undefined,
+          vacation,
+        } as CustomKeycloakProfile;
+      } catch (error) {
+        throw new Error(`An error occurred while fetching the user: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
     },
 
     /**
      * Updates a user's attributes
      * 
-     * @param id string
-     * @param attributes Record<string, string[]>
-     * 
-     * Note: Method renamed from updateUserAttribute to updateUserAttributes
-     * and no longer returns "success" as specified in requirements
+     * @param id string - User ID to update
+     * @param attributes Record<string, string[]> - Attribute key-value pairs to update
      */
     updateUserAttributes: async (
       id: string,
@@ -110,7 +126,7 @@ export const CreateKeycloakApiService = (): KeycloakApiService => {
             },
           }
         );
-    
+
         if (!userDetailsResponse.ok) {
           const errorText = await userDetailsResponse.text();
           throw new Error(
@@ -119,9 +135,9 @@ export const CreateKeycloakApiService = (): KeycloakApiService => {
         }
         const userDetails = await userDetailsResponse.json();
         const existingAttributes = userDetails.attributes || {};
-
         const existingEmail = userDetails.email;
-    
+
+        // Merge existing attributes with new ones
         const updatedAttributes = {
           ...existingAttributes,
           ...attributes,
@@ -129,7 +145,7 @@ export const CreateKeycloakApiService = (): KeycloakApiService => {
 
         const bodyContent = {
           attributes: updatedAttributes,
-          email: existingEmail, 
+          email: existingEmail,
         };
 
         const updateResponse = await fetch(
@@ -151,83 +167,82 @@ export const CreateKeycloakApiService = (): KeycloakApiService => {
           );
         }
 
-        // No return value - removed "success" return as per requirements
       } catch (error) {
         throw new Error(
           error instanceof Error
             ? error.message
-            : "An unknown error occurred while updating user attribute"
+            : "An unknown error occurred while updating user attributes"
         );
       }
     },
-    
-  /**
-   * Remove user attributes  
-   * 
-   * @param id  string
-   * @param attributeName string
-   */
-  removeUserAttribute: async (
-    id: string,
-    attributeName: string
-  ): Promise<void> => {
-    try {
-      const response = await fetch(`${baseUrl}/admin/realms/${realm}/users/${id}`, {
-      method: "GET",
-        headers: {
-          Authorization: `Bearer ${await getAccessToken()}`,
-          "Content-Type": "application/json",
-        },
-    });
-  
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Failed to fetch user data: ${response.status} - ${response.statusText}. Details: ${errorText}`);
-      }
-  
-      const user = await response.json();
-      const existingEmail = user.email;
 
-      const currentAttributes = user.attributes || {};
-
-      delete currentAttributes[attributeName];
-  
-      const bodyContent = {
-        email: existingEmail,
-        attributes: currentAttributes,
-      };
-  
-      const updateResponse = await fetch(
-        `${baseUrl}/admin/realms/${realm}/users/${id}`,
-        {
-          method: "PUT",
+    /**
+     * Remove user attribute from Keycloak user
+     * 
+     * @param id - User ID to update
+     * @param attributeName - Name of the attribute to remove
+     */
+    removeUserAttribute: async (
+      id: string,
+      attributeName: string
+    ): Promise<void> => {
+      try {
+        const response = await fetch(`${baseUrl}/admin/realms/${realm}/users/${id}`, {
+          method: "GET",
           headers: {
             Authorization: `Bearer ${await getAccessToken()}`,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(bodyContent),
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Failed to fetch user data: ${response.status} - ${response.statusText}. Details: ${errorText}`);
         }
-      );
-  
-      if (!updateResponse.ok) {
-        const errorText = await updateResponse.text();
+
+        const user = await response.json();
+        const existingEmail = user.email;
+
+        const currentAttributes = user.attributes || {};
+
+        delete currentAttributes[attributeName];
+
+        const bodyContent = {
+          email: existingEmail,
+          attributes: currentAttributes,
+        };
+
+        const updateResponse = await fetch(
+          `${baseUrl}/admin/realms/${realm}/users/${id}`,
+          {
+            method: "PUT",
+            headers: {
+              Authorization: `Bearer ${await getAccessToken()}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(bodyContent),
+          }
+        );
+
+        if (!updateResponse.ok) {
+          const errorText = await updateResponse.text();
+          throw new Error(
+            `Failed to update user attributes: ${updateResponse.status} - ${updateResponse.statusText}. Details: ${errorText}`
+          );
+        }
+      } catch (error) {
         throw new Error(
-          `Failed to update user attributes: ${updateResponse.status} - ${updateResponse.statusText}. Details: ${errorText}`
+          error instanceof Error
+            ? error.message
+            : "An unknown error occurred while removing the user attribute."
         );
       }
-    } catch (error) {
-      throw new Error(
-        error instanceof Error
-          ? error.message
-          : "An unknown error occurred while removing the user attribute."
-      );
     }
-  }
-}; 
+  };
 };
 
 /**
- * Requests an access token from keycloak API
+ * Requests an access token from Keycloak API
  *
  * @returns access token as string
  */

@@ -14,6 +14,15 @@ export default {
     },
     {
       httpApi: {
+        method: "get",
+        path: "/admin/users/{userId}",
+        authorizer: {
+          name: "homeKeycloakAuthorizer",
+        },
+      },
+    },
+    {
+      httpApi: {
         method: "put",
         path: "/admin/users/{userId}/vacation",
         authorizer: {
@@ -31,6 +40,12 @@ export default {
       httpApi: {
         method: "options",
         path: "/admin/users/{userId}/vacation",
+      },
+    },
+    {
+      httpApi: {
+        method: "options",
+        path: "/admin/users/{userId}",
       },
     }
   ],

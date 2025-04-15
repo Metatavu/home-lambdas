@@ -8,29 +8,51 @@ dotenv.config();
 
 const keycloakApiService = CreateKeycloakApiService();
 
-// Common headers for CORS
+/**
+ * CORS headers for API responses
+ */
 const corsHeaders = {
   'Content-Type': 'application/json',
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET,PUT,OPTIONS',
+  'Access-Control-Allow-Methods': 'GET,PUT,POST,OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type,Authorization'
 };
 
 /**
- * Lambda for managing user vacation days in Keycloak
+ * Updates or adds a year entry in an array of "YEAR:value" strings
  * 
- * @param event APIGatewayProxyEvent
- * @returns APIGatewayProxyResult
+ * @param array - Array of year entries in "YEAR:value" format
+ * @param year - Year to update or add
+ * @param value - Value to set for the specified year
+ */
+function updateYearEntry(array: string[], year: string, value: string): void {
+  const yearPrefix = `${year}:`;
+  const existingIndex = array.findIndex(entry => entry.startsWith(yearPrefix));
+  
+  if (existingIndex >= 0) {
+    array[existingIndex] = `${yearPrefix}${value}`;
+  } else {
+    array.push(`${yearPrefix}${value}`);
+  }
+}
+
+/**
+ * Lambda handler for vacation management API endpoints
+ * 
+ * Supported endpoints:
+ * - GET /admin/users - Retrieve all users
+ * - GET /admin/users/:id - Get specific user
+ * - PUT /admin/users/:id/vacation - Update user vacation days
+ * - PUT /users/:id/attributes - Update user attributes
+ * 
+ * @param event - AWS API Gateway event
+ * @returns API Gateway response with appropriate status code and body
  */
 const vacationManagementHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
-  console.log('Event:', JSON.stringify(event));
-  
-  // Access both path properties to handle different API Gateway formats
   const requestPath = (event as any).rawPath || event.path;
-  const httpMethod = event.httpMethod || event.requestContext?.http?.method;
+  const httpMethod = event.httpMethod || (event.requestContext as any)?.http?.method;
 
   try {
-    // OPTIONS request for CORS preflight
     if (httpMethod === 'OPTIONS') {
       return {
         statusCode: 200,
@@ -39,134 +61,185 @@ const vacationManagementHandler: APIGatewayProxyHandler = async (event: APIGatew
       };
     }
 
-    // GET /users - Get all users from Keycloak
-    if (requestPath === '/users' && httpMethod === 'GET') {
-      console.log('Processing GET /users request');
-
+    /**
+     * GET /admin/users - Retrieve all users from Keycloak
+     */
+    if (requestPath === '/admin/users' && httpMethod === 'GET') {
       try {
         const users: CustomKeycloakProfile[] = await keycloakApiService.getUsers();
-        console.log('Fetched users from Keycloak:', users.length);
-
+        
         return {
           statusCode: 200,
           headers: corsHeaders,
           body: JSON.stringify(users)
         };
       } catch (error) {
-        console.error('Error fetching users from Keycloak:', error);
         return {
           statusCode: 500,
           headers: corsHeaders,
-          body: JSON.stringify({ message: 'Failed to fetch users from Keycloak' })
+          body: JSON.stringify({ message: 'Failed to fetch users' })
         };
       }
     }
 
-    // PUT /users/:id/attributes - Update user attributes
-if (requestPath.match(/^\/users\/[^/]+\/attributes$/) && httpMethod === 'PUT') {
-  const userId = requestPath.split('/')[2]; // Extract user ID from path
-  console.log('Processing PUT /users/:id/attributes request for user ID:', userId);
-  
-  try {
-    const requestBody = JSON.parse(event.body || '{}');
-    const { attributes } = requestBody;
-    
-    if (!attributes) {
-      return {
-        statusCode: 400,
-        headers: corsHeaders,
-        body: JSON.stringify({ message: 'Attributes are required' })
-      };
-    }
-// POST /users/:id/vacation-days - Update user vacation days
-if (requestPath.match(/^\/users\/[^/]+\/vacation-days$/) && httpMethod === 'POST') {
-  const userId = requestPath.split('/')[2]; // Extract user ID from path
-  console.log('Processing POST /users/:id/vacation-days request for user ID:', userId);
-  
-  try {
-    const requestBody = JSON.parse(event.body || '{}');
-    const { vacationDays } = requestBody;
-    
-    if (!vacationDays) {
-      return {
-        statusCode: 400,
-        headers: corsHeaders,
-        body: JSON.stringify({ message: 'Vacation days are required' })
-      };
-    }
-    
-    // Build attributes to update from vacation days
-    const attributes: Record<string, string[]> = {};
-    
-    Object.keys(vacationDays).forEach(year => {
-      attributes[`vacation_${year}`] = [vacationDays[year].total];
-      attributes[`vacation_${year}_remaining`] = [vacationDays[year].remaining];
-    });
-    
-    // Update the user attributes
-    await keycloakApiService.updateUserAttributes(userId, attributes);
-    
-    // Return success response
-    return {
-      statusCode: 200,
-      headers: corsHeaders,
-      body: JSON.stringify({
-        id: userId,
-        updatedFields: Object.keys(attributes)
-      })
-    };
-  } catch (error) {
-    console.error('Error updating vacation days:', error);
-    return {
-      statusCode: 500,
-      headers: corsHeaders,
-      body: JSON.stringify({ 
-        message: 'Failed to update vacation days',
-        error: error.message
-      })
-    };
-  }
-}
-    // Call the service with the updated method name
-    await keycloakApiService.updateUserAttributes(userId, attributes);
-    
-    // Return the updated fields in the response
-    return {
-      statusCode: 200,
-      headers: corsHeaders,
-      body: JSON.stringify({
-        id: userId,
-        updatedFields: Object.keys(attributes)
-      })
-    };
-  } catch (error) {
-    console.error('Error updating user attributes:', error);
-    return {
-      statusCode: 500,
-      headers: corsHeaders,
-      body: JSON.stringify({ 
-        message: 'Failed to update user attributes',
-        error: error.message
-      })
-    };
-  }
-}
+    /**
+     * GET /admin/users/:id - Get specific user by ID
+     */
+    if (requestPath.match(/^\/admin\/users\/[^/]+$/) && httpMethod === 'GET') {
+      const userId = requestPath.split('/')[3];
 
-    // Default route not found response
+      try {
+        const user = await keycloakApiService.findUser(userId);
+        
+        return {
+          statusCode: 200,
+          headers: corsHeaders,
+          body: JSON.stringify(user)
+        };
+      } catch (error) {
+        return {
+          statusCode: 500,
+          headers: corsHeaders,
+          body: JSON.stringify({ message: "Server error", error: error.message })
+        };
+      }
+    }
+
+    /**
+     * PUT /admin/users/:id/vacation - Update user vacation data
+     * 
+     * Updates vacation day allocations and remaining days
+     * Supports two storage formats:
+     * 1. Individual attributes: vacation_YEAR and vacation_YEAR_remaining
+     * 2. Arrays: vacationDaysByYear and unspentVacationDaysByYear in "YEAR:value" format
+     */
+    if (requestPath.match(/^\/admin\/users\/[^/]+\/vacation$/) && httpMethod === 'PUT') {
+      const userId = requestPath.split('/')[3];
+
+      try {
+        // Parse request body safely
+        let requestBody;
+        if (typeof event.body === 'string') {
+          requestBody = JSON.parse(event.body);
+        } else {
+          requestBody = event.body || {};
+        }
+        
+        const { vacationDays, attributes: directAttributes } = requestBody;
+
+        if (!vacationDays && !directAttributes) {
+          return {
+            statusCode: 400,
+            headers: corsHeaders,
+            body: JSON.stringify({ message: "Vacation days or attributes are required" }),
+          };
+        }
+
+        const existingUser = await keycloakApiService.findUser(userId);
+        const attributes: Record<string, string[]> = {
+          ...(existingUser.attributes as Record<string, string[]>) || {}
+        };
+
+        if (directAttributes) {
+          Object.assign(attributes, directAttributes);
+        }
+
+        if (vacationDays) {
+          if (!attributes.vacationDaysByYear) attributes.vacationDaysByYear = [];
+          if (!attributes.unspentVacationDaysByYear) attributes.unspentVacationDaysByYear = [];
+          for (const year of Object.keys(vacationDays)) {
+            attributes[`vacation_${year}`] = [String(vacationDays[year].total)];
+            attributes[`vacation_${year}_remaining`] = [String(vacationDays[year].remaining)];
+            
+            const totalWithPadding = String(vacationDays[year].total).padStart(3, '0');
+            const remainingWithPadding = String(vacationDays[year].remaining).padStart(3, '0');
+            
+            updateYearEntry(attributes.vacationDaysByYear, year, totalWithPadding);
+            updateYearEntry(attributes.unspentVacationDaysByYear, year, remainingWithPadding);
+          }
+          
+          if (!attributes.isActive) {
+            attributes.isActive = ['Active'];
+          }
+        }
+
+        // Update the user in Keycloak
+        await keycloakApiService.updateUserAttributes(userId, attributes);
+        // Fetch the updated user to confirm changes
+        const updatedUser = await keycloakApiService.findUser(userId);
+        return {
+          statusCode: 200,
+          headers: corsHeaders,
+          body: JSON.stringify({
+            id: userId,
+            updatedFields: Object.keys(attributes),
+            user: updatedUser
+          }),
+        };
+      } catch (error) {
+        return {
+          statusCode: 500,
+          headers: corsHeaders,
+          body: JSON.stringify({ message: "Server error", error: error.message }),
+        };
+      }
+    }
+
+    /**
+     * PUT /users/:id/attributes - Generic endpoint to update any user attributes
+     * 
+     * Allows direct manipulation of Keycloak user attributes
+     */
+    if (requestPath.match(/^\/users\/[^/]+\/attributes$/) && httpMethod === 'PUT') {
+      const userId = requestPath.split('/')[2];
+      try {
+        let requestBody;
+        if (typeof event.body === 'string') {
+          requestBody = JSON.parse(event.body);
+        } else {
+          requestBody = event.body || {};
+        }
+        
+        const { attributes } = requestBody;
+        if (!attributes) {
+          return {
+            statusCode: 400,
+            headers: corsHeaders,
+            body: JSON.stringify({ message: 'Attributes are required' })
+          };
+        }
+        await keycloakApiService.updateUserAttributes(userId, attributes);
+        // Fetch the updated user to confirm changes
+        const updatedUser = await keycloakApiService.findUser(userId);
+        return {
+          statusCode: 200,
+          headers: corsHeaders,
+          body: JSON.stringify({
+            id: userId,
+            updatedFields: Object.keys(attributes),
+            user: updatedUser
+          })
+        };
+      } catch (error) {
+        return {
+          statusCode: 500,
+          headers: corsHeaders,
+          body: JSON.stringify({ message: 'Failed to update user attributes', error: error.message })
+        };
+      }
+    }
+    // If no route matches
     return {
       statusCode: 404,
       headers: corsHeaders,
       body: JSON.stringify({ message: 'Route not found' })
     };
+
   } catch (error) {
-    console.error('Error handling request:', error);
     return {
       statusCode: 500,
       headers: corsHeaders,
-      body: JSON.stringify({ 
-        message: 'Error processing request', 
-        error: error.message 
-      })
+      body: JSON.stringify({ message: 'Error processing request', error: error.message })
     };
   }
 };

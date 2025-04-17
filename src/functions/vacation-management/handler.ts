@@ -163,8 +163,9 @@ const vacationManagementHandler: APIGatewayProxyHandler = async (event: APIGatew
           }
         }
 
-        // Update the user in Keycloak
-        await keycloakApiService.updateUserAttributes(userId, attributes);
+        // Update the user in Keycloak - Changed to use updateUserAttribute (singular)
+        await keycloakApiService.updateUserAttribute(userId, attributes);
+        
         // Fetch the updated user to confirm changes
         const updatedUser = await keycloakApiService.findUser(userId);
         return {
@@ -208,7 +209,10 @@ const vacationManagementHandler: APIGatewayProxyHandler = async (event: APIGatew
             body: JSON.stringify({ message: 'Attributes are required' })
           };
         }
-        await keycloakApiService.updateUserAttributes(userId, attributes);
+        
+        // Changed to use updateUserAttribute (singular)
+        await keycloakApiService.updateUserAttribute(userId, attributes);
+        
         // Fetch the updated user to confirm changes
         const updatedUser = await keycloakApiService.findUser(userId);
         return {

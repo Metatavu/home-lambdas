@@ -88,7 +88,7 @@ export const CreateKeycloakApiService = (): KeycloakApiService => {
 
         const user: KeycloakProfile = await response.json();
         
-        // Extract vacation attributes and include them in the user object
+        
         const vacationAttributes = Object.keys(user.attributes || {}).filter(key => key.startsWith('vacation_'));
         const vacation = vacationAttributes.reduce((acc, key) => {
           acc[key] = user.attributes[key];
@@ -137,7 +137,7 @@ export const CreateKeycloakApiService = (): KeycloakApiService => {
         const existingAttributes = userDetails.attributes || {};
         const existingEmail = userDetails.email;
 
-        // Merge existing attributes with new ones
+       
         const updatedAttributes = {
           ...existingAttributes,
           ...attributes,
@@ -249,7 +249,6 @@ export const CreateKeycloakApiService = (): KeycloakApiService => {
 const getAccessToken = async (): Promise<string> => {
   const realm: string = process.env.KEYCLOAK_REALM;
   const url: string = `${process.env.KEYCLOAK_BASE_URL}/realms/${realm}/protocol/openid-connect/token`;
-
   const requestBody = new URLSearchParams({
     client_id: process.env.KEYCLOAK_CLIENT_ID,
     client_secret: process.env.KEYCLOAK_ADMIN_SECRET,
@@ -265,7 +264,6 @@ const getAccessToken = async (): Promise<string> => {
       body: requestBody.toString(),
     });
     const jsonResponse = await response.json();
-
     return jsonResponse.access_token;
   } catch (error) {
     throw new Error(error);

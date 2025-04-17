@@ -3,9 +3,7 @@ import type { APIGatewayProxyEvent, APIGatewayProxyHandler } from "aws-lambda";
 import { CreateKeycloakApiService } from "src/database/services/keycloak-api-service";
 import { CustomKeycloakProfile } from "src/database/services/keycloak-api-service";
 import dotenv from "dotenv";
-
 dotenv.config();
-
 const keycloakApiService = CreateKeycloakApiService();
 
 /**
@@ -17,7 +15,6 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'GET,PUT,POST,OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type,Authorization'
 };
-
 /**
  * Updates or adds a year entry in an array of "YEAR:value" strings
  * 
@@ -60,7 +57,6 @@ const vacationManagementHandler: APIGatewayProxyHandler = async (event: APIGatew
         body: ''
       };
     }
-
     /**
      * GET /admin/users - Retrieve all users from Keycloak
      */
@@ -134,7 +130,6 @@ const vacationManagementHandler: APIGatewayProxyHandler = async (event: APIGatew
             body: JSON.stringify({ message: "Vacation days or attributes are required" }),
           };
         }
-
         const existingUser = await keycloakApiService.findUser(userId);
         const attributes: Record<string, string[]> = {
           ...(existingUser.attributes as Record<string, string[]>) || {}
@@ -162,11 +157,8 @@ const vacationManagementHandler: APIGatewayProxyHandler = async (event: APIGatew
             attributes.isActive = ['Active'];
           }
         }
-
-        // Update the user in Keycloak - Changed to use updateUserAttribute (singular)
         await keycloakApiService.updateUserAttribute(userId, attributes);
         
-        // Fetch the updated user to confirm changes
         const updatedUser = await keycloakApiService.findUser(userId);
         return {
           statusCode: 200,
@@ -210,10 +202,7 @@ const vacationManagementHandler: APIGatewayProxyHandler = async (event: APIGatew
           };
         }
         
-        // Changed to use updateUserAttribute (singular)
         await keycloakApiService.updateUserAttribute(userId, attributes);
-        
-        // Fetch the updated user to confirm changes
         const updatedUser = await keycloakApiService.findUser(userId);
         return {
           statusCode: 200,
@@ -247,5 +236,4 @@ const vacationManagementHandler: APIGatewayProxyHandler = async (event: APIGatew
     };
   }
 };
-
 export const main = middyfy(vacationManagementHandler);

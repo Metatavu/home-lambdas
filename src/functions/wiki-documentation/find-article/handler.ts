@@ -2,8 +2,6 @@ import { APIGatewayProxyEvent, APIGatewayProxyHandler } from "aws-lambda";
 import { DocumentClient } from "aws-sdk/clients/dynamodb";
 import ArticlesApiService from "src/database/services/articles-api-service";
 import { middyfy } from "src/libs/lambda";
-import { injectPresignedUrls } from "src/libs/parse-utils";
-import { generatePreSignedUrl } from "src/services/s3-file-service";
 
 const dynamoDb = new DocumentClient();
 const articleService = new ArticlesApiService(dynamoDb);

@@ -34,14 +34,9 @@ export const findArticleHandler: APIGatewayProxyHandler = async (event: APIGatew
       };
     };
 
-    const renderArticleContent = await injectPresignedUrls(foundArticle.content);
-    const coverImageUrl = foundArticle.coverImage.startsWith("http") 
-      ? foundArticle.coverImage
-      : await generatePreSignedUrl(foundArticle.coverImage);
-    const article = {...foundArticle, content: renderArticleContent, coverImage: coverImageUrl }
     return {
       statusCode: 200,
-      body: JSON.stringify(article),
+      body: JSON.stringify(foundArticle),
     };
   } catch (error) {
     return {

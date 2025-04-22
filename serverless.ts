@@ -24,7 +24,7 @@ import deleteSoftwareHandler from "@/functions/software-registry/delete-software
 import listUsersHandler from "@/functions/keycloak/list-users";
 import findUserHandler from "@/functions/keycloak/find-user";
 import updateUserAttributeHandler from "src/functions/keycloak/update-user-attributes";
-import removeUserAttributeHandler from "src/functions/keycloak/remove-user-attribute";
+import removeUserAttributeHanndler from "src/functions/keycloak/remove-user-attribute";
 import createQuestionnaireHandler from "@/functions/questionnaire/create-questionnaire";
 import findQuestionnaireHandler from "@/functions/questionnaire/find-questionnaire";
 import deleteQuestionnaireHandler from "src/functions/questionnaire/delete-questionnaire";
@@ -146,7 +146,14 @@ const serverlessConfiguration: AWS = {
         statements: [
           {
             Effect: "Allow",
-            Action: ["s3:GetObject", "s3:PutObject"],
+            Action: ["s3:GetObject"],
+            Resource: isLocal
+              ? "*"
+              : "arn:aws:s3:::${opt:stage}-on-call-data/*",
+          },
+          {
+            Effect: "Allow",
+            Action: ["s3:PutObject"],
             Resource: isLocal
               ? "*"
               : "arn:aws:s3:::${opt:stage}-on-call-data/*",
@@ -197,7 +204,7 @@ const serverlessConfiguration: AWS = {
     listUsersHandler,
     findUserHandler,
     updateUserAttributeHandler,
-    removeUserAttributeHandler,
+    removeUserAttributeHanndler,
     createQuestionnaireHandler,
     findQuestionnaireHandler,
     deleteQuestionnaireHandler,

@@ -16,30 +16,29 @@ const updateUserAttributeHandler: APIGatewayProxyHandler = async (event: APIGate
     }
 
     const body = JSON.parse(JSON.stringify(event.body));
-    const { id, attributes } = body;
-    const email = attributes?.email;
-    const allowedKeys = ["isSeveraOptIn"];
+    const email = body;
+    const { id, attributeName } = event.pathParameters ?? {};
 
-    if (!id || !attributes || typeof attributes !== "object") {
+    const allowedAttributes = ["isSeveraOptIn"];
+    
+    if (!id || !email || !attributeName) {
       return {
         statusCode: 400,
-        body: JSON.stringify({ message: "Missing or invalid parameters: 'id' or 'attribute'." })
+        body: JSON.stringify({ message: "Missing required parameters: id, email, or attributeName." })
       };
     }
 
-    const keys = Object.keys(attributes);
-    if (!keys.every((key) => allowedKeys.includes(key))) {
+    if (!allowedAttributes.includes(attributeName)) {
       return {
         statusCode: 400,
-        body: JSON.stringify({ message: "Attributes contain invalid keys." })
+        body: JSON.stringify({ message: "Invalid attribute name." })
       };
     }
-
-    const api = CreateKeycloakApiService();
-
-    const severaUser = await optInSeveraUser(email, attributes);
-    await api.updateUserAttribute(id, attributes);
-
+    
+    const keywords: Record<string, string[]> = {
+      "isSeveraOptIn": [attributeName]
+    };
+    const severaUser = await optInSeveraUser(email, keywords);
     if (!severaUser?.email || !severaUser?.guid) {
       return {
         statusCode: 404,
@@ -47,16 +46,24 @@ const updateUserAttributeHandler: APIGatewayProxyHandler = async (event: APIGate
       };
     }
 
-    if (!attributes.isActive) {
-      attributes.isActive = ["Active"];
-    }
-    attributes["severa-user-id"] = [severaUser.guid];
-
+    const attributes: Record<string, string[]> = {
+      "severaUserId": [severaUser.guid]
+    };
+    const api = CreateKeycloakApiService();
+    const updateResult = await api.updateUserAttribute(id, attributes);
+    
     return {
       statusCode: 200,
       body: JSON.stringify({
-        severaUser: severaUser,
-        updatedAttributes: attributes
+        id,
+        updatedKeycloakAttributes: {
+          severaUserId: updateResult.updatedFields.severaUserId[0]
+        },
+        severaUser: {
+          email: severaUser.email,
+          severaUserId: severaUser.guid,
+          severaKeyword: severaUser.isSeveraOptIn
+        }
       })
     };
   } catch (error) {

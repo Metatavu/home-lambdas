@@ -14,7 +14,7 @@ export interface CustomKeycloakProfile extends KeycloakProfile {
 export interface KeycloakApiService {
   getUsers: () => Promise<CustomKeycloakProfile[]>;
   findUser: (id: string) => Promise<CustomKeycloakProfile>;
-  updateUserAttribute: (id: string, attributes: Record<string, string[]>) => Promise<{success: boolean, updatedFields:string[]}>;
+  updateUserAttribute: (id: string, attributes: Record<string, string[]>) => Promise<{updatedFields:Record<string, string[]>}>;
   removeUserAttribute: (id: string, attributeName:string) => Promise<void>;
 }
 
@@ -94,7 +94,7 @@ export const CreateKeycloakApiService = (): KeycloakApiService => {
     updateUserAttribute: async (
       id: string,
       attributes: Record<string, string[]>
-    ): Promise<{ success: boolean, updatedFields: string[] }> => {
+    ): Promise<{ updatedFields: Record<string, string[]> }> => {
       try {
         const userDetailsResponse = await fetch(
           `${baseUrl}/admin/realms/${realm}/users/${id}`,
@@ -115,7 +115,7 @@ export const CreateKeycloakApiService = (): KeycloakApiService => {
         }
         const userDetails = await userDetailsResponse.json();
         const existingAttributes = userDetails.attributes || {};
-
+        
         const existingEmail = userDetails.email;
     
         const updatedAttributes = {
@@ -139,16 +139,15 @@ export const CreateKeycloakApiService = (): KeycloakApiService => {
             body: JSON.stringify(bodyContent),
           }
         );
-
+        
         if (!updateResponse.ok) {
           const errorText = await updateResponse.text();
           throw new Error(
             `Failed to update user attributes: ${updateResponse.status} - ${updateResponse.statusText}. Details: ${errorText}`
           );
         }
-        return { 
-          success: true, 
-          updatedFields: Object.keys(attributes) 
+        return {  
+          updatedFields: bodyContent.attributes
         };
         
       } catch (error) {

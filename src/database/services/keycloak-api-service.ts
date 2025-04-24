@@ -14,7 +14,7 @@ export interface CustomKeycloakProfile extends KeycloakProfile {
 export interface KeycloakApiService {
   getUsers: () => Promise<CustomKeycloakProfile[]>;
   findUser: (id: string) => Promise<CustomKeycloakProfile>;
-  updateUserAttribute: (id: string, attributes: Record<string, string[]>) => Promise<void>;
+  updateUserAttribute: (id: string, attributes: Record<string, string[]>) => Promise<{updatedFields:Record<string, string[]>}>;
   removeUserAttribute: (id: string, attributeName:string) => Promise<void>;
 }
 
@@ -86,14 +86,15 @@ export const CreateKeycloakApiService = (): KeycloakApiService => {
 
     /**
      * Updates a user's attributes
-     * 
+     *
      * @param id string
-     * @param attributes  Record<string, string[]>
+     * @param attributes Record<string, string[]>
+     * @returns success boolean and updated fields
      */
     updateUserAttribute: async (
       id: string,
       attributes: Record<string, string[]>
-    ): Promise<void> => {
+    ): Promise<{ updatedFields: Record<string, string[]> }> => {
       try {
         const userDetailsResponse = await fetch(
           `${baseUrl}/admin/realms/${realm}/users/${id}`,
@@ -114,7 +115,7 @@ export const CreateKeycloakApiService = (): KeycloakApiService => {
         }
         const userDetails = await userDetailsResponse.json();
         const existingAttributes = userDetails.attributes || {};
-
+        
         const existingEmail = userDetails.email;
     
         const updatedAttributes = {
@@ -138,13 +139,17 @@ export const CreateKeycloakApiService = (): KeycloakApiService => {
             body: JSON.stringify(bodyContent),
           }
         );
-
+        
         if (!updateResponse.ok) {
           const errorText = await updateResponse.text();
           throw new Error(
             `Failed to update user attributes: ${updateResponse.status} - ${updateResponse.statusText}. Details: ${errorText}`
           );
         }
+        return {  
+          updatedFields: bodyContent.attributes
+        };
+        
       } catch (error) {
         throw new Error(
           error instanceof Error

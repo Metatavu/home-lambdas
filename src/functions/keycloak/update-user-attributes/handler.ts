@@ -9,7 +9,9 @@ import { optInSeveraUser } from "src/utils/severa";
  * @param event API Gateway event
  * @returns Response message as JSON string
  */
-const updateUserAttributeHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
+const updateUserAttributeHandler: APIGatewayProxyHandler = async (
+  event: APIGatewayProxyEvent
+) => {
   try {
     if (!event.body) {
       throw new Error("Request body is missing.");
@@ -23,7 +25,9 @@ const updateUserAttributeHandler: APIGatewayProxyHandler = async (event: APIGate
     if (!id || !attributes || typeof attributes !== "object") {
       return {
         statusCode: 400,
-        body: JSON.stringify({ message: "Missing or invalid parameters: 'id' or 'attribute'." })
+        body: JSON.stringify({
+          message: "Missing or invalid parameters: 'id' or 'attribute'.",
+        }),
       };
     }
 
@@ -31,7 +35,7 @@ const updateUserAttributeHandler: APIGatewayProxyHandler = async (event: APIGate
     if (!keys.every((key) => allowedKeys.includes(key))) {
       return {
         statusCode: 400,
-        body: JSON.stringify({ message: "Attributes contain invalid keys." })
+        body: JSON.stringify({ message: "Attributes contain invalid keys." }),
       };
     }
 
@@ -42,7 +46,7 @@ const updateUserAttributeHandler: APIGatewayProxyHandler = async (event: APIGate
     if (!severaUser?.email || !severaUser?.guid) {
       return {
         statusCode: 404,
-        body: JSON.stringify({ message: "Severa user not found." })
+        body: JSON.stringify({ message: "Severa user not found." }),
       };
     }
 
@@ -59,14 +63,14 @@ const updateUserAttributeHandler: APIGatewayProxyHandler = async (event: APIGate
         message: "Severa user and Keycloak attributes updated",
         severaUser: severaUser,
         updatedAttributes: attributes,
-        keycloakResponse: updateResponse
-      })
+        keycloakResponse: updateResponse,
+      }),
     };
   } catch (error) {
     return {
       statusCode: 500,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: error.message, stack: error.stack })
+      body: JSON.stringify({ message: error.message, stack: error.stack }),
     };
   }
 };

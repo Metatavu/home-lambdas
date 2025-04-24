@@ -19,18 +19,20 @@ class ArticlesApiService {
    *
    * @returns list of article entries (excluding content)
    */
-  public listArticles = async(path?: string): Promise<ArticleMetadataModel[]> => {
+  public listArticles = async(draft: string = "false", path?: string): Promise<ArticleMetadataModel[]> => {
     const params: AWS.DynamoDB.DocumentClient.ScanInput = {
       TableName: TABLE_NAME,
       ExpressionAttributeNames: {
         "#path": "path",
       },
-      ProjectionExpression: "id, title, description, #path, coverImage, createdBy, createdAt, lastUpdatedBy, lastUpdatedAt, tags, readBy, lastReadAt"
+      ProjectionExpression: "id, title, description, #path, coverImage, createdBy, createdAt, lastUpdatedBy, lastUpdatedAt, tags, readBy, lastReadAt, draft",
+      FilterExpression: "draft = :draft",
+      ExpressionAttributeValues: { ":draft": draft === "true" ? true : false}
     };
 
     if (path) {
-      params.FilterExpression = "begins_with(#path, :path)";
-      params.ExpressionAttributeValues = { ":path": path };
+      params.FilterExpression = params.FilterExpression + " AND begins_with(#path, :path)";
+      params.ExpressionAttributeValues[":path"] = path;
     }
 
     const articles = await this.docClient.scan(params).promise();

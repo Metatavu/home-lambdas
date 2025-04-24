@@ -22,7 +22,8 @@ const updateArticleHandler: APIGatewayProxyHandler = async (event: APIGatewayPro
     description,
     coverImage,
     tags,
-    updatedBy
+    updatedBy,
+    draft
   } = (typeof body === "string" ? JSON.parse(body) : body);
   const id = pathParameters?.id;
 
@@ -37,7 +38,7 @@ const updateArticleHandler: APIGatewayProxyHandler = async (event: APIGatewayPro
   }
 
   const existingArticle = await articleService.findArticleById(id);
-  if (!existingArticle && existingArticle.id !== id) {
+  if (!existingArticle) {
     return {
       statusCode: 404,
       body: JSON.stringify({ 
@@ -48,7 +49,7 @@ const updateArticleHandler: APIGatewayProxyHandler = async (event: APIGatewayPro
   }
 
   const articleExistsWithPath = await articleService.findArticleByPath(path);
-  if (articleExistsWithPath) {
+  if (articleExistsWithPath && articleExistsWithPath.id !== id) {
     return {
       statusCode: 409,
       body: JSON.stringify({
@@ -71,7 +72,8 @@ const updateArticleHandler: APIGatewayProxyHandler = async (event: APIGatewayPro
     tags: tags || existingArticle.tags,
     lastUpdatedBy: updatedBy,
     lastUpdatedAt: new Date().toISOString(),
-    lastReadAt: existingArticle.lastReadAt
+    lastReadAt: existingArticle.lastReadAt,
+    draft: draft
   };
 
   try {

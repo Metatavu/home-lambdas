@@ -34,6 +34,7 @@ export const createArticleHandler: APIGatewayProxyHandler = async (event: APIGat
     description,
     coverImage,
     tags,
+    draft
   } = (typeof event.body === "string" ? JSON.parse(event.body) : event.body);
 
   if (!path || !title || !content || !createdBy) {
@@ -72,7 +73,8 @@ export const createArticleHandler: APIGatewayProxyHandler = async (event: APIGat
       lastUpdatedAt: createdAt,
       lastReadAt: createdAt,
       readBy: [createdBy],
-      tags: tags || []
+      tags: tags || [],
+      draft: draft,
     };
 
     const articleCreated = await articleService.createArticle(newArticle);

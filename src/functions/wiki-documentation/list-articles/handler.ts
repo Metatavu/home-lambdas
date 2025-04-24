@@ -15,7 +15,7 @@ const articleService = new ArticlesApiService(dynamoDb);
 export const listArticlesHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
   try {
     const { queryStringParameters } = event;
-    const articleList = await articleService.listArticles(queryStringParameters?.path);
+    const articleList = await articleService.listArticles(queryStringParameters?.draft, queryStringParameters?.path);
     const sortedArticles = articleList.sort((article1, article2) => 
       new Date(article2.lastUpdatedAt).getTime() - new Date(article1.lastUpdatedAt).getTime()
     )

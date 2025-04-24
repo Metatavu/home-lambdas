@@ -14,6 +14,7 @@ export interface ArticleMetadataModel {
   lastReadAt: string;
   readBy: string[];
   tags: string[];
+  draft: boolean;
 }
 
 export interface ArticleModel extends ArticleMetadataModel{

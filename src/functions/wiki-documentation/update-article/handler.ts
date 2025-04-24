@@ -37,7 +37,7 @@ const updateArticleHandler: APIGatewayProxyHandler = async (event: APIGatewayPro
   }
 
   const existingArticle = await articleService.findArticleById(id);
-  if (!existingArticle) {
+  if (!existingArticle && existingArticle.id !== id) {
     return {
       statusCode: 404,
       body: JSON.stringify({ 

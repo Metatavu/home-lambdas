@@ -29,7 +29,10 @@ const updateArticleHandler: APIGatewayProxyHandler = async (event: APIGatewayPro
   if (!id) {
     return {
       statusCode: 400,
-      body: JSON.stringify({ error: "Missing or invalid 'id' path parameter." })
+      body: JSON.stringify({ 
+        code: 400,
+        messge: "Missing or invalid 'id' path parameter."
+      })
     };
   }
 
@@ -37,7 +40,10 @@ const updateArticleHandler: APIGatewayProxyHandler = async (event: APIGatewayPro
   if (!existingArticle) {
     return {
       statusCode: 404,
-      body: JSON.stringify({ error: `Article ${id} not found.` })
+      body: JSON.stringify({ 
+        code: 404,
+        message: `Article ${id} not found.`
+      })
     };
   }
 
@@ -46,6 +52,7 @@ const updateArticleHandler: APIGatewayProxyHandler = async (event: APIGatewayPro
     return {
       statusCode: 409,
       body: JSON.stringify({
+        code: 409,
         message: `Article with the path ${path} already exists.`
       })
     }
@@ -77,8 +84,8 @@ const updateArticleHandler: APIGatewayProxyHandler = async (event: APIGatewayPro
     return {
       statusCode: 500,
       body: JSON.stringify({
-        error: `Error updating article with id ${id}`,
-        message: error.message
+        code: 500,
+        message: `Error updating article with id ${id}: ${error.message}`,
       })
     };
   }

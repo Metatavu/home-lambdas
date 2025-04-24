@@ -18,7 +18,10 @@ export const findArticleHandler: APIGatewayProxyHandler = async (event: APIGatew
   if (!path) {
     return {
       statusCode: 400,
-      body: JSON.stringify({ error: "Missing or invalid path parameter." }),
+      body: JSON.stringify({ 
+        code: 400,
+        message: "Missing or invalid path parameter." 
+      }),
     };
   }
 
@@ -28,7 +31,10 @@ export const findArticleHandler: APIGatewayProxyHandler = async (event: APIGatew
     if (!foundArticle) {
       return {
         statusCode: 404,
-        body: JSON.stringify({ error: `Article ${path} not found.` })
+        body: JSON.stringify({ 
+          code: 404,
+          message: `Article ${path} not found.` 
+        })
       };
     };
 
@@ -40,8 +46,8 @@ export const findArticleHandler: APIGatewayProxyHandler = async (event: APIGatew
     return {
       statusCode: 500,
       body: JSON.stringify({
-        error: "Failed to retrieve an article.",
-        message: error.message,
+        code: 500,
+        message: `Failed to retrieve an article: ${error.message}`
       }),
     };
   }

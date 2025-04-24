@@ -16,7 +16,8 @@ const uploadFileHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyE
     return {
       statusCode: 400,
       body: JSON.stringify({
-        error: "Invalid request body.",
+        code: 400,
+        message: "Invalid request body.",
       })
     };
   }
@@ -31,8 +32,8 @@ const uploadFileHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyE
     return {
       statusCode: 500,
       body: JSON.stringify({
-        error: `Error uploading file.`,
-        message: error.message
+        code: 500,
+        message: `Error uploading file: ${error.message}`,
       })
     };
   }

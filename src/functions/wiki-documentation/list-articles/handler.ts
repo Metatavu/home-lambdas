@@ -27,7 +27,10 @@ export const listArticlesHandler: APIGatewayProxyHandler = async (event: APIGate
   } catch(error) {
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: 'Failed to retrieve article list.', details: error.message }),
+      body: JSON.stringify({ 
+        code: 500,
+        message: `Failed to retrieve article list: ${error.message}` 
+      }),
     }
   }
 };

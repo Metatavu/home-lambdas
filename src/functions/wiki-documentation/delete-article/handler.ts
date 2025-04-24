@@ -17,7 +17,8 @@ const deleteArticleHandler: APIGatewayProxyHandler = async (event: APIGatewayPro
     return {
       statusCode: 400,
       body: JSON.stringify({
-        error: "Missing or invalid 'id' path parameter.",
+        code: 400,
+        message: "Missing or invalid 'id' path parameter.",
       }),
     };
   }
@@ -28,7 +29,8 @@ const deleteArticleHandler: APIGatewayProxyHandler = async (event: APIGatewayPro
       return {
         statusCode: 404,
         body: JSON.stringify({
-          error: `Article ${id} not found.`,
+          code: 404,
+          message: `Article ${id} not found.`,
         }),
       };
     };
@@ -42,8 +44,8 @@ const deleteArticleHandler: APIGatewayProxyHandler = async (event: APIGatewayPro
     return {
       statusCode: 500,
       body: JSON.stringify({
-        error: "Failed to delete article.",
-        message: error.message,
+        code: 500,
+        message: `Failed to delete article: ${error.message}`
       }),
     };
   }

@@ -16,7 +16,10 @@ export const readArticleHandler: APIGatewayProxyHandler = async (event: APIGatew
   if (!event.body) {
     return {
       statusCode: 400,
-      body: JSON.stringify({ error: 'Request body is required.' }),
+      body: JSON.stringify({ 
+        code: 400,
+        meassage: "Request body is required."
+      }),
     };
   }
 
@@ -27,7 +30,10 @@ export const readArticleHandler: APIGatewayProxyHandler = async (event: APIGatew
   if (!userId)
     return {
       statusCode: 400,
-      body: JSON.stringify({ error: `Missing or invalid path parameter.` })
+      body: JSON.stringify({ 
+        code: 400,
+        message: "Missing or invalid path parameter."
+      })
     }
 
   try {
@@ -35,7 +41,10 @@ export const readArticleHandler: APIGatewayProxyHandler = async (event: APIGatew
     if (!existedArticle) {
       return {
         statusCode: 404,
-        body: JSON.stringify({ error: `Article ${id} not found.` })
+        body: JSON.stringify({ 
+          code: 404,
+          message: `Article ${id} not found.`
+        })
       }
     }
 
@@ -48,8 +57,8 @@ export const readArticleHandler: APIGatewayProxyHandler = async (event: APIGatew
     return {
       statusCode: 500,
       body: JSON.stringify({ 
-        error: "Failed to update readBy list for an article.", 
-        message: error.message 
+        code: 500,
+        message: `Failed to update readBy list for an article: ${error.message}`, 
       })
     };
   }

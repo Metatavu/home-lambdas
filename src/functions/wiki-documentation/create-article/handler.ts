@@ -18,7 +18,11 @@ export const createArticleHandler: APIGatewayProxyHandler = async (event: APIGat
   if (!event.body) {
     return {
       statusCode: 400,
-      body: JSON.stringify({ error: 'Request body is required.' }),
+      body: JSON.stringify({ 
+          code: 400,
+          message: 'Request body is required.'
+        }
+      ),
     };
   }
 
@@ -35,7 +39,10 @@ export const createArticleHandler: APIGatewayProxyHandler = async (event: APIGat
   if (!path || !title || !content || !createdBy) {
     return {
       statusCode: 400,
-      body: JSON.stringify({ error: "Some required data is missing." })
+      body: JSON.stringify({ 
+        code: 400,
+        message: "Some required data is missing." 
+      })
     };
   }
 
@@ -45,6 +52,7 @@ export const createArticleHandler: APIGatewayProxyHandler = async (event: APIGat
       return {
         statusCode: 409,
         body: JSON.stringify({
+          code: 500,
           message: `Article with the path ${path} already exists.`
         })
       }
@@ -76,8 +84,8 @@ export const createArticleHandler: APIGatewayProxyHandler = async (event: APIGat
     return {
       statusCode: 500,
       body: JSON.stringify({ 
+        code: 500,
         error: "Failed to create new article.", 
-        message: error.message 
       })
     };
   }

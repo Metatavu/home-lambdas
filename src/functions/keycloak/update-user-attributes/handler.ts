@@ -35,10 +35,10 @@ const updateUserAttributeHandler: APIGatewayProxyHandler = async (event: APIGate
       };
     }
     
-    const keywords: Record<string, string[]> = {
+    const severaKeywords: Record<string, string[]> = {
       "isSeveraOptIn": [attributeName]
     };
-    const severaUser = await optInSeveraUser(email, keywords);
+    const severaUser = await optInSeveraUser(email, severaKeywords);
     if (!severaUser?.email || !severaUser?.guid) {
       return {
         statusCode: 404,
@@ -46,18 +46,18 @@ const updateUserAttributeHandler: APIGatewayProxyHandler = async (event: APIGate
       };
     }
 
-    const attributes: Record<string, string[]> = {
+    const keycloakAttributes: Record<string, string[]> = {
       "severaUserId": [severaUser.guid]
     };
     const api = CreateKeycloakApiService();
-    const updateResult = await api.updateUserAttribute(id, attributes);
+    const keycloakUpdateResult = await api.updateUserAttribute(id, keycloakAttributes);
     
     return {
       statusCode: 200,
       body: JSON.stringify({
         id,
         updatedKeycloakAttributes: {
-          severaUserId: updateResult.updatedFields.severaUserId[0]
+          severaUserId: keycloakUpdateResult.updatedFields.severaUserId[0]
         },
         severaUser: {
           email: severaUser.email,

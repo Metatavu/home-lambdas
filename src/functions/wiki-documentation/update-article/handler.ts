@@ -22,7 +22,7 @@ const updateArticleHandler: APIGatewayProxyHandler = async (event: APIGatewayPro
     description,
     coverImage,
     tags,
-    updatedBy,
+    lastUpdatedBy,
     draft
   } = (typeof body === "string" ? JSON.parse(body) : body);
   const id = pathParameters?.id;
@@ -70,7 +70,7 @@ const updateArticleHandler: APIGatewayProxyHandler = async (event: APIGatewayPro
     description: description || existingArticle.description,
     coverImage: coverImage || existingArticle.coverImage,
     tags: tags || existingArticle.tags,
-    lastUpdatedBy: updatedBy,
+    lastUpdatedBy: lastUpdatedBy,
     lastUpdatedAt: new Date().toISOString(),
     lastReadAt: existingArticle.lastReadAt,
     draft: draft

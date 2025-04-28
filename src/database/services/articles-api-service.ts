@@ -128,14 +128,15 @@ class ArticlesApiService {
    * @param id id of article to be updated
    * @param userId user id to include in the read list
    */
-  public updateArticleReadBy = async(id: string, userId: string) => {
+  public updateArticleReadBy = async(id: string, users: string[]) => {
+    const newDate = new Date().toISOString();
     const params = {
       TableName: TABLE_NAME,
       Key: { id: id },
-      UpdateExpression: "ADD readBy :userId SET lastReadAt=:newDate, lastUpdatedAt = :newDate",
+      UpdateExpression: "SET readBy = :users, lastReadAt = :newDate, lastUpdatedAt = :newDate",
       ExpressionAttributeValues: {
-        ":userId": this.docClient.createSet([userId]),
-        ":newDate": new Date().toISOString()
+        ":users": users,
+        ":newDate": newDate
       }
     };
 

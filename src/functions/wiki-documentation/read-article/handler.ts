@@ -24,10 +24,10 @@ export const readArticleHandler: APIGatewayProxyHandler = async (event: APIGatew
   }
 
   const { pathParameters, body } = event;
-  const { userId } = (typeof body === "string" ? JSON.parse(body) : body);
+  const { user } = (typeof body === "string" ? JSON.parse(body) : body);
   const id = pathParameters?.id;
 
-  if (!userId)
+  if (!user)
     return {
       statusCode: 400,
       body: JSON.stringify({ 
@@ -47,8 +47,12 @@ export const readArticleHandler: APIGatewayProxyHandler = async (event: APIGatew
         })
       }
     }
-
-    await articleService.updateArticleReadBy(id, userId);
+    const currentReadBy = existedArticle.readBy || [];
+    
+    if (!currentReadBy.includes(user)) {
+      const updatedUsers = Array.from(new Set([...currentReadBy, user]));
+      await articleService.updateArticleReadBy(id, updatedUsers);
+    }
     return {
       statusCode: 200,
       body: "Successfully updated readBy for an article."

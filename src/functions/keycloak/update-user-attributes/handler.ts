@@ -16,7 +16,7 @@ const updateUserAttributeHandler: APIGatewayProxyHandler = async (event: APIGate
     }
 
     const body = JSON.parse(JSON.stringify(event.body));
-    const email = body;
+    const email = body.email;
     const { id, attributeName } = event.pathParameters ?? {};
 
     const allowedAttributes = ["isSeveraOptIn"];

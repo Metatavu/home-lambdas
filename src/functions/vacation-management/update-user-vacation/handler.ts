@@ -40,6 +40,12 @@ const updatevacationhandler: APIGatewayProxyHandlerV2 = async (event) => {
     const unspentVacationDaysByYear =
       userAttributes.unspentVacationDaysByYear || [];
 
+    // Store updated vacation days in a separate object
+    const updatedVacationDays: Record<
+      string,
+      { total: number; remaining: number }
+    > = {};
+
     Object.entries(vacationDays).forEach(([year, data]: [string, any]) => {
       const yearInt = Number.parseInt(year, 10);
       if (!Number.isNaN(yearInt) && yearInt <= new Date().getFullYear()) {
@@ -55,8 +61,15 @@ const updatevacationhandler: APIGatewayProxyHandlerV2 = async (event) => {
           else arr.push(value);
         };
 
+        // Updating vacation days for the year
         updateEntry(vacationDaysByYear, formattedTotal);
         updateEntry(unspentVacationDaysByYear, formattedRemaining);
+
+        // Store the updated vacation days
+        updatedVacationDays[year] = {
+          total: data.total,
+          remaining: data.remaining,
+        };
 
         updatedAttributes[`vacation_${year}`] = [String(data.total)];
         updatedAttributes[`vacation_${year}_remaining`] = [
@@ -65,6 +78,7 @@ const updatevacationhandler: APIGatewayProxyHandlerV2 = async (event) => {
       }
     });
 
+    // Update the main attributes with the new vacation days
     updatedAttributes.vacationDaysByYear = [...new Set(vacationDaysByYear)];
     updatedAttributes.unspentVacationDaysByYear = [
       ...new Set(unspentVacationDaysByYear),
@@ -77,7 +91,7 @@ const updatevacationhandler: APIGatewayProxyHandlerV2 = async (event) => {
       headers: corsHeaders,
       body: JSON.stringify({
         id: userId,
-        updatedFields: Object.keys(updatedAttributes),
+        vacationDays: updatedVacationDays, // Return the updated vacation days directly
       }),
     };
   } catch (error) {

@@ -4,7 +4,7 @@ import { middyfy } from "src/libs/lambda";
 import { optInSeveraUser } from "src/utils/severa";
 
 /**
- * Lambda handler to update a user's attributes
+ * Lambda handler to update a user's keycloak attributes and severa keywords
  *
  * @param event API Gateway event
  * @returns Response message as JSON string
@@ -20,7 +20,7 @@ const updateUserAttributeHandler: APIGatewayProxyHandler = async (event: APIGate
     const { id, attributeName } = event.pathParameters ?? {};
 
     const allowedAttributes = ["isSeveraOptIn"];
-    
+
     if (!id || !email || !attributeName) {
       return {
         statusCode: 400,
@@ -34,7 +34,7 @@ const updateUserAttributeHandler: APIGatewayProxyHandler = async (event: APIGate
         body: JSON.stringify({ message: "Invalid attribute name." })
       };
     }
-    
+
     const severaKeywords: Record<string, string[]> = {
       "isSeveraOptIn": [attributeName]
     };
@@ -51,7 +51,7 @@ const updateUserAttributeHandler: APIGatewayProxyHandler = async (event: APIGate
     };
     const api = CreateKeycloakApiService();
     const keycloakUpdateResult = await api.updateUserAttribute(id, keycloakAttributes);
-    
+
     return {
       statusCode: 200,
       body: JSON.stringify({

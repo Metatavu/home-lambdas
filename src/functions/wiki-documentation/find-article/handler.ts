@@ -13,9 +13,9 @@ const articleService = new ArticlesApiService(dynamoDb);
  * @returns Response object with status code
  */
 export const findArticleHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
-  const {path} = event.pathParameters || {};
+  const { id } = event.pathParameters || {};
 
-  if (!path) {
+  if (!id) {
     return {
       statusCode: 400,
       body: JSON.stringify({ 
@@ -26,14 +26,14 @@ export const findArticleHandler: APIGatewayProxyHandler = async (event: APIGatew
   }
 
   try {
-    const foundArticle = await articleService.findArticleByPath(path);
+    const foundArticle = await articleService.findArticleById(id);
 
     if (!foundArticle) {
       return {
         statusCode: 404,
         body: JSON.stringify({ 
           code: 404,
-          message: `Article ${path} not found.` 
+          message: `Article ${id} not found.` 
         })
       };
     };

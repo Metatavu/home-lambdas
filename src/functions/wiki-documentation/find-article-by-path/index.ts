@@ -1,14 +1,14 @@
-import { handlerPath } from "@libs/handler-resolver";
+import { handlerPath } from '@libs/handler-resolver';
 
 export default {
   handler: `${handlerPath(__dirname)}/handler.main`,
   events: [
     {
       httpApi: {
-        method: "post",
-        path: "/articles/{id}/read",
+        method: 'get',
+        path: '/articles/path',
         authorizer: {
-          name: "homeKeycloakAuthorizer",
+          name: "homeKeycloakAuthorizer"
         }
       },
     },

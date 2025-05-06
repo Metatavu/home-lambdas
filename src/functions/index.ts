@@ -38,6 +38,7 @@ export { default as getPhasesHandler } from "./severa/get-phases-by-project";
 export { default as getResourceAllocationHandler } from "./severa/get-resource-allocations-by-user";
 export { default as listArticlesHandler } from "./wiki-documentation/list-articles";
 export { default as findArticleHandler } from "./wiki-documentation/find-article";
+export { default as findArticleByPathHandler } from "./wiki-documentation/find-article-by-path";
 export { default as createArticleHandler } from "./wiki-documentation/create-article";
 export { default as updateArticleHandler } from "./wiki-documentation/update-article";
 export { default as deleteArticleHndler } from "./wiki-documentation/delete-article";

@@ -50,6 +50,7 @@ import getPhasesHandler  from "src/functions/severa/get-phases-by-project";
 import getWorkHoursHandler from "src/functions/severa/get-filtered-workhours";
 import listArticlesHandler from "src/functions/wiki-documentation/list-articles";
 import findArticleHandler from "src/functions/wiki-documentation/find-article";
+import findArticleByPathHandler from "src/functions/wiki-documentation/find-article-by-path";
 import createArticleHandler from "src/functions/wiki-documentation/create-article";
 import updateArticleHandler from "src/functions/wiki-documentation/update-article";
 import deleteArticleHndler from "src/functions/wiki-documentation/delete-article";
@@ -227,6 +228,7 @@ const serverlessConfiguration: AWS = {
     getWorkHoursHandler,
     listArticlesHandler,
     findArticleHandler,
+    findArticleByPathHandler,
     createArticleHandler,
     updateArticleHandler,
     deleteArticleHndler,
@@ -236,8 +238,8 @@ const serverlessConfiguration: AWS = {
   package: { individually: true },
   custom: {
     s3BucketName: {
-      dev: "home-staging",
-      production: "home"
+      dev: env.HOME_BUCKET_NAME_DEV,
+      production: env.HOME_BUCKET_NAME_PROD
     },
     esbuild: {
       bundle: true,

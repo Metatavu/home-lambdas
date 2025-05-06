@@ -3,6 +3,7 @@ import { APIGatewayProxyEvent, APIGatewayProxyHandler } from "aws-lambda";
 import { DocumentClient } from "aws-sdk/clients/dynamodb";
 import { ArticleModel } from "src/database/models/article";
 import ArticlesApiService from "src/database/services/articles-api-service";
+import * as jwt from 'jsonwebtoken';
 
 const dynamoDb = new DocumentClient();
 const articleService = new ArticlesApiService(dynamoDb);
@@ -14,6 +15,10 @@ const articleService = new ArticlesApiService(dynamoDb);
  * @returns Response object with status code
  */
 const updateArticleHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
+  const token = event.headers?.Authorization?.split(' ')[1];
+  const decodedJWT = jwt.decode(token);
+  const isAdmin = decodedJWT?.realm_access.roles?.includes("admin") || false;
+
   const { pathParameters, body } = event;
   const {
     path,
@@ -73,7 +78,7 @@ const updateArticleHandler: APIGatewayProxyHandler = async (event: APIGatewayPro
     lastUpdatedBy: lastUpdatedBy,
     lastUpdatedAt: new Date().toISOString(),
     lastReadAt: existingArticle.lastReadAt,
-    draft: draft
+    draft: isAdmin && draft
   };
 
   try {

@@ -53,7 +53,7 @@ import findArticleHandler from "src/functions/wiki-documentation/find-article";
 import findArticleByPathHandler from "src/functions/wiki-documentation/find-article-by-path";
 import createArticleHandler from "src/functions/wiki-documentation/create-article";
 import updateArticleHandler from "src/functions/wiki-documentation/update-article";
-import deleteArticleHndler from "src/functions/wiki-documentation/delete-article";
+import deleteArticleHandler from "src/functions/wiki-documentation/delete-article";
 import readArticleHandler from "src/functions/wiki-documentation/read-article";
 import uploadFileHandler from "src/functions/wiki-documentation/upload-file";
 
@@ -231,7 +231,7 @@ const serverlessConfiguration: AWS = {
     findArticleByPathHandler,
     createArticleHandler,
     updateArticleHandler,
-    deleteArticleHndler,
+    deleteArticleHandler,
     readArticleHandler,
     uploadFileHandler
   },

@@ -84,7 +84,7 @@ const updatevacationhandler: APIGatewayProxyHandlerV2 = async (event) => {
       ...new Set(unspentVacationDaysByYear),
     ];
 
-    await keycloakApiService.updateUserAttribute(userId, updatedAttributes);
+    await keycloakApiService.updateUserAttributes(userId, updatedAttributes);
 
     return {
       statusCode: 200,

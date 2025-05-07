@@ -16,6 +16,7 @@ export interface KeycloakApiService {
   findUser: (id: string) => Promise<CustomKeycloakProfile>;
   updateUserAttribute: (id: string, attributes: Record<string, string[]>) => Promise<{updatedFields:Record<string, string[]>}>;
   removeUserAttribute: (id: string, attributeName:string) => Promise<void>;
+  getUserAttributes: (id: string) => Promise<Record<string, string[]>>;
 }
 
 /**
@@ -220,9 +221,44 @@ export const CreateKeycloakApiService = (): KeycloakApiService => {
           : "An unknown error occurred while removing the user attribute."
       );
     }
-  }
-}; 
+  },
+
+  getUserAttributes: async (
+    id: string
+  ): Promise<Record<string, string[]>> => {
+    try {
+      const response = await fetch(
+        `${baseUrl}/admin/realms/${realm}/users/${id}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${await getAccessToken()}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          `Failed to get user attributes: ${response.status} - ${response.statusText}`
+        );
+      }
+
+      const user = await response.json();
+      return user.attributes || {};
+    } catch (error) {
+      throw new Error(
+        `An error occurred while fetching user attributes: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
+    }
+  },
 };
+};
+
+
+
 
 /**
  * Requests an access token from keycloak API

@@ -25,6 +25,7 @@ import listUsersHandler from "@/functions/keycloak/list-users";
 import findUserHandler from "@/functions/keycloak/find-user";
 import updateUserAttributeHandler from "@/functions/keycloak/update-user-attributes";
 import removeUserAttributeHanndler from "src/functions/keycloak/remove-user-attribute";
+import updatevacationhandler from "src/functions/keycloak/update-user-vacation";
 import createQuestionnaireHandler from "@/functions/questionnaire/create-questionnaire";
 import findQuestionnaireHandler from "@/functions/questionnaire/find-questionnaire";
 import deleteQuestionnaireHandler from "src/functions/questionnaire/delete-questionnaire";
@@ -48,7 +49,6 @@ import updateVacationRequestHandler from "src/functions/vacation-request/update-
 import getResourceAllocationHandler from "src/functions/severa/get-resource-allocations-by-user";
 import getPhasesHandler from "src/functions/severa/get-phases-by-project";
 import getWorkHoursHandler from "src/functions/severa/get-filtered-workhours";
-import updatevacationhandler from "src/functions/keycloak/update-user-vacation";
 
 const isLocal = process.env.STAGE === "local";
 const region = (env.AWS_DEFAULT_REGION as any) || "eu-north-1";
@@ -203,6 +203,7 @@ const serverlessConfiguration: AWS = {
     findUserHandler,
     updateUserAttributeHandler,
     removeUserAttributeHanndler,
+    updatevacationhandler,
     createQuestionnaireHandler,
     findQuestionnaireHandler,
     deleteQuestionnaireHandler,
@@ -226,7 +227,6 @@ const serverlessConfiguration: AWS = {
     getResourceAllocationHandler,
     getPhasesHandler,
     getWorkHoursHandler,
-    updatevacationhandler,
   },
   package: { individually: true },
   custom: {

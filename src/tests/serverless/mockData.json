@@ -4,7 +4,7 @@
   },
   "body": "{\"email\": \"test-user@example.fi\"}",
   "pathParameters": {
-    "id": "11477679-06b0-49e1-9ea8-f748ba59630e",
+    "id": "*insert the keycloak id of the user whose attributes are to be updated.*",
     "attributeName": "isSeveraOptIn"
   },
   "queryStringParameters": {

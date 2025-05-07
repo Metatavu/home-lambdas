@@ -14,8 +14,11 @@ export interface CustomKeycloakProfile extends KeycloakProfile {
 export interface KeycloakApiService {
   getUsers: () => Promise<CustomKeycloakProfile[]>;
   findUser: (id: string) => Promise<CustomKeycloakProfile>;
-  updateUserAttribute: (id: string, attributes: Record<string, string[]>) => Promise<{updatedFields:Record<string, string[]>}>;
-  removeUserAttribute: (id: string, attributeName:string) => Promise<void>;
+  updateUserAttributes: (
+    id: string,
+    attributes: Record<string, string[]>
+  ) => Promise<{ updatedFields: Record<string, string[]> }>;
+  removeUserAttribute: (id: string, attributeName: string) => Promise<void>;
   getUserAttributes: (id: string) => Promise<Record<string, string[]>>;
 }
 
@@ -25,7 +28,7 @@ export interface KeycloakApiService {
 export const CreateKeycloakApiService = (): KeycloakApiService => {
   const baseUrl: string = process.env.KEYCLOAK_BASE_URL;
   const realm: string = process.env.KEYCLOAK_REALM;
-  
+
   return {
     /**
      * Gets all users from keycloak
@@ -42,7 +45,7 @@ export const CreateKeycloakApiService = (): KeycloakApiService => {
 
       if (!response.ok) {
         throw new Error(
-          `Failed to fetch users: ${response.status} - ${response.statusText}`,
+          `Failed to fetch users: ${response.status} - ${response.statusText}`
         );
       }
 
@@ -60,28 +63,33 @@ export const CreateKeycloakApiService = (): KeycloakApiService => {
      * @returns user by Id
      */
     findUser: async (id: string): Promise<CustomKeycloakProfile> => {
-      try { 
+      try {
         const response = await fetch(
           `${baseUrl}/admin/realms/${realm}/users/${id}`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${await getAccessToken()}`,
-          },
-        },
-      );
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${await getAccessToken()}`,
+            },
+          }
+        );
 
-      if (!response.ok) {
-        throw new Error(`Failed to find user with id: ${id}`);
-      }
+        if (!response.ok) {
+          throw new Error(`Failed to find user with id: ${id}`);
+        }
 
-      const user: KeycloakProfile = await response.json();
-      return {
-        ...user,
-        severaUserId: (user as CustomKeycloakProfile).severaUserId ?? undefined,
-      } as CustomKeycloakProfile;
-      } catch(error) {
-        throw new Error(`An error occurred while fetching the user: ${error instanceof Error ? error.message : 'Unknown error'}`)
+        const user: KeycloakProfile = await response.json();
+        return {
+          ...user,
+          severaUserId:
+            (user as CustomKeycloakProfile).severaUserId ?? undefined,
+        } as CustomKeycloakProfile;
+      } catch (error) {
+        throw new Error(
+          `An error occurred while fetching the user: ${
+            error instanceof Error ? error.message : "Unknown error"
+          }`
+        );
       }
     },
 
@@ -92,7 +100,7 @@ export const CreateKeycloakApiService = (): KeycloakApiService => {
      * @param attributes Record<string, string[]>
      * @returns success boolean and updated fields
      */
-    updateUserAttribute: async (
+    updateUserAttributes: async (
       id: string,
       attributes: Record<string, string[]>
     ): Promise<{ updatedFields: Record<string, string[]> }> => {
@@ -107,7 +115,7 @@ export const CreateKeycloakApiService = (): KeycloakApiService => {
             },
           }
         );
-    
+
         if (!userDetailsResponse.ok) {
           const errorText = await userDetailsResponse.text();
           throw new Error(
@@ -116,9 +124,9 @@ export const CreateKeycloakApiService = (): KeycloakApiService => {
         }
         const userDetails = await userDetailsResponse.json();
         const existingAttributes = userDetails.attributes || {};
-        
+
         const existingEmail = userDetails.email;
-    
+
         const updatedAttributes = {
           ...existingAttributes,
           ...attributes,
@@ -126,7 +134,7 @@ export const CreateKeycloakApiService = (): KeycloakApiService => {
 
         const bodyContent = {
           attributes: updatedAttributes,
-          email: existingEmail, 
+          email: existingEmail,
         };
 
         const updateResponse = await fetch(
@@ -140,17 +148,16 @@ export const CreateKeycloakApiService = (): KeycloakApiService => {
             body: JSON.stringify(bodyContent),
           }
         );
-        
+
         if (!updateResponse.ok) {
           const errorText = await updateResponse.text();
           throw new Error(
             `Failed to update user attributes: ${updateResponse.status} - ${updateResponse.statusText}. Details: ${errorText}`
           );
         }
-        return {  
-          updatedFields: bodyContent.attributes
+        return {
+          updatedFields: bodyContent.attributes,
         };
-        
       } catch (error) {
         throw new Error(
           error instanceof Error
@@ -159,106 +166,108 @@ export const CreateKeycloakApiService = (): KeycloakApiService => {
         );
       }
     },
-    
-  /**
-   * Remove user attributes  
-   * 
-   * @param id  string
-   * @param attributeName string
-   */
-  removeUserAttribute: async (
-    id: string,
-    attributeName: string
-  ): Promise<void> => {
-    try {
-      const response = await fetch(`${baseUrl}/admin/realms/${realm}/users/${id}`, {
-      method: "GET",
-        headers: {
-          Authorization: `Bearer ${await getAccessToken()}`,
-          "Content-Type": "application/json",
-        },
-    });
-  
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Failed to fetch user data: ${response.status} - ${response.statusText}. Details: ${errorText}`);
-      }
-  
-      const user = await response.json();
-      const existingEmail = user.email;
 
-      const currentAttributes = user.attributes || {};
+    /**
+     * Remove user attributes
+     *
+     * @param id  string
+     * @param attributeName string
+     */
+    removeUserAttribute: async (
+      id: string,
+      attributeName: string
+    ): Promise<void> => {
+      try {
+        const response = await fetch(
+          `${baseUrl}/admin/realms/${realm}/users/${id}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${await getAccessToken()}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
 
-      delete currentAttributes[attributeName];
-  
-      const bodyContent = {
-        email: existingEmail,
-        attributes: currentAttributes,
-      };
-  
-      const updateResponse = await fetch(
-        `${baseUrl}/admin/realms/${realm}/users/${id}`,
-        {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${await getAccessToken()}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(bodyContent),
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(
+            `Failed to fetch user data: ${response.status} - ${response.statusText}. Details: ${errorText}`
+          );
         }
-      );
-  
-      if (!updateResponse.ok) {
-        const errorText = await updateResponse.text();
+
+        const user = await response.json();
+        const existingEmail = user.email;
+
+        const currentAttributes = user.attributes || {};
+
+        delete currentAttributes[attributeName];
+
+        const bodyContent = {
+          email: existingEmail,
+          attributes: currentAttributes,
+        };
+
+        const updateResponse = await fetch(
+          `${baseUrl}/admin/realms/${realm}/users/${id}`,
+          {
+            method: "PUT",
+            headers: {
+              Authorization: `Bearer ${await getAccessToken()}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(bodyContent),
+          }
+        );
+
+        if (!updateResponse.ok) {
+          const errorText = await updateResponse.text();
+          throw new Error(
+            `Failed to update user attributes: ${updateResponse.status} - ${updateResponse.statusText}. Details: ${errorText}`
+          );
+        }
+      } catch (error) {
         throw new Error(
-          `Failed to update user attributes: ${updateResponse.status} - ${updateResponse.statusText}. Details: ${errorText}`
+          error instanceof Error
+            ? error.message
+            : "An unknown error occurred while removing the user attribute."
         );
       }
-    } catch (error) {
-      throw new Error(
-        error instanceof Error
-          ? error.message
-          : "An unknown error occurred while removing the user attribute."
-      );
-    }
-  },
+    },
 
-  getUserAttributes: async (
-    id: string
-  ): Promise<Record<string, string[]>> => {
-    try {
-      const response = await fetch(
-        `${baseUrl}/admin/realms/${realm}/users/${id}`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${await getAccessToken()}`,
-            "Content-Type": "application/json",
-          },
+    getUserAttributes: async (
+      id: string
+    ): Promise<Record<string, string[]>> => {
+      try {
+        const response = await fetch(
+          `${baseUrl}/admin/realms/${realm}/users/${id}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${await getAccessToken()}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(
+            `Failed to get user attributes: ${response.status} - ${response.statusText}`
+          );
         }
-      );
 
-      if (!response.ok) {
+        const user = await response.json();
+        return user.attributes || {};
+      } catch (error) {
         throw new Error(
-          `Failed to get user attributes: ${response.status} - ${response.statusText}`
+          `An error occurred while fetching user attributes: ${
+            error instanceof Error ? error.message : "Unknown error"
+          }`
         );
       }
-
-      const user = await response.json();
-      return user.attributes || {};
-    } catch (error) {
-      throw new Error(
-        `An error occurred while fetching user attributes: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`
-      );
-    }
-  },
+    },
+  };
 };
-};
-
-
-
 
 /**
  * Requests an access token from keycloak API

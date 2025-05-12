@@ -39,7 +39,6 @@ export default class Config {
       schedulePolicyName: env.SPLUNK_SCHEDULE_POLICY_NAME
     },
     testUser: {
-      email: env.SEVERA_TEST_USER_EMAIL,
       id: env.SEVERA_TEST_USER_ID,
     }
   });

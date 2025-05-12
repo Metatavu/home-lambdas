@@ -12,7 +12,7 @@ import {fetchUserByEmail, getUserKeywords, checkKeywordExists,updateSeveraOptInK
  */
 export const optInSeveraUser = async (email: string, keyword: Record<string, string[]>) => {
 
-  const userEmail = Config.get().testUser.email || email;
+  const userEmail = email;
 
   try {
     const user = await fetchUserByEmail(userEmail);

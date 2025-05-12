@@ -27,6 +27,6 @@ export interface Configuration {
         schedulePolicyName: string
     }
     testUser: {
-        id: string
+        email: string
     }
 }

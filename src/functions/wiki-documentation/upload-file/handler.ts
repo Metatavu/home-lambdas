@@ -12,7 +12,7 @@ const uploadFileHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyE
   const { body } = event;
   const { path, contentType } = (typeof body === "string" ? JSON.parse(body) : body);
 
-  if (!path) {
+  if (!path)
     return {
       statusCode: 400,
       body: JSON.stringify({
@@ -20,10 +20,18 @@ const uploadFileHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyE
         message: "Invalid request body.",
       })
     };
-  }
+
+  if (!contentType.startWith("image/"))
+    return {
+      statusCode: 400,
+      body: JSON.stringify({
+        code: 400,
+        message: "Invalid file type.",
+      })
+    }
 
   try {
-    const presignedUrl = await generatePreSignedUrl(path, "put", contentType);
+    const presignedUrl = await generatePreSignedUrl(path, contentType);
     return {
       statusCode: 200,
       body: JSON.stringify({ data: presignedUrl })

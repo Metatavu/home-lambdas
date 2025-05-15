@@ -19,7 +19,7 @@ class ArticlesApiService {
    *
    * @returns list of article entries (excluding content)
    */
-  public listArticles = async(draft: string = "false", path?: string): Promise<ArticleMetadataModel[]> => {
+  public listArticles = async(draft: string = "false", pathPrefix?: string): Promise<ArticleMetadataModel[]> => {
     const params: AWS.DynamoDB.DocumentClient.ScanInput = {
       TableName: TABLE_NAME,
       ExpressionAttributeNames: {
@@ -30,9 +30,9 @@ class ArticlesApiService {
       ExpressionAttributeValues: { ":draft": draft === "true" ? true : false}
     };
 
-    if (path) {
+    if (pathPrefix) {
       params.FilterExpression = params.FilterExpression + " AND begins_with(#path, :path)";
-      params.ExpressionAttributeValues[":path"] = path;
+      params.ExpressionAttributeValues[":path"] = pathPrefix;
     }
 
     const articles = await this.docClient.scan(params).promise();

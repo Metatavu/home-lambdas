@@ -1,7 +1,7 @@
 import type { AWS } from "@serverless/typescript";
 import * as dotenv from "dotenv";
-dotenv.config({ path: `${__dirname}/.env` });
-import { env } from "node:process";
+dotenv.config({ path: __dirname + "/.env" });
+import { env } from "process";
 import listDealsHandler from "@functions/pipedrive/list-deals";
 import listLeadsHandler from "@functions/pipedrive/list-leads";
 import getLeadByIdHandler from "@functions/pipedrive/find-lead-by-id";
@@ -25,7 +25,7 @@ import listUsersHandler from "@/functions/keycloak/list-users";
 import findUserHandler from "@/functions/keycloak/find-user";
 import updateUserAttributeHandler from "@/functions/keycloak/update-user-attributes";
 import removeUserAttributeHanndler from "src/functions/keycloak/remove-user-attribute";
-import updatevacationhandler from "src/functions/keycloak/update-user-vacation";
+import updateVacationhandler from "src/functions/keycloak/update-user-vacation";
 import createQuestionnaireHandler from "@/functions/questionnaire/create-questionnaire";
 import findQuestionnaireHandler from "@/functions/questionnaire/find-questionnaire";
 import deleteQuestionnaireHandler from "src/functions/questionnaire/delete-questionnaire";
@@ -202,7 +202,7 @@ const serverlessConfiguration: AWS = {
     findUserHandler,
     updateUserAttributeHandler,
     removeUserAttributeHanndler,
-    updatevacationhandler,
+    updateVacationhandler,
     createQuestionnaireHandler,
     findQuestionnaireHandler,
     deleteQuestionnaireHandler,

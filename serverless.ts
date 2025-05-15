@@ -126,13 +126,13 @@ const serverlessConfiguration: AWS = {
       TRELLO_MANAGEMENT_BOARD_ID: env.TRELLO_MANAGEMENT_BOARD_ID,
       CHANNEL_ID: env.CHANNEL_ID,
       OPENAI_API_KEY: env.OPENAI_API_KEY,
-      HOME_BUCKET_NAME: "${self:custom.s3BucketName.${opt:stage}}",
+      HOME_BUCKET_NAME: "${self:custom.s3BucketName.dev}",
       HOME_BUCKET_REGION: region
     },
     s3: {
       "on-call": {
         bucketName: isLocal ? "local-on-call-data" : "${opt:stage}-on-call-data"
-      } 
+      }
     },
     iam: {
       role: {
@@ -153,7 +153,7 @@ const serverlessConfiguration: AWS = {
               "s3:GetObject",
               "s3:PutObject"
             ],
-            Resource: isLocal ? "*" : "arn:aws:s3:::${self:custom.s3BucketName.${opt:stage}}/*"
+            Resource: isLocal ? "*" : "arn:aws:s3:::${self:custom.s3BucketName.dev}/*"
           },
           {
             Effect: "Allow",

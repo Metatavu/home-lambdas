@@ -48,6 +48,14 @@ import updateVacationRequestHandler from "src/functions/vacation-request/update-
 import getResourceAllocationHandler  from "src/functions/severa/get-resource-allocations-by-user";
 import getPhasesHandler  from "src/functions/severa/get-phases-by-project";
 import getWorkHoursHandler from "src/functions/severa/get-filtered-workhours";
+import listArticlesHandler from "src/functions/wiki-documentation/list-articles";
+import findArticleHandler from "src/functions/wiki-documentation/find-article";
+import findArticleByPathHandler from "src/functions/wiki-documentation/find-article-by-path";
+import createArticleHandler from "src/functions/wiki-documentation/create-article";
+import updateArticleHandler from "src/functions/wiki-documentation/update-article";
+import deleteArticleHandler from "src/functions/wiki-documentation/delete-article";
+import readArticleHandler from "src/functions/wiki-documentation/read-article";
+import uploadFileHandler from "src/functions/wiki-documentation/upload-file";
 
 const isLocal = process.env.STAGE === "local";
 const region = (env.AWS_DEFAULT_REGION as any) || "eu-north-1";
@@ -118,6 +126,8 @@ const serverlessConfiguration: AWS = {
       TRELLO_MANAGEMENT_BOARD_ID: env.TRELLO_MANAGEMENT_BOARD_ID,
       CHANNEL_ID: env.CHANNEL_ID,
       OPENAI_API_KEY: env.OPENAI_API_KEY,
+      HOME_BUCKET_NAME: "${self:custom.s3BucketName.${opt:stage}}",
+      HOME_BUCKET_REGION: region
     },
     s3: {
       "on-call": {
@@ -140,18 +150,28 @@ const serverlessConfiguration: AWS = {
           {
             Effect: "Allow",
             Action: [
+              "s3:GetObject",
+              "s3:PutObject"
+            ],
+            Resource: isLocal ? "*" : "arn:aws:s3:::${self:custom.s3BucketName.${opt:stage}}/*"
+          },
+          {
+            Effect: "Allow",
+            Action: [
               "dynamodb:DescribeTable",
               "dynamodb:Query",
               "dynamodb:Scan",
               "dynamodb:GetItem",
               "dynamodb:PutItem",
               "dynamodb:UpdateItem",
-              "dynamodb:DeleteItem",
+              "dynamodb:DeleteItem"
             ],
             Resource: isLocal ? "*" : [
               "arn:aws:dynamodb:${self:provider.region}:*:table/SoftwareRegistry",
               "arn:aws:dynamodb:${self:provider.region}:*:table/Questionnaires",
-              "arn:aws:dynamodb:${self:provider.region}:*:table/VacationRequests"
+              "arn:aws:dynamodb:${self:provider.region}:*:table/VacationRequests",
+              "arn:aws:dynamodb:${self:provider.region}:*:table/Articles",
+              "arn:aws:dynamodb:${self:provider.region}:*:table/Articles/index/GSI_Path"
             ]
           }
         ]
@@ -205,9 +225,21 @@ const serverlessConfiguration: AWS = {
     getResourceAllocationHandler,
     getPhasesHandler,
     getWorkHoursHandler,
+    listArticlesHandler,
+    findArticleHandler,
+    findArticleByPathHandler,
+    createArticleHandler,
+    updateArticleHandler,
+    deleteArticleHandler,
+    readArticleHandler,
+    uploadFileHandler
   },
   package: { individually: true },
   custom: {
+    s3BucketName: {
+      dev: env.HOME_BUCKET_NAME_DEV,
+      production: env.HOME_BUCKET_NAME_PROD
+    },
     esbuild: {
       bundle: true,
       minify: false,
@@ -268,6 +300,33 @@ const serverlessConfiguration: AWS = {
             ReadCapacityUnits: 1,
             WriteCapacityUnits: 1
           },
+        }
+      },
+      Articles: {
+        Type: "AWS::DynamoDB::Table",
+        DeletionPolicy: "Delete",
+        Properties: {
+          TableName: "Articles",
+          AttributeDefinitions: [
+            { AttributeName: "id", AttributeType: "S" },
+            { AttributeName: "path", AttributeType: "S" }
+          ],
+          KeySchema: [{ AttributeName: "id", KeyType: "HASH" }],
+          GlobalSecondaryIndexes: [
+            {
+              IndexName: "GSI_Path",
+              KeySchema: [{ AttributeName: "path", KeyType: "HASH" }],
+              Projection: { ProjectionType: "KEYS_ONLY" },
+              ProvisionedThroughput: {
+                ReadCapacityUnits: 1,
+                WriteCapacityUnits: 1
+              }
+            }
+          ],
+          ProvisionedThroughput: {
+            ReadCapacityUnits: 1,
+            WriteCapacityUnits: 1
+          }
         }
       },
     },

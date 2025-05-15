@@ -14,6 +14,7 @@
     "node": ">=14.15.0"
   },
   "dependencies": {
+    "@aws-sdk/s3-request-presigner": "^3.750.0",
     "@googleapis/docs": "^3.3.0",
     "@googleapis/drive": "^8.14.0",
     "@middy/core": "^3.4.0",

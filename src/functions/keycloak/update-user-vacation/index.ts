@@ -6,7 +6,7 @@ export default {
     {
       httpApi: {
         method: "put",
-        path: "/users/{userId}/vacation",
+        path: "/users/{userId}/vacationDays",
         authorizer: {
           name: "homeKeycloakAuthorizer",
         },

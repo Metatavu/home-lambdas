@@ -1,19 +1,9 @@
 import { middyfy } from "src/libs/lambda";
 import { CreateKeycloakApiService } from "src/database/services/keycloak-api-service";
 import type { APIGatewayProxyHandlerV2 } from "aws-lambda";
+import type { VacationDays,VacationDayEntry } from "src/types/keycloak/vacations";
 
 const keycloakApiService = CreateKeycloakApiService();
-
-
-
-interface VacationDayEntry {
-  total: number;
-  remaining: number;
-}
-
-interface VacationDays {
-  [year: string]: VacationDayEntry;
-}
 
 /**
  * Lambda handler to update a user's vacation day attributes in Keycloak.
@@ -58,8 +48,30 @@ const updateVacationHandler: APIGatewayProxyHandlerV2 = async (event) => {
 
     const updatedVacationDays: Record<string, VacationDayEntry> = {};
 
+    
+ /**
+ * Formats a numeric value for a given year into a consistent "YYYY:NNN" string.
+ * This format helps with easy lookup and updating in Keycloak user attributes.
+ *
+ * Example:
+ *   formatValue("2024", 5) => "2024:005"
+ *
+ * @param year - The year as a string (e.g., "2024")
+ * @param value - The numeric value (e.g., vacation days)
+ * @returns Formatted string "YYYY:NNN"
+ */
+
     const formatValue = (year: string, value: number) =>
       `${year}:${String(value).padStart(3, "0")}`;
+
+    /**
+ * Updates a year-specific value in a string array (e.g., ["2023:020"]).
+ * If the year already exists in the array, its value is replaced.
+ * If not, the new "year:value" string is added.
+ *
+ * @param arr - Array of year-value strings (e.g., vacationDaysByYear)
+ * @param value - The new or updated "YYYY:NNN" string
+ */
 
     const updateEntry = (arr: string[], value: string) => {
       const index = arr.findIndex((v) => v.startsWith(`${value.split(":")[0]}:`));
@@ -75,6 +87,7 @@ const updateVacationHandler: APIGatewayProxyHandlerV2 = async (event) => {
         typeof data.total !== "number" ||
         typeof data.remaining !== "number"
       ) {
+        console.warn(`Invalid vacation data for year: ${year}`, { data });
         return;
       }
 

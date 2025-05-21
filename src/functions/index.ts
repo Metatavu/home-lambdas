@@ -33,7 +33,15 @@ export { default as getBoardMembersHandler } from "./memo-management/trello-card
 export { default as deleteTrelloCardHandler } from "./memo-management/trello-cards/delete-trello-card";
 export { default as createTrelloCardHandler } from "./memo-management/trello-cards/create-trello-card";
 export { default as createCommentHandler } from "./memo-management/trello-cards/comment-trello-card";
-export {default as getWorkHoursHandler} from "./severa/get-filtered-workhours";
+export { default as getWorkHoursHandler } from "./severa/get-filtered-workhours";
 export { default as getFlextimeHandler } from "./severa/get-flextime-by-user";
-export { default as getPhasesHandler} from "./severa/get-phases-by-project";
-export {default as getResourceAllocationHandler} from "./severa/get-resource-allocations-by-user";
+export { default as getPhasesHandler } from "./severa/get-phases-by-project";
+export { default as getResourceAllocationHandler } from "./severa/get-resource-allocations-by-user";
+export { default as listArticlesHandler } from "./wiki-documentation/list-articles";
+export { default as findArticleHandler } from "./wiki-documentation/find-article";
+export { default as findArticleByPathHandler } from "./wiki-documentation/find-article-by-path";
+export { default as createArticleHandler } from "./wiki-documentation/create-article";
+export { default as updateArticleHandler } from "./wiki-documentation/update-article";
+export { default as deleteArticleHandler } from "./wiki-documentation/delete-article";
+export { default as readArticleHandler } from "./wiki-documentation/read-article";
+export { default as uploadFileHandler } from "./wiki-documentation/upload-file";

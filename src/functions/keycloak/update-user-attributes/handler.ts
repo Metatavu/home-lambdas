@@ -9,7 +9,9 @@ import { optInSeveraUser } from "src/utils/severa";
  * @param event API Gateway event
  * @returns Response message as JSON string
  */
-const updateUserAttributeHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
+const updateUserAttributeHandler: APIGatewayProxyHandler = async (
+  event: APIGatewayProxyEvent
+) => {
   try {
     if (!event.body) {
       throw new Error("Request body is missing.");
@@ -24,53 +26,58 @@ const updateUserAttributeHandler: APIGatewayProxyHandler = async (event: APIGate
     if (!id || !email || !attributeName) {
       return {
         statusCode: 400,
-        body: JSON.stringify({ message: "Missing required parameters: id, email, or attributeName." })
+        body: JSON.stringify({
+          message: "Missing required parameters: id, email, or attributeName.",
+        }),
       };
     }
 
     if (!allowedAttributes.includes(attributeName)) {
       return {
         statusCode: 400,
-        body: JSON.stringify({ message: "Invalid attribute name." })
+        body: JSON.stringify({ message: "Invalid attribute name." }),
       };
     }
 
     const severaKeywords: Record<string, string[]> = {
-      "isSeveraOptIn": [attributeName]
+      isSeveraOptIn: [attributeName],
     };
     const severaUser = await optInSeveraUser(email, severaKeywords);
     if (!severaUser?.email || !severaUser?.guid) {
       return {
         statusCode: 404,
-        body: JSON.stringify({ message: "Severa user not found." })
+        body: JSON.stringify({ message: "Severa user not found." }),
       };
     }
 
     const keycloakAttributes: Record<string, string[]> = {
-      "severaUserId": [severaUser.guid]
+      severaUserId: [severaUser.guid],
     };
     const api = CreateKeycloakApiService();
-    const keycloakUpdateResult = await api.updateUserAttribute(id, keycloakAttributes);
+    const keycloakUpdateResult = await api.updateUserAttributes(
+      id,
+      keycloakAttributes
+    );
 
     return {
       statusCode: 200,
       body: JSON.stringify({
         id,
         updatedKeycloakAttributes: {
-          severaUserId: keycloakUpdateResult.updatedFields.severaUserId[0]
+          severaUserId: keycloakUpdateResult.updatedFields.severaUserId[0],
         },
         severaUser: {
           email: severaUser.email,
           severaUserId: severaUser.guid,
-          severaKeyword: severaUser.isSeveraOptIn
-        }
-      })
+          severaKeyword: severaUser.isSeveraOptIn,
+        },
+      }),
     };
   } catch (error) {
     return {
       statusCode: 500,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: error.message, stack: error.stack })
+      body: JSON.stringify({ message: error.message, stack: error.stack }),
     };
   }
 };

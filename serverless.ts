@@ -25,6 +25,7 @@ import listUsersHandler from "@/functions/keycloak/list-users";
 import findUserHandler from "@/functions/keycloak/find-user";
 import updateUserAttributeHandler from "@/functions/keycloak/update-user-attributes";
 import removeUserAttributeHanndler from "src/functions/keycloak/remove-user-attribute";
+import updateVacationHandler from "src/functions/keycloak/update-user-vacation";
 import createQuestionnaireHandler from "@/functions/questionnaire/create-questionnaire";
 import findQuestionnaireHandler from "@/functions/questionnaire/find-questionnaire";
 import deleteQuestionnaireHandler from "src/functions/questionnaire/delete-questionnaire";
@@ -45,8 +46,8 @@ import deleteVacationRequestHandler from "src/functions/vacation-request/delete-
 import findVacationRequestHandler from "src/functions/vacation-request/find-vacation-request";
 import listVacationRequestHandler from "src/functions/vacation-request/list-vacation-request";
 import updateVacationRequestHandler from "src/functions/vacation-request/update-vacation-request";
-import getResourceAllocationHandler  from "src/functions/severa/get-resource-allocations-by-user";
-import getPhasesHandler  from "src/functions/severa/get-phases-by-project";
+import getResourceAllocationHandler from "src/functions/severa/get-resource-allocations-by-user";
+import getPhasesHandler from "src/functions/severa/get-phases-by-project";
 import getWorkHoursHandler from "src/functions/severa/get-filtered-workhours";
 import listArticlesHandler from "src/functions/wiki-documentation/list-articles";
 import findArticleHandler from "src/functions/wiki-documentation/find-article";
@@ -63,13 +64,20 @@ const region = (env.AWS_DEFAULT_REGION as any) || "eu-north-1";
 const serverlessConfiguration: AWS = {
   service: "home-lambdas",
   frameworkVersion: "3",
-  plugins: ["serverless-esbuild", "serverless-deployment-bucket", "serverless-offline", "serverless-dynamodb"],
+  plugins: [
+    "serverless-esbuild",
+    "serverless-deployment-bucket",
+    "serverless-offline",
+    "serverless-dynamodb",
+  ],
   provider: {
     name: "aws",
     runtime: "nodejs16.x",
     region: region,
     deploymentBucket: {
-      name: isLocal ? "local-bucket" : `\${self:service}-\${opt:stage}-${region}-deploy`
+      name: isLocal
+        ? "local-bucket"
+        : `\${self:service}-\${opt:stage}-${region}-deploy`,
     },
     memorySize: 256,
     timeout: 60,
@@ -80,11 +88,11 @@ const serverlessConfiguration: AWS = {
     httpApi: {
       cors: true,
       authorizers: {
-        "homeKeycloakAuthorizer": {
+        homeKeycloakAuthorizer: {
           identitySource: "$request.header.Authorization",
           issuerUrl: env.AUTH_ISSUER,
-          audience: ["account"]
-        }
+          audience: ["account"],
+        },
       },
     },
     environment: {
@@ -112,10 +120,14 @@ const serverlessConfiguration: AWS = {
       SPLUNK_SCHEDULE_POLICY_NAME: env.SPLUNK_SCHEDULE_POLICY_NAME,
       SPLUNK_TEAM_ONCALL_URL: env.SPLUNK_TEAM_ONCALL_URL,
       ONCALL_WEEKLY_SCHEDULE_TIMER: env.ONCALL_WEEKLY_SCHEDULE_TIMER,
-      GOOGLE_MANAGEMENT_MINUTES_FOLDER_ID: env.GOOGLE_MANAGEMENT_MINUTES_FOLDER_ID,
-      GOOGLE_SERVICE_ACCOUNT_CLIENT_EMAIL: env.GOOGLE_SERVICE_ACCOUNT_CLIENT_EMAIL,
-      GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY_ID: env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY_ID,
-      GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY: env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY,
+      GOOGLE_MANAGEMENT_MINUTES_FOLDER_ID:
+        env.GOOGLE_MANAGEMENT_MINUTES_FOLDER_ID,
+      GOOGLE_SERVICE_ACCOUNT_CLIENT_EMAIL:
+        env.GOOGLE_SERVICE_ACCOUNT_CLIENT_EMAIL,
+      GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY_ID:
+        env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY_ID,
+      GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY:
+        env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY,
       GOOGLE_CLOUD_PROJECT_ID: env.GOOGLE_CLOUD_PROJECT_ID,
       SEVERA_DEMO_BASE_URL: env.SEVERA_DEMO_BASE_URL,
       SEVERA_DEMO_CLIENT_ID: env.SEVERA_DEMO_CLIENT_ID,
@@ -140,12 +152,16 @@ const serverlessConfiguration: AWS = {
           {
             Effect: "Allow",
             Action: ["s3:GetObject"],
-            Resource: isLocal ? "*" : "arn:aws:s3:::${opt:stage}-on-call-data/*"
+            Resource: isLocal
+              ? "*"
+              : "arn:aws:s3:::${opt:stage}-on-call-data/*",
           },
           {
             Effect: "Allow",
             Action: ["s3:PutObject"],
-            Resource: isLocal ? "*" : "arn:aws:s3:::${opt:stage}-on-call-data/*"
+            Resource: isLocal
+              ? "*"
+              : "arn:aws:s3:::${opt:stage}-on-call-data/*",
           },
           {
             Effect: "Allow",
@@ -202,6 +218,7 @@ const serverlessConfiguration: AWS = {
     findUserHandler,
     updateUserAttributeHandler,
     removeUserAttributeHanndler,
+    updateVacationHandler,
     createQuestionnaireHandler,
     findQuestionnaireHandler,
     deleteQuestionnaireHandler,
@@ -262,9 +279,9 @@ const serverlessConfiguration: AWS = {
           KeySchema: [{ AttributeName: "id", KeyType: "HASH" }],
           ProvisionedThroughput: {
             ReadCapacityUnits: 1,
-            WriteCapacityUnits: 1
+            WriteCapacityUnits: 1,
           },
-        }
+        },
       },
       Software: {
         Type: "AWS::DynamoDB::Table",
@@ -298,9 +315,9 @@ const serverlessConfiguration: AWS = {
           KeySchema: [{ AttributeName: "id", KeyType: "HASH" }],
           ProvisionedThroughput: {
             ReadCapacityUnits: 1,
-            WriteCapacityUnits: 1
+            WriteCapacityUnits: 1,
           },
-        }
+        },
       },
       Articles: {
         Type: "AWS::DynamoDB::Table",

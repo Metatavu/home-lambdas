@@ -4,7 +4,7 @@
   },
   "body": "{\"email\": \"*insert the email of the user whose attributes are to be updated.*\"}",
   "pathParameters": {
-    "id": "*insert the keycloak id of the user whose attributes are to be updated.*",
+    "severaUserId": "0c6b0b15-15eb-a77b-ad09-61527abc7be6",
     "attributeName": "isSeveraOptIn"
   },
   "queryStringParameters": {

@@ -21,6 +21,7 @@ export interface SeveraApiService {
   getWorkDays: (severaUserId: string) => Promise<SeveraResponseWorkDays>;
   getOptInUsers: () => Promise<SeveraResponseUser[]>;
   getResourceAllocations: () => Promise<SeveraResponseResourceAllocation>;
+  getUser: (severaUserId: string) => Promise<SeveraResponseUser>;
 }
 
 /**
@@ -224,7 +225,32 @@ export const CreateSeveraApiService = (): SeveraApiService => {
         throw new Error(`Failed to fetch work hours: ${response.status} - ${response.statusText}`);
       }
       return response.json();
-    }
+    },
+    
+    /**
+   * Gets a specific user from Severa by their user ID.
+   *
+   * @param severaUserId - Severa user ID
+   * @returns Severa user object, including keywords
+   */
+    getUser: async (severaUserId: string) => {
+      const url = `${baseUrl}/v1/users/${severaUserId}`;
+      
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${await getSeveraAccessToken()}`,
+          Client_Id: process.env.SEVERA_DEMO_CLIENT_ID,
+          "Content-Type": "application/json"
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch Severa user: ${response.status} - ${response.statusText}`);
+      }
+
+      return response.json();
+    },
   };
 };
 

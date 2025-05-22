@@ -8,7 +8,8 @@ interface SeveraResponseUser {
   lastName: string;
   workContract: {
     dailyHours: number;
-  }
+  };
+  keywords?: { value: string }[];
 }
 
 export default SeveraResponseUser;

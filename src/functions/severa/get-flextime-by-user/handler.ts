@@ -4,10 +4,10 @@ import { middyfy } from "src/libs/lambda";
 import { DateTime } from "luxon";
 
 /**
- * Lambda handler for getting flextime by Severa user ID,
- * but only if the user has opted in (has "isOptIn" keyword).
+ * Lambda handler for getting flextime by severaUserId,
+ * but only if the user has opted in (has "isSeveraOptIn" keyword).
  *
- * @param event - API Gateway event containing the Severa user ID
+ * @param event - API Gateway event containing the severaUserId
  * @returns Flextime data if user has opted in
  */
 export const getFlextimeHandler: APIGatewayProxyHandler = async (event) => {
@@ -41,6 +41,15 @@ export const getFlextimeHandler: APIGatewayProxyHandler = async (event) => {
       return {
         statusCode: 403,
         body: JSON.stringify({ message: "User has not opted in to flextime tracking." }),
+      };
+    }
+
+    const keycloakEmail = event.requestContext?.authorizer?.claims?.email || "test-user@example.fi";
+    
+    if (severaUser.email !== keycloakEmail) {
+      return {
+        statusCode: 403,
+        body: JSON.stringify({ message: "You can only view your own flextime data." }),
       };
     }
 

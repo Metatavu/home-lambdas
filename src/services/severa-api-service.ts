@@ -234,7 +234,8 @@ export const CreateSeveraApiService = (): SeveraApiService => {
    * @returns Severa user object, including keywords
    */
     getUser: async (severaUserId: string) => {
-      const url = `${baseUrl}/v1/users/${severaUserId}`;
+    const optInKeywordId = "8e7b363e-aa8c-34b1-478f-0a9633848fde";
+    const url = `${baseUrl}/v1/users/${severaUserId}?keywordGuids=${optInKeywordId}`;
       
       const response = await fetch(url, {
         method: "GET",

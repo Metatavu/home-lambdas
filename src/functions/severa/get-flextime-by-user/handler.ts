@@ -33,18 +33,8 @@ export const getFlextimeHandler: APIGatewayProxyHandler = async (event) => {
       };
     }
 
-    const isOptedIn = severaUser.keywords?.some(
-      (keyword) => keyword.value === "isSeveraOptIn"
-    );
-
-    if (!isOptedIn) {
-      return {
-        statusCode: 403,
-        body: JSON.stringify({ message: "User has not opted in to flextime tracking." }),
-      };
-    }
-
-    const keycloakEmail = event.requestContext?.authorizer?.claims?.email || "test-user@example.fi";
+    const testUserEmail = process.env.SEVERA_TEST_USER_EMAIL;
+    const keycloakEmail = testUserEmail || event.requestContext?.authorizer?.claims?.email;
     
     if (severaUser.email !== keycloakEmail) {
       return {

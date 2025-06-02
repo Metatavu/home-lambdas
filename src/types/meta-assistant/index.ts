@@ -1,6 +1,6 @@
-import { ChatPostMessageResponse } from "@slack/web-api/dist/response/ChatPostMessageResponse";
-import { DateTime } from "luxon";
-import { PersonTotalTime } from "src/generated/client/api";
+import type { ChatPostMessageResponse } from "@slack/web-api/dist/response/ChatPostMessageResponse";
+import type { DateTime } from "luxon";
+import type { PersonTotalTime } from "src/generated/client/api";
 
 /**
  * Serverless schema type
@@ -17,18 +17,16 @@ export default {
  * DailyCombinedData interface
  */
 export interface DailyCombinedData {
-  name: string;
+  userId: string;
   firstName: string;
-  personId: number;
-  minimumBillableRate: number;
-  expected: number;
-  logged: number;
-  loggedProjectTime: number;
-  billableProjectTime: number;
-  nonBillableProjectTime: number;
-  internalTime: number;
+  lastName: string;
   date: string;
-  balance: number;
+  totalLoggedTime: number;
+  expectedHours: number;
+  projectTime: number;
+  minimumBillableRate: number;
+  totalBillableTime: number;
+  nonBillableProject: number;
   slackId?: string;
 }
 
@@ -99,26 +97,20 @@ export interface DailyMessageData {
   message: string;
   name: string;
   displayDate?: string;
-  displayLogged: string;
-  displayLoggedProject: string;
+  displayTotalLoggedTime: string;
   displayExpected: string;
-  displayBillableProject: string;
   displayNonBillableProject: string;
-  displayInternal: string;
-  billableHoursPercentage: string;
 }
 
 /**
  * Interface for DisplayValues
  */
 export interface DisplayValues {
-  logged: string;
-  loggedProject: string;
-  expected: string;
-  difference: string;
-  billableProject: string;
+  totalLoggedTime: string;
+  expectedHours: string;
+  projectTime: string;
+  totalBillableTime: string;
   nonBillableProject: string;
-  internal: string;
 }
 
 /**

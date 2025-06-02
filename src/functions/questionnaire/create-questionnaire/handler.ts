@@ -19,9 +19,9 @@ export const createQuestionnaireHandler: ValidatedEventAPIGatewayProxyEvent<type
     };
   }
   
-  const { title, description, options, tags, passedUsers, passScore } = event.body;
+  const { title, description, questions, tags, passedUsers, passScore } = event.body;
   
-  if (!title || !description || !options || !passScore) {
+  if (!title || !description || !questions || !passScore) {
     return {
       statusCode: 400,
       body: JSON.stringify({ error: "Some required data is missing !" })
@@ -36,7 +36,7 @@ export const createQuestionnaireHandler: ValidatedEventAPIGatewayProxyEvent<type
       id: newQuestionnaireId,
       title: title,
       description: description,
-      options: options,
+      questions: questions,
       tags: tags,
       passedUsers: passedUsers,
       passScore: passScore

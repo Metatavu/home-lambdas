@@ -2,14 +2,13 @@ import { S3 } from "aws-sdk"
 import fetch from "node-fetch";
 import { DateTime } from "luxon";
 import S3Utils from "@libs/s3-utils";
-import { middyfy } from "@libs/lambda";
 import Config from "src/app/config";
 import { OnCallEntry, SplunkSchedule } from "src/types/on-call";
 import { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
 
 /**
  * Resolve next week from schedule
- * 
+ *
  * @param schedule schedule from Splunk
  * @param nextThursday Next thursday, DateTime of 4 days after scheduled function call
  * @param policyName name of policy
@@ -33,11 +32,10 @@ const getNextWeekFromSchedule = (schedule: SplunkSchedule, nextThursday: DateTim
 
 /**
  * Lambda for checking who is on call this week
- * 
+ *
  * @param event event
  */
 export const weeklyCheckHandler : ValidatedEventAPIGatewayProxyEvent<any> = async () => {
- 
   const { apiId, apiKey, schedulePolicyName, teamOnCallUrl } = Config.get().splunkApi
 
   const splunkTeamOnCallUrl = teamOnCallUrl
@@ -79,4 +77,4 @@ export const weeklyCheckHandler : ValidatedEventAPIGatewayProxyEvent<any> = asyn
   };
 };
 
-export const main = middyfy(weeklyCheckHandler);
+export const main = weeklyCheckHandler;

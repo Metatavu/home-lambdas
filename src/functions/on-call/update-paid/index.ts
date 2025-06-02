@@ -8,7 +8,7 @@ export default {
         method: 'post',
         path: '/update-paid',
         authorizer: {
-          name: "timebankKeycloakAuthorizer"
+          name: "homeKeycloakAuthorizer"
         }
       },
     },

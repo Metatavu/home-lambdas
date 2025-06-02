@@ -8,7 +8,7 @@ export default {
         method: 'get',
         path: '/on-call',
         authorizer: {
-          name: "timebankKeycloakAuthorizer"
+          name: "homeKeycloakAuthorizer"
         }
       }
     }

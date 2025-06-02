@@ -1,6 +1,6 @@
 import { DocumentClient } from "aws-sdk/clients/dynamodb";
 import { v4 as uuidv4 } from "uuid";
-import { SoftwareModel, Status } from "../schemas/software-registry/software";
+import { SoftwareModel, Status } from "../models/software";
 
 const tableName = "SoftwareRegistry";
 

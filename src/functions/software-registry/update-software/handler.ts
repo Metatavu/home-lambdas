@@ -2,7 +2,7 @@ import { DocumentClient } from "aws-sdk/clients/dynamodb";
 import SoftwareService from "src/database/services/software-service";
 import { middyfy } from "src/libs/lambda";
 import { getAuthDataFromToken } from "src/libs/auth-utils"
-import { SoftwareModel } from "src/database/schemas/software-registry/software";
+import { SoftwareModel } from "src/database/models/software";
 import { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
 
 const dynamoDb = new DocumentClient();
@@ -10,7 +10,7 @@ const softwareService = new SoftwareService(dynamoDb);
 
 /**
  * Handler to update a software item in the DynamoDB table.
- * 
+ *
  * @param event - API Gateway event containing the request body and path parameters
  * @returns Response object with status code and body
  */

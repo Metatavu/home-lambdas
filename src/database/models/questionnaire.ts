@@ -5,7 +5,7 @@ interface QuestionnaireModel {
   id: string;
   title: string;
   description: string;
-  options: Question[];
+  questions: Question[];
   tags?: string[];
   passedUsers?: number[];
   passScore: number;
@@ -15,16 +15,16 @@ interface QuestionnaireModel {
  * DynamoDB model for Question
  */
 interface Question {
-  question: string;
-  options: Option[];
+  questionText: string;
+  answerOptions: AnswerOption[];
 }
 
 /**
  * DynamoDB model for Option
  */
-interface Option {
+interface AnswerOption {
   label: string;
-  value: boolean;
+  isCorrect: boolean;
 }
 
 export default QuestionnaireModel;

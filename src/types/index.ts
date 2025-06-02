@@ -13,9 +13,6 @@ export interface Configuration {
     auth: {
         issuer: string;
     },
-    api: {
-        apiKey: string;
-    },
     onCall: {
         bucketName: string;
     },
@@ -28,5 +25,8 @@ export interface Configuration {
         apiId: string,
         teamOnCallUrl: string,
         schedulePolicyName: string
+    }
+    testUser: {
+        email: string
     }
 }

@@ -8,7 +8,7 @@ export default {
         method: 'get',
         path: '/getDealById/{dealId}',
         authorizer: {
-          name: "timebankKeycloakAuthorizer"
+          name: "homeKeycloakAuthorizer"
         }
       },
     },

@@ -10,11 +10,6 @@ import addInterestToDealHandler from "@functions/pipedrive/add-interest-to-deal"
 import addInterestToLeadHandler from "@functions/pipedrive/add-interest-to-lead";
 import removeInterestFromDealHandler from "@functions/pipedrive/remove-interest-from-deal";
 import removeInterestFromLeadHandler from "@functions/pipedrive/remove-interest-from-lead";
-import listAllocationsHandler from "src/functions/forecast/list-allocations";
-import listProjectsHandler from "src/functions/forecast/list-projects";
-import listTasksHandler from "src/functions/forecast/list-tasks";
-import listTimeEntriesHandler from "src/functions/forecast/list-time-entries";
-import listProjectSprintsHandler from "src/functions/forecast/list-project-sprints";
 import sendDailyMessage from "@functions/meta-assistant/send-daily-message";
 import sendWeeklyMessage from "@functions/meta-assistant/send-weekly-message";
 import updatePaidHandler from "@/functions/on-call/update-paid";
@@ -28,26 +23,63 @@ import updateSoftwareHandler from "@/functions/software-registry/update-software
 import deleteSoftwareHandler from "@/functions/software-registry/delete-software";
 import listUsersHandler from "@/functions/keycloak/list-users";
 import findUserHandler from "@/functions/keycloak/find-user";
+import updateUserAttributeHandler from "@/functions/keycloak/update-user-attributes";
+import removeUserAttributeHanndler from "src/functions/keycloak/remove-user-attribute";
+import updateVacationHandler from "src/functions/keycloak/update-user-vacation";
 import createQuestionnaireHandler from "@/functions/questionnaire/create-questionnaire";
 import findQuestionnaireHandler from "@/functions/questionnaire/find-questionnaire";
 import deleteQuestionnaireHandler from "src/functions/questionnaire/delete-questionnaire";
 import listQuestionnaireHandler from "src/functions/questionnaire/list-questionnaire";
 import updateQuestionnaireHandler from "src/functions/questionnaire/update-questionnaire";
+import listMemoPdfHandler from "@/functions/memo-management/drive-memos/get-memos-pdf";
+import getTranslatedMemoPdfHandler from "@/functions/memo-management/drive-memos/get-translated-memo-pdf";
+import getSummaryMemoPdfHandler from "@/functions/memo-management/drive-memos/get-summary-memo-pdf";
+import getContentPdfHandler from "@/functions/memo-management/drive-memos/get-content-pdf";
+import getTrelloCardsOnListHandler from "@/functions/memo-management/trello-cards/get-trello-cards";
+import getBoardMembersHandler from "@/functions/memo-management/trello-cards/get-board-members";
+import deleteTrelloCardHandler from "@/functions/memo-management/trello-cards/delete-trello-card";
+import createTrelloCardHandler from "@/functions/memo-management/trello-cards/create-trello-card";
+import createCommentHandler from "@/functions/memo-management/trello-cards/comment-trello-card";
+import getFlextimeHandler from "src/functions/severa/get-flextime-by-user";
+import createVacationRequestHandler from "src/functions/vacation-request/create-vacation-request";
+import deleteVacationRequestHandler from "src/functions/vacation-request/delete-vacation-request";
+import findVacationRequestHandler from "src/functions/vacation-request/find-vacation-request";
+import listVacationRequestHandler from "src/functions/vacation-request/list-vacation-request";
+import updateVacationRequestHandler from "src/functions/vacation-request/update-vacation-request";
+import getResourceAllocationHandler from "src/functions/severa/get-resource-allocations-by-user";
+import getPhasesHandler from "src/functions/severa/get-phases-by-project";
+import getWorkHoursHandler from "src/functions/severa/get-filtered-workhours";
+import listArticlesHandler from "src/functions/wiki-documentation/list-articles";
+import findArticleHandler from "src/functions/wiki-documentation/find-article";
+import findArticleByPathHandler from "src/functions/wiki-documentation/find-article-by-path";
+import createArticleHandler from "src/functions/wiki-documentation/create-article";
+import updateArticleHandler from "src/functions/wiki-documentation/update-article";
+import deleteArticleHandler from "src/functions/wiki-documentation/delete-article";
+import readArticleHandler from "src/functions/wiki-documentation/read-article";
+import uploadFileHandler from "src/functions/wiki-documentation/upload-file";
 
 const isLocal = process.env.STAGE === "local";
+const region = (env.AWS_DEFAULT_REGION as any) || "eu-north-1";
 
 const serverlessConfiguration: AWS = {
-  service: 'home-lambdas',
-  frameworkVersion: '3',
-  plugins: ['serverless-esbuild', 'serverless-deployment-bucket', 'serverless-offline', 'serverless-dynamodb'],
+  service: "home-lambdas",
+  frameworkVersion: "3",
+  plugins: [
+    "serverless-esbuild",
+    "serverless-deployment-bucket",
+    "serverless-offline",
+    "serverless-dynamodb",
+  ],
   provider: {
-    name: 'aws',
-    runtime: 'nodejs16.x',
-    region: (env.AWS_DEFAULT_REGION as any) || "us-east-1",
+    name: "aws",
+    runtime: "nodejs16.x",
+    region: region,
     deploymentBucket: {
-      name: isLocal ? "local-bucket" : "${self:service}-${opt:stage}-deploy"
+      name: isLocal
+        ? "local-bucket"
+        : `\${self:service}-\${opt:stage}-${region}-deploy`,
     },
-    memorySize: 128,
+    memorySize: 256,
     timeout: 60,
     apiGateway: {
       minimumCompressionSize: 1024,
@@ -56,23 +88,21 @@ const serverlessConfiguration: AWS = {
     httpApi: {
       cors: true,
       authorizers: {
-        "timebankKeycloakAuthorizer": {
+        homeKeycloakAuthorizer: {
           identitySource: "$request.header.Authorization",
           issuerUrl: env.AUTH_ISSUER,
-          audience: ["account"]
-        }
+          audience: ["account"],
+        },
       },
     },
     environment: {
-      AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1',
-      NODE_OPTIONS: '--enable-source-maps --stack-trace-limit=1000',
-      FORECAST_API_KEY: env.FORECAST_API_KEY,
+      AWS_NODEJS_CONNECTION_REUSE_ENABLED: "1",
+      NODE_OPTIONS: "--enable-source-maps --stack-trace-limit=1000",
+      SEVERA_TEST_USER_EMAIL: env.SEVERA_TEST_USER_EMAIL,
       AUTH_ISSUER: env.AUTH_ISSUER,
       PIPEDRIVE_API_KEY: env.PIPEDRIVE_API_KEY,
       PIPEDRIVE_API_URL: env.PIPEDRIVE_API_URL,
       METATAVU_BOT_TOKEN: env.METATAVU_BOT_TOKEN,
-      TIMEBANK_BASE_URL: env.TIMEBANK_BASE_URL,
-      FORECAST_BASE_URL: env.FORECAST_BASE_URL,
       KEYCLOAK_CLIENT_SECRET: env.KEYCLOAK_CLIENT_SECRET,
       KEYCLOAK_BASE_URL: env.KEYCLOAK_BASE_URL,
       KEYCLOAK_REALM: env.KEYCLOAK_REALM,
@@ -90,7 +120,26 @@ const serverlessConfiguration: AWS = {
       SPLUNK_SCHEDULE_POLICY_NAME: env.SPLUNK_SCHEDULE_POLICY_NAME,
       SPLUNK_TEAM_ONCALL_URL: env.SPLUNK_TEAM_ONCALL_URL,
       ONCALL_WEEKLY_SCHEDULE_TIMER: env.ONCALL_WEEKLY_SCHEDULE_TIMER,
+      GOOGLE_MANAGEMENT_MINUTES_FOLDER_ID:
+        env.GOOGLE_MANAGEMENT_MINUTES_FOLDER_ID,
+      GOOGLE_SERVICE_ACCOUNT_CLIENT_EMAIL:
+        env.GOOGLE_SERVICE_ACCOUNT_CLIENT_EMAIL,
+      GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY_ID:
+        env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY_ID,
+      GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY:
+        env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY,
+      GOOGLE_CLOUD_PROJECT_ID: env.GOOGLE_CLOUD_PROJECT_ID,
+      SEVERA_DEMO_BASE_URL: env.SEVERA_DEMO_BASE_URL,
+      SEVERA_DEMO_CLIENT_ID: env.SEVERA_DEMO_CLIENT_ID,
+      SEVERA_DEMO_CLIENT_SECRET: env.SEVERA_DEMO_CLIENT_SECRET,
       DYNAMODB_ENDPOINT: isLocal ? "http://localhost:8000" : undefined,
+      TRELLO_API_KEY: env.TRELLO_API_KEY,
+      TRELLO_TOKEN: env.TRELLO_TOKEN,
+      TRELLO_MANAGEMENT_BOARD_ID: env.TRELLO_MANAGEMENT_BOARD_ID,
+      CHANNEL_ID: env.CHANNEL_ID,
+      OPENAI_API_KEY: env.OPENAI_API_KEY,
+      HOME_BUCKET_NAME: "${self:custom.s3BucketName.dev}",
+      HOME_BUCKET_REGION: region
     },
     s3: {
       "on-call": {
@@ -103,12 +152,24 @@ const serverlessConfiguration: AWS = {
           {
             Effect: "Allow",
             Action: ["s3:GetObject"],
-            Resource: isLocal ? "*" : "arn:aws:s3:::${opt:stage}-on-call-data/*"
+            Resource: isLocal
+              ? "*"
+              : "arn:aws:s3:::${opt:stage}-on-call-data/*",
           },
           {
             Effect: "Allow",
             Action: ["s3:PutObject"],
-            Resource: isLocal ? "*" : "arn:aws:s3:::${opt:stage}-on-call-data/*"
+            Resource: isLocal
+              ? "*"
+              : "arn:aws:s3:::${opt:stage}-on-call-data/*",
+          },
+          {
+            Effect: "Allow",
+            Action: [
+              "s3:GetObject",
+              "s3:PutObject"
+            ],
+            Resource: isLocal ? "*" : "arn:aws:s3:::${self:custom.s3BucketName.dev}/*"
           },
           {
             Effect: "Allow",
@@ -119,22 +180,15 @@ const serverlessConfiguration: AWS = {
               "dynamodb:GetItem",
               "dynamodb:PutItem",
               "dynamodb:UpdateItem",
-              "dynamodb:DeleteItem",
+              "dynamodb:DeleteItem"
             ],
-            Resource: isLocal ? "*" : "arn:aws:dynamodb:${self:provider.region}:*:table/SoftwareRegistry"
-          },
-          {
-            Effect: "Allow",
-            Action: [
-              "dynamodb:DescribeTable",
-              "dynamodb:Query",
-              "dynamodb:Scan",
-              "dynamodb:GetItem",
-              "dynamodb:PutItem",
-              "dynamodb:UpdateItem",
-              "dynamodb:DeleteItem",
-            ],
-            Resource: isLocal ? "*" : "arn:aws:dynamodb:${self:provider.region}:*:table/Questionnaires"
+            Resource: isLocal ? "*" : [
+              "arn:aws:dynamodb:${self:provider.region}:*:table/SoftwareRegistry",
+              "arn:aws:dynamodb:${self:provider.region}:*:table/Questionnaires",
+              "arn:aws:dynamodb:${self:provider.region}:*:table/VacationRequests",
+              "arn:aws:dynamodb:${self:provider.region}:*:table/Articles",
+              "arn:aws:dynamodb:${self:provider.region}:*:table/Articles/index/GSI_Path"
+            ]
           }
         ]
       }
@@ -149,11 +203,6 @@ const serverlessConfiguration: AWS = {
     addInterestToLeadHandler,
     removeInterestFromDealHandler,
     removeInterestFromLeadHandler,
-    listAllocationsHandler,
-    listProjectsHandler,
-    listTasksHandler,
-    listTimeEntriesHandler,
-    listProjectSprintsHandler,
     listOnCallDataHandler,
     weeklyCheckHandler,
     sendDailyMessage,
@@ -167,22 +216,55 @@ const serverlessConfiguration: AWS = {
     deleteSoftwareHandler,
     listUsersHandler,
     findUserHandler,
+    updateUserAttributeHandler,
+    removeUserAttributeHanndler,
+    updateVacationHandler,
     createQuestionnaireHandler,
     findQuestionnaireHandler,
     deleteQuestionnaireHandler,
     listQuestionnaireHandler,
     updateQuestionnaireHandler,
+    listMemoPdfHandler,
+    getTranslatedMemoPdfHandler,
+    getSummaryMemoPdfHandler,
+    getTrelloCardsOnListHandler,
+    getBoardMembersHandler,
+    deleteTrelloCardHandler,
+    createTrelloCardHandler,
+    createCommentHandler,
+    getContentPdfHandler,
+    getFlextimeHandler,
+    createVacationRequestHandler,
+    deleteVacationRequestHandler,
+    findVacationRequestHandler,
+    listVacationRequestHandler,
+    updateVacationRequestHandler,
+    getResourceAllocationHandler,
+    getPhasesHandler,
+    getWorkHoursHandler,
+    listArticlesHandler,
+    findArticleHandler,
+    findArticleByPathHandler,
+    createArticleHandler,
+    updateArticleHandler,
+    deleteArticleHandler,
+    readArticleHandler,
+    uploadFileHandler
   },
   package: { individually: true },
   custom: {
+    s3BucketName: {
+      dev: env.HOME_BUCKET_NAME_DEV,
+      production: env.HOME_BUCKET_NAME_PROD
+    },
     esbuild: {
       bundle: true,
       minify: false,
       sourcemap: true,
-      exclude: ['aws-sdk'],
-      target: 'node16',
-      define: { 'require.resolve': undefined },
-      platform: 'node',
+      exclude: ["aws-sdk"],
+      target: "node16",
+      define: { "require.resolve": undefined },
+      platform: "node",
       concurrency: 10,
     },
   },
@@ -197,25 +279,25 @@ const serverlessConfiguration: AWS = {
           KeySchema: [{ AttributeName: "id", KeyType: "HASH" }],
           ProvisionedThroughput: {
             ReadCapacityUnits: 1,
-            WriteCapacityUnits: 1
+            WriteCapacityUnits: 1,
           },
-        }
+        },
       },
       Software: {
-        Type: 'AWS::DynamoDB::Table',
-        DeletionPolicy: 'Delete',
+        Type: "AWS::DynamoDB::Table",
+        DeletionPolicy: "Delete",
         Properties: {
-          TableName: 'SoftwareRegistry',
+          TableName: "SoftwareRegistry",
           AttributeDefinitions: [
             {
-              AttributeName: 'id',
-              AttributeType: 'S',
+              AttributeName: "id",
+              AttributeType: "S",
             },
           ],
           KeySchema: [
             {
-              AttributeName: 'id',
-              KeyType: 'HASH',
+              AttributeName: "id",
+              KeyType: "HASH",
             },
           ],
           ProvisionedThroughput: {
@@ -223,6 +305,46 @@ const serverlessConfiguration: AWS = {
             WriteCapacityUnits: 1,
           },
         },
+      },
+      VacationRequests: {
+        Type: "AWS::DynamoDB::Table",
+        DeletionPolicy: "Delete",
+        Properties: {
+          TableName: "VacationRequests",
+          AttributeDefinitions: [{ AttributeName: "id", AttributeType: "S" }],
+          KeySchema: [{ AttributeName: "id", KeyType: "HASH" }],
+          ProvisionedThroughput: {
+            ReadCapacityUnits: 1,
+            WriteCapacityUnits: 1,
+          },
+        },
+      },
+      Articles: {
+        Type: "AWS::DynamoDB::Table",
+        DeletionPolicy: "Delete",
+        Properties: {
+          TableName: "Articles",
+          AttributeDefinitions: [
+            { AttributeName: "id", AttributeType: "S" },
+            { AttributeName: "path", AttributeType: "S" }
+          ],
+          KeySchema: [{ AttributeName: "id", KeyType: "HASH" }],
+          GlobalSecondaryIndexes: [
+            {
+              IndexName: "GSI_Path",
+              KeySchema: [{ AttributeName: "path", KeyType: "HASH" }],
+              Projection: { ProjectionType: "KEYS_ONLY" },
+              ProvisionedThroughput: {
+                ReadCapacityUnits: 1,
+                WriteCapacityUnits: 1
+              }
+            }
+          ],
+          ProvisionedThroughput: {
+            ReadCapacityUnits: 1,
+            WriteCapacityUnits: 1
+          }
+        }
       },
     },
   },

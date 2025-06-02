@@ -1,6 +1,6 @@
-import { Deal } from "../schemas/pipedrive/deal";
-import { Lead } from "../schemas/pipedrive/lead";
-import { Interest } from "../schemas/pipedrive/interest";
+import { Deal } from "../../types/pipedrive/deal";
+import { Lead } from "../../types/pipedrive/lead";
+import { Interest } from "../../types/pipedrive/interest";
 import Config from "src/app/config";
 import fetch from "node-fetch";
 /**

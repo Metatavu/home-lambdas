@@ -1,67 +1,79 @@
-import { ValidatedAPIGatewayProxyEvent, ValidatedEventAPIGatewayProxyEvent, formatJSONResponse, DailyHandlerResponse } from "src/libs/api-gateway";
-import { middyfy } from "src/libs/lambda";
-import schema from "src/types/meta-assistant/index";
-import TimeBankApiProvider from "src/meta-assistant/timebank/timebank-api";
-import TimebankUtilities from "src/meta-assistant/timebank/timebank-utils";
+import { type ValidatedAPIGatewayProxyEvent, type ValidatedEventAPIGatewayProxyEvent, formatJSONResponse, type DailyHandlerResponse } from "src/libs/api-gateway";
+import type { DailyCombinedData } from "src/types/meta-assistant/index";
+import type schema from "src/types/meta-assistant/index";
 import SlackUtilities from "src/meta-assistant/slack/slack-utils";
-import { DailyEntry } from "src/generated/client/api";
-import ForecastApiUtilities from "src/meta-assistant/forecastapi/forecast-api";
 import TimeUtilities from "src/meta-assistant/generic/time-utils";
-import Auth from "src/meta-assistant/auth/auth-provider";
+import { CreateSeveraApiService } from "src/services/severa-api-service";
+import type SeveraResponsePreviousWorkHours from "src/types/severa/previousWorkHours/severaResponsePreviousWorkHours";
+import type SeveraResponseUser from "src/types/severa/user/severaResponseUser";
 
 /**
- * AWS-less handler for sendDailyMessage
+ * Handler for sendDailyMessage
  *
  * @returns Promise of DailyHandlerResponse
  */
 export const sendDailyMessageHandler = async (): Promise<DailyHandlerResponse> => {
   try {
-    const { accessToken } = await Auth.getAccessToken();
-    if (!accessToken) {
-      throw new Error("Timebank authentication failed");
-    }
-
+    const severaApi = CreateSeveraApiService();
+    const severaUsers = await severaApi.getOptInUsers() as SeveraResponseUser[];
     const previousWorkDays = TimeUtilities.getPreviousTwoWorkdays();
-    const { yesterday, dayBeforeYesterday } = previousWorkDays;
-
-    const timebankUsers = await TimeBankApiProvider.getTimebankUsers(accessToken);
-    const slackUsers = await SlackUtilities.getSlackUsers();
-    const timeRegistrations = await ForecastApiUtilities.getTimeRegistrations(dayBeforeYesterday);
-
-    const nonProjectTimes = await ForecastApiUtilities.getNonProjectTime();
-
-    if (!timebankUsers) {
-      throw new Error("No persons retrieved from Timebank");
+    const workHours = await severaApi.getPreviousWorkHours() as SeveraResponsePreviousWorkHours[];
+    if (!severaUsers) {
+      throw new Error("No users retrieved from Severa");
     }
 
-    const dailyEntries: DailyEntry[] = [];
+    // Get the user's guids from workHours
+    const workHoursUserGuids = workHours.map(hour => hour.user.guid);
 
-    for (const timebankUser of timebankUsers) {
-      const dailyEntry = await TimeBankApiProvider.getDailyEntries(timebankUser.id, yesterday, yesterday, accessToken);
-      if (dailyEntry && !dailyEntry.isVacation) {
-        dailyEntries.push(dailyEntry);
-      }
-    }
+    // Filter severaUsers to include only those who worked in the selected time frame
+    const filteredSeveraUsers = severaUsers.filter(user => workHoursUserGuids.includes(user.guid));
 
-    const filteredTimebankUsers = timebankUsers.filter(person => dailyEntries.find(dailyEntry => dailyEntry.person === person.id));
+    // Combine user data
+    const combinedUserData: DailyCombinedData[] = await Promise.all(
+      filteredSeveraUsers.map(async user => {
+        const userWorkHours = workHours.filter(hour => hour.user.guid === user.guid);
+        const workDays = await severaApi.getWorkDays(user.guid);
+        const projectTime = userWorkHours[0]?.quantity || 0;
+        const totalLoggedTime = workDays[0]?.enteredHours || 0;
+        const expectedHours = user.workContract.dailyHours || 0;
+        const minimumBillableRate = 75;
 
-    const dailyCombinedData = TimebankUtilities.combineDailyData(filteredTimebankUsers, dailyEntries, slackUsers);
-    const messagesSent = await SlackUtilities.postDailyMessageToUsers(dailyCombinedData, timeRegistrations, previousWorkDays, nonProjectTimes);
+        let totalBillableTime = 0;
 
-    const errors = messagesSent.filter(messageSent => messageSent.response.error);
+        userWorkHours.forEach(hour => {
+          if (hour.isBillable && hour.user.guid === user.guid) {
+            totalBillableTime += hour.quantity;
+          }
+        });
 
-    if (errors.length) {
-      let errorMessage = "Error while posting slack messages, ";
+        const nonBillableProject = totalLoggedTime - totalBillableTime;
 
-      errors.forEach(error => {
-        errorMessage += `${error.response.error}\n`;
-      });
-      console.error(errorMessage);
-    }
+        // Find the corresponding Slack user
+        const slackUser = await SlackUtilities.findSlackUser(user.firstName, user.lastName);
+
+        const result = {
+          userId: user.guid,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          totalLoggedTime: totalLoggedTime,
+          expectedHours: expectedHours,
+          projectTime: projectTime,
+          minimumBillableRate: minimumBillableRate,
+          totalBillableTime: totalBillableTime,
+          nonBillableProject: nonBillableProject,
+          date: previousWorkDays.yesterday.toISO(),
+          slackId: slackUser ? slackUser.id : null
+        };
+
+        return result;
+      })
+    );
+
+    const messageSent = await SlackUtilities.postDailyMessageToUsers(combinedUserData, previousWorkDays);
 
     return {
-      message: "Everything went well sending the daily, see data for message breakdown...",
-      data: messagesSent
+      message: "Daily messages constructed successfully",
+      data: messageSent
     };
   } catch (error) {
     console.error(error.toString());

@@ -15,7 +15,7 @@ const updateQuestionnaireHandler: ValidatedEventAPIGatewayProxyEvent<typeof ques
   const {
     title,
     description,
-    options,
+    questions,
     tags,
     passedUsers,
     passScore,
@@ -40,7 +40,7 @@ const updateQuestionnaireHandler: ValidatedEventAPIGatewayProxyEvent<typeof ques
     id: existingQuestionnaire.id,
     title: title,
     description: description,
-    options: options,
+    questions: questions,
     tags: tags,
     passedUsers: passedUsers,
     passScore: passScore,

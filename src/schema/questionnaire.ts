@@ -6,19 +6,19 @@ import { Type } from "@sinclair/typebox";
 const questionnaireSchema = Type.Object({
   title: Type.String(),
   description: Type.String(),
-  options: Type.Array(
+  questions: Type.Array(
     Type.Object({
-      question: Type.String(),
-      options: Type.Array(
+      questionText: Type.String(),
+      answerOptions: Type.Array(
         Type.Object({
           label: Type.String(),
-          value: Type.Boolean(),
+          isCorrect: Type.Boolean(),
         }),
       ),
     }),
   ),
   tags: Type.Optional(Type.Array(Type.String())),
-  passedUsers: Type.Optional(Type.Array(Type.Number())),
+  passedUsers: Type.Optional(Type.Array(Type.String())),
   passScore: Type.Number(),
 });
 

@@ -2,11 +2,11 @@
  * Interface for Severa response for users.
  */
 interface SeveraResponseUser {
-  email: string;
   guid: string;
   name: string;
   firstName: string;
   lastName: string;
+  email: string;
   workContract: {
     dailyHours: number;
   };

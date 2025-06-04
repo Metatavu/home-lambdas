@@ -2,13 +2,11 @@ import type { APIGatewayProxyHandler } from "aws-lambda";
 import { CreateSeveraApiService } from "src/services/severa-api-service";
 import { middyfy } from "src/libs/lambda";
 import { DateTime } from "luxon";
+import Config from "src/app/config";
 
 /**
  * Lambda handler for getting flextime by severaUserId,
  * but only if the user has opted in (has "isSeveraOptIn" keyword).
- *
- * @param event - API Gateway event containing the severaUserId
- * @returns Flextime data if user has opted in
  */
 export const getFlextimeHandler: APIGatewayProxyHandler = async (event) => {
   const severaUserId = event.pathParameters?.severaUserId;
@@ -24,18 +22,20 @@ export const getFlextimeHandler: APIGatewayProxyHandler = async (event) => {
       };
     }
 
-    const severaUser = await api.getUser(severaUserId);
-    
-    if (!severaUser) {
+    try {
+      await api.getKeywordIdForUser(severaUserId, "isSeveraOptIn");
+    } catch {
       return {
-        statusCode: 404,
-        body: JSON.stringify({ message: "Severa user not found." }),
+        statusCode: 403,
+        body: JSON.stringify({ message: "User has not opted in." }),
       };
     }
 
-    const testUserEmail = process.env.SEVERA_TEST_USER_EMAIL;
+    const severaUser = await api.getUser(severaUserId);
+
+    const testUserEmail = Config.get().testUser.email;
     const keycloakEmail = testUserEmail || event.requestContext?.authorizer?.claims?.email;
-    
+
     if (severaUser.email !== keycloakEmail) {
       return {
         statusCode: 403,

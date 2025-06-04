@@ -22,6 +22,7 @@ export interface SeveraApiService {
   getOptInUsers: () => Promise<SeveraResponseUser[]>;
   getResourceAllocations: () => Promise<SeveraResponseResourceAllocation>;
   getUser: (severaUserId: string) => Promise<SeveraResponseUser>;
+  getKeywordIdForUser: (severaUserId: string, keywordValue: string) => Promise<string>;
 }
 
 /**
@@ -234,8 +235,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
    * @returns Severa user object, including keywords
    */
     getUser: async (severaUserId: string) => {
-    const optInKeywordId = "8e7b363e-aa8c-34b1-478f-0a9633848fde";
-    const url = `${baseUrl}/v1/users/${severaUserId}?keywordGuids=${optInKeywordId}`;
+    const url = `${baseUrl}/v1/users/${severaUserId}`;
       
       const response = await fetch(url, {
         method: "GET",
@@ -252,6 +252,39 @@ export const CreateSeveraApiService = (): SeveraApiService => {
 
       return response.json();
     },
+
+    /**
+     * Gets the keyword ID for a given keyword name from a user's assigned keywords.
+     *
+     * @param severaUserId - Severa user ID
+     * @param keywordValue - The text of the keyword (e.g. "isSeveraOptIn")
+     * @returns GUID of the matched keyword
+     */
+    getKeywordIdForUser: async (severaUserId: string, keywordValue: string) => {
+      const url = `${baseUrl}/v1/users/${severaUserId}/keywords`;
+
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${await getSeveraAccessToken()}`,
+          Client_Id: process.env.SEVERA_DEMO_CLIENT_ID,
+          "Content-Type": "application/json"
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch keywords for user: ${response.status} - ${response.statusText}`);
+      }
+
+      const keywords = await response.json();
+      const match = keywords.find((k: { keyword: string }) => k.keyword === keywordValue);
+
+      if (!match) {
+        throw new Error(`Keyword "${keywordValue}" not found for user ${severaUserId}`);
+      }
+
+      return match.guid;
+    }
   };
 };
 

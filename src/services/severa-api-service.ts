@@ -13,7 +13,7 @@ import type SeveraResponseUser from "src/types/severa/user/severaResponseUser";
  * Interface for a SeveraApiService.
  */
 export interface SeveraApiService {
-  getFlextimeBySeveraUserId: (severaUserId: string, eventDate: string) => Promise<Flextime>;
+  getFlextimeBySeveraUserId: (severaUserId: string) => Promise<Flextime>;
   getResourceAllocation: (endpointPath: URL) => Promise<SeveraResponseResourceAllocation[]>;
   getPhasesBySeveraProjectId: (severaProjectId: string) => Promise<SeveraResponsePhases[]>;
   getWorkHours: (endpointPath: URL, startDate?: string, endDate?: string ) => Promise<SeveraResponseWorkHours[]>;  
@@ -21,6 +21,8 @@ export interface SeveraApiService {
   getWorkDays: (severaUserId: string) => Promise<SeveraResponseWorkDays>;
   getOptInUsers: () => Promise<SeveraResponseUser[]>;
   getResourceAllocations: () => Promise<SeveraResponseResourceAllocation>;
+  getUser: (severaUserId: string) => Promise<SeveraResponseUser>;
+  getKeywordIdForUser: (severaUserId: string, keywordValue: string) => Promise<string>;
 }
 
 /**
@@ -224,6 +226,64 @@ export const CreateSeveraApiService = (): SeveraApiService => {
         throw new Error(`Failed to fetch work hours: ${response.status} - ${response.statusText}`);
       }
       return response.json();
+    },
+    
+    /**
+   * Gets a specific user from Severa by their user ID.
+   *
+   * @param severaUserId - Severa user ID
+   * @returns Severa user object, including keywords
+   */
+    getUser: async (severaUserId: string) => {
+    const url = `${baseUrl}/v1/users/${severaUserId}`;
+      
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${await getSeveraAccessToken()}`,
+          Client_Id: process.env.SEVERA_DEMO_CLIENT_ID,
+          "Content-Type": "application/json"
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch Severa user: ${response.status} - ${response.statusText}`);
+      }
+
+      return response.json();
+    },
+
+    /**
+     * Gets the keyword ID for a given keyword name from a user's assigned keywords.
+     *
+     * @param severaUserId - Severa user ID
+     * @param keywordValue - The text of the keyword (e.g. "isSeveraOptIn")
+     * @returns GUID of the matched keyword
+     */
+    getKeywordIdForUser: async (severaUserId: string, keywordValue: string) => {
+      const url = `${baseUrl}/v1/users/${severaUserId}/keywords`;
+
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${await getSeveraAccessToken()}`,
+          Client_Id: process.env.SEVERA_DEMO_CLIENT_ID,
+          "Content-Type": "application/json"
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch keywords for user: ${response.status} - ${response.statusText}`);
+      }
+
+      const keywords = await response.json();
+      const match = keywords.find((k: { keyword: string }) => k.keyword === keywordValue);
+
+      if (!match) {
+        throw new Error(`Keyword "${keywordValue}" not found for user ${severaUserId}`);
+      }
+
+      return match.guid;
     }
   };
 };

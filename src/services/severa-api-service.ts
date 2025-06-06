@@ -13,7 +13,7 @@ import type SeveraResponseUser from "src/types/severa/user/severaResponseUser";
  * Interface for a SeveraApiService.
  */
 export interface SeveraApiService {
-  getFlextimeBySeveraUserId: (severaUserId: string, eventDate: string) => Promise<Flextime>;
+  getFlextimeBySeveraUserId: (severaUserId: string) => Promise<Flextime>;
   getResourceAllocation: (endpointPath: URL) => Promise<SeveraResponseResourceAllocation[]>;
   getPhasesBySeveraProjectId: (severaProjectId: string) => Promise<SeveraResponsePhases[]>;
   getWorkHours: (endpointPath: URL, startDate?: string, endDate?: string ) => Promise<SeveraResponseWorkHours[]>;  

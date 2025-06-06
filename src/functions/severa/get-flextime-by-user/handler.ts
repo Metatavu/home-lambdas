@@ -10,7 +10,6 @@ import Config from "src/app/config";
  */
 export const getFlextimeHandler: APIGatewayProxyHandler = async (event) => {
   const severaUserId = event.pathParameters?.severaUserId;
-  const eventDate = DateTime.now().toISODate();
 
   try {
     const api = CreateSeveraApiService();
@@ -34,8 +33,8 @@ export const getFlextimeHandler: APIGatewayProxyHandler = async (event) => {
     const severaUser = await api.getUser(severaUserId);
 
     const testUserEmail = Config.get().testUser.email;
-    const keycloakEmail = testUserEmail || event.requestContext?.authorizer?.claims?.email;
-
+    const keycloakEmail = testUserEmail || event.requestContext.authorizer.claims.email;
+    
     if (severaUser.email !== keycloakEmail) {
       return {
         statusCode: 403,
@@ -43,7 +42,7 @@ export const getFlextimeHandler: APIGatewayProxyHandler = async (event) => {
       };
     }
 
-    const flextime = await api.getFlextimeBySeveraUserId(severaUserId, eventDate);
+    const flextime = await api.getFlextimeBySeveraUserId(severaUserId);
 
     return {
       statusCode: 200,

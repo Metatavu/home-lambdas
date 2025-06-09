@@ -1,7 +1,6 @@
 import type { APIGatewayProxyEvent, APIGatewayProxyHandler } from "aws-lambda";
 import { CreateKeycloakApiService } from "src/database/services/keycloak-api-service";
 import { middyfy } from "src/libs/lambda";
-
 /**
  * Lambda for finding user
  *
@@ -9,18 +8,15 @@ import { middyfy } from "src/libs/lambda";
  * @returns user information as string
  */
 const findUserHandler: APIGatewayProxyHandler = async (
-  event: APIGatewayProxyEvent,
+  event: APIGatewayProxyEvent
 ) => {
   try {
-    const { queryStringParameters } = event;
+    const { id } = event.pathParameters ?? {};
     const api = CreateKeycloakApiService();
-
-    if (!queryStringParameters || !queryStringParameters.id) {
+    if (!id) {
       throw new Error("Missing or invalid path parameter: id");
     }
-
-    const userById = await api.findUser(queryStringParameters.id);
-
+    const userById = await api.findUser(id);
     if (!userById) {
       return {
         statusCode: 404,
@@ -38,5 +34,4 @@ const findUserHandler: APIGatewayProxyHandler = async (
     };
   }
 };
-
 export const main = middyfy(findUserHandler);

@@ -26,4 +26,7 @@ export interface Configuration {
         teamOnCallUrl: string,
         schedulePolicyName: string
     }
+    testUser: {
+        email: string
+    }
 }

@@ -6,7 +6,7 @@ export default {
     {
       httpApi: {
         method: "get",
-        path: "/severa/users/{severaUserId}/flextime",
+        path: "/users/{userId}/flextime",
         authorizer: {
           name: "homeKeycloakAuthorizer"
         }

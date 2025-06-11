@@ -1,7 +1,6 @@
 import type { APIGatewayProxyHandler } from "aws-lambda";
 import { CreateSeveraApiService } from "src/services/severa-api-service";
 import { middyfy } from "src/libs/lambda";
-import { DateTime } from "luxon";
 import Config from "src/app/config";
 
 /**
@@ -9,7 +8,7 @@ import Config from "src/app/config";
  * but only if the user has opted in (has "isSeveraOptIn" keyword).
  */
 export const getFlextimeHandler: APIGatewayProxyHandler = async (event) => {
-  const severaUserId = event.pathParameters?.severaUserId;
+  const severaUserId = event.pathParameters?.userId;
 
   try {
     const api = CreateSeveraApiService();

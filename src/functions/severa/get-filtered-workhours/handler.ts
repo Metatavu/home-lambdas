@@ -16,6 +16,10 @@ export const getWorkHoursHandler: APIGatewayProxyHandler = async (event) => {
   try {
     const api = CreateSeveraApiService();
 
+    // Getting the list of opted in users
+    const optInUsers = await api.getOptInUsers();
+    const optInUserGuids = new Set(optInUsers.map((u) => u.guid));
+
     /**
      * Construct a custom url for fetching workHours with required queryParams.
      *
@@ -48,11 +52,15 @@ export const getWorkHoursHandler: APIGatewayProxyHandler = async (event) => {
     const url = buildWorkHoursUrl(severaProjectId, severaUserId, startDate, endDate);
     const response = await api.getWorkHours(url);
 
+    // Filtering by opted in users only
     const filteredWorkHours = response.filter((workHours: SeveraResponseWorkHours) => {
-    /**
-     * Note: If severaProjectId and severaUserId are both true, the work hours data
-     * will be filtered by project in the Severa API call due to workHours custom url.
-     */
+      if (!workHours.user?.guid || !optInUserGuids.has(workHours.user.guid)) {
+        return false;
+      }
+      /**
+       * Note: If severaProjectId and severaUserId are both true, the work hours data
+       * will be filtered by project in the Severa API call due to workHours custom url.
+       */
       if (severaProjectId && severaUserId) {
         const filteredWorkHoursUserProject = FilterUtilities.filterByUserSevera(workHours.user?.guid, severaUserId);
         if (!filteredWorkHoursUserProject) return false ;

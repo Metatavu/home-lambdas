@@ -30,12 +30,23 @@ export const getWorkHoursHandler: APIGatewayProxyHandler = async (event) => {
      *
      * @returns {string} - The constructed custom URL for fetching work hours.
      */
-    const buildWorkHoursUrl = (severaProjectId?: string, severaUserId?: string, startDate?: string, endDate?: string) => {
+    const buildWorkHoursUrl = async (severaProjectId?: string, severaUserId?: string, startDate?: string, endDate?: string) => {
       let endpointPath: string;
+      try {
+      await api.getKeywordIdForUser(severaUserId, "isSeveraOptIn");
+    } catch {
+      return {
+        statusCode: 403,
+        body: JSON.stringify({ message: "User has not opted in." }),
+      };
+    }
 
       if (severaProjectId) {
         endpointPath = `projects/${severaProjectId}/workhours`;
       } else if (severaUserId) {
+      if (severaUserId && !optInUserGuids.has(severaUserId)) {
+        throw new Error("User has not opted in.");
+      }
         endpointPath = `users/${severaUserId}/workhours`;
       } else {
         endpointPath = "workhours";
@@ -49,7 +60,11 @@ export const getWorkHoursHandler: APIGatewayProxyHandler = async (event) => {
       return customUrl;
     };
 
-    const url = buildWorkHoursUrl(severaProjectId, severaUserId, startDate, endDate);
+    const url = await buildWorkHoursUrl(severaProjectId, severaUserId, startDate, endDate);
+    if (!(url instanceof URL)) {
+      // url is an error response object, return it directly
+      return url;
+    }
     const response = await api.getWorkHours(url);
 
     // Filtering by opted in users only

@@ -54,7 +54,6 @@ export const getWorkHoursHandler: APIGatewayProxyHandler = async (event) => {
       // Absolute endpoint, fetching all work hours
       url = new URL(`${process.env.SEVERA_DEMO_BASE_URL}/v1/workhours`);
       }
-      if (severaProjectId) url.searchParams.append("projectGuid", severaProjectId);
       if (startDate) url.searchParams.append("startDate", startDate);
       if (endDate) url.searchParams.append("endDate", endDate);
 

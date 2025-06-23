@@ -19,6 +19,7 @@ export const getWorkHoursHandler: APIGatewayProxyHandler = async (event) => {
     const optInUsers = await api.getOptInUsers();
     const optInUserGuids = new Set(optInUsers.map((u) => u.guid));
 
+    let errors: Array<{ userGuid: string, error: any }> = [];
     // If severaProjectId is specified and severaUserId is not, make requests for each opted-in user
     let allWorkHours: SeveraResponseWorkHours[] = [];
     if (severaProjectId) {
@@ -33,7 +34,7 @@ export const getWorkHoursHandler: APIGatewayProxyHandler = async (event) => {
             const userWorkHours = await api.getWorkHours(url);
             return userWorkHours;
           } catch (e) {
-            // If there is an error for a single user, just skip
+            errors.push({ userGuid: user.guid, error: e });
             return [];
           }
         })

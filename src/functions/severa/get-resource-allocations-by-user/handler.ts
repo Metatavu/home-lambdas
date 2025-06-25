@@ -14,23 +14,45 @@ export const getResourceAllocationHandler: APIGatewayProxyHandler = async (event
 
   try {
     const api = CreateSeveraApiService();
+    // Getting the list of opted in users
+    const optInUsers = await api.getOptInUsers();
 
     const buildResourceAllocationUrl = (severaUserId?: string) => {
       let endpointPath: string;
 
       if (severaUserId) {
         endpointPath = `users/${severaUserId}/resourceallocations/allocations`;
+        const customUrl = new URL(`${process.env.SEVERA_DEMO_BASE_URL}/v1/${endpointPath}`);
+        return customUrl;
       } else {
-        endpointPath = "resourceallocations";
+        // If severaUserId is not specified, we make requests for each opted-in user and merge the results
+        return null; // special marker that we need to iterate over all opted-in
       }
-
-    const customUrl = new URL(`${process.env.SEVERA_DEMO_BASE_URL}/v1/${endpointPath}`);
-
-    return customUrl;
     }
 
     const url = buildResourceAllocationUrl(severaUserId);
-    const response = await api.getResourceAllocation(url);
+    let allResourceAllocations: SeveraResponseResourceAllocation[] = [];
+
+    if (url) {
+      // Normal case: for a specific user
+      const response = await api.getResourceAllocation(url);
+      allResourceAllocations = response;
+    } else {
+      // Like in get-filtered-workhours: we collect for all opted-in
+      const resourceAllocationsResults = await Promise.all(
+        optInUsers.map(async (user: { guid: string }) => {
+          try {
+            const userUrl = new URL(`${process.env.SEVERA_DEMO_BASE_URL}/v1/users/${user.guid}/resourceallocations/allocations`);
+            const userResourceAllocations = await api.getResourceAllocation(userUrl);
+            return userResourceAllocations;
+          } catch (e) {
+            // We can add error handling per user if needed
+            return [];
+          }
+        })
+      );
+      allResourceAllocations = resourceAllocationsResults.flat();
+    }
 
     /**
      * Maps the Severa API response data to the ResourceAllocation model.
@@ -57,9 +79,8 @@ export const getResourceAllocationHandler: APIGatewayProxyHandler = async (event
           isInternal: resourceAllocation.project?.isInternal,
         },
       }))
-  );
-  
-    const resourceAllocations = mappedResourceAllocations(response);
+    );
+    const resourceAllocations = mappedResourceAllocations(allResourceAllocations);
 
     return {
       statusCode: 200,

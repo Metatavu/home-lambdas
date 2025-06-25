@@ -28,6 +28,7 @@ export const getWorkHoursHandler: APIGatewayProxyHandler = async (event) => {
         optInUsers.map(async (user) => {
           try {
             const url = new URL(`${process.env.SEVERA_DEMO_BASE_URL}/v1/users/${user.guid}/workhours`);
+            // This endpoint/query parameter is working but it is not documented proper in Severa API spec
             url.searchParams.append("projectGuid", severaProjectId);
             if (startDate) url.searchParams.append("startDate", startDate);
             if (endDate) url.searchParams.append("endDate", endDate);

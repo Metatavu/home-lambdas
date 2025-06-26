@@ -11,7 +11,7 @@ import type SeveraResponseWorkHours from "src/types/severa/workHour/severaRespon
  * @param event - API Gateway event containing the userId, projectId, and phaseId.
  */
 export const getWorkHoursHandler: APIGatewayProxyHandler = async (event) => {
-  const { startTime: startTime, endTime: endTime, severaProjectId, severaPhaseId, severaUserId } = event.queryStringParameters || {};
+  const { startDate: startDate, endDate: endDate, severaProjectId, severaPhaseId, severaUserId } = event.queryStringParameters || {};
 
   try {
     const api = CreateSeveraApiService();
@@ -30,8 +30,8 @@ export const getWorkHoursHandler: APIGatewayProxyHandler = async (event) => {
             const url = new URL(`${process.env.SEVERA_DEMO_BASE_URL}/v1/users/${user.guid}/workhours`);
             // This endpoint/query parameter is working but it is not documented proper in Severa API spec
             url.searchParams.append("projectGuid", severaProjectId);
-            if (startTime) url.searchParams.append("startDate", startTime);
-            if (endTime) url.searchParams.append("endDate", endTime);
+            if (startDate) url.searchParams.append("startDate", startDate);
+            if (endDate) url.searchParams.append("endDate", endDate);
             const userWorkHours = await api.getWorkHours(url);
             return userWorkHours;
           } catch (e) {
@@ -55,8 +55,8 @@ export const getWorkHoursHandler: APIGatewayProxyHandler = async (event) => {
       } else {
         throw new Error("severaUserId is required when severaProjectId is not specified");
       }
-      if (startTime) url.searchParams.append("startTime", startTime);
-      if (endTime) url.searchParams.append("endTime", endTime);
+      if (startDate) url.searchParams.append("startDate", startDate);
+      if (endDate) url.searchParams.append("endDate", endDate);
 
       allWorkHours = await api.getWorkHours(url);
     }

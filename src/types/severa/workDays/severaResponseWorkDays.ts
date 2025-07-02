@@ -6,7 +6,6 @@ interface SeveraResponseWorkDays {
   expectedHours: number;
   enteredHours: number;
   enteredTimeEntries: number;
-
 }
 
 export default SeveraResponseWorkDays;

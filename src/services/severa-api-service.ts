@@ -166,11 +166,11 @@ export const CreateSeveraApiService = (): SeveraApiService => {
      */
     getWorkWeek: async (severaUserId: string) => {
 
-      const today = DateTime.now().toISODate();
-      const weekAgo = DateTime.now().minus({ days: 7 }).toISODate();
-      const isProduction = process.env.NODE_ENV === "production";
-      const endDate = isProduction ? today : "2025-01-20";
-      const startDate = isProduction ? weekAgo : "2025-01-13";
+      const demoDataDate = process.env.DEMO_DATA_DATE;
+      const today = demoDataDate ? DateTime.fromISO(demoDataDate).toISODate() : DateTime.now().toISODate();
+      const weekAgo = demoDataDate ? DateTime.fromISO(demoDataDate).minus({ days: 7 }).toISODate() : DateTime.now().minus({ days: 7 }).toISODate();
+      const startDate = weekAgo;
+      const endDate = today;
 
       const url = `${baseUrl}/v1/users/${severaUserId}/workdays?startDate=${startDate}&endDate=${endDate}`;
 
@@ -266,13 +266,16 @@ export const CreateSeveraApiService = (): SeveraApiService => {
 
     /**
      * Gets previous workweeks Workhours from Severa
+     *
+     * @param severaUserId Severa user id
+     * @returns Previous workweek workhours for the user
      */
     getPreviousWeekHours: async (severaUserId: string) => {
-      const weekAgo = DateTime.now().minus({ days: 7 }).toISODate();
-      const today = DateTime.now().toISODate();
-      const isProduction = process.env.NODE_ENV === "production";
-      const startDate = isProduction ? weekAgo : "2025-01-13";
-      const endDate = isProduction ? today : "2025-01-20";
+      const demoDataDate = process.env.DEMO_DATA_DATE;
+      const today = demoDataDate ? DateTime.fromISO(demoDataDate).toISODate() : DateTime.now().toISODate();
+      const weekAgo = demoDataDate ? DateTime.fromISO(demoDataDate).minus({ days: 7 }).toISODate() : DateTime.now().minus({ days: 7 }).toISODate();
+      const startDate = weekAgo;
+      const endDate = today;
 
       const url = `${baseUrl}/v1/users/${severaUserId}/workhours?eventDateStart=${startDate}&eventDateEnd=${endDate}`;
 

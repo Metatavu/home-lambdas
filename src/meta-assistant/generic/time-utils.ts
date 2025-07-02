@@ -26,13 +26,12 @@ namespace TimeUtilities {
    * @returns various date formats/ numbers for start and end of previous week
    */
   export const getlastWeeksDates = (date?: DateTime): Dates => {
-    let startOfWeek = DateTime.now().startOf("week");
+    let startOfWeek = getBaseDate().startOf("week");
     if (date) {
       startOfWeek = date.startOf("week");
     }
     const weekStartDate = startOfWeek.minus({ weeks: 1 });
     const weekEndDate = startOfWeek.minus({ days: 1 });
-
     return { weekEndDate: weekEndDate, weekStartDate: weekStartDate };
   };
 
@@ -160,6 +159,14 @@ namespace TimeUtilities {
       dayBeforeYesterday: dayBeforePreviousWorkDay
     };
   };
+
+  /**
+   * Returns the base date for all time calculations, using DEMO_DATA_DATE if set
+   */
+  const getBaseDate = (): DateTime => {
+    const demoDataDate = process.env.DEMO_DATA_DATE;
+    return demoDataDate ? DateTime.fromISO(demoDataDate) : DateTime.now();
+  }
 }
 
 export default TimeUtilities;

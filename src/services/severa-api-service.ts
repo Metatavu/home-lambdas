@@ -23,6 +23,8 @@ export interface SeveraApiService {
   getResourceAllocations: () => Promise<SeveraResponseResourceAllocation>;
   getUser: (severaUserId: string) => Promise<SeveraResponseUser>;
   getKeywordIdForUser: (severaUserId: string, keywordValue: string) => Promise<string>;
+  getWorkWeek: (severaUserId: string) => Promise<SeveraResponseWorkDays[]>;
+  getPreviousWeekHours: (severaUserId: string) => Promise<SeveraResponsePreviousWorkHours[]>;
 }
 
 /**
@@ -157,6 +159,38 @@ export const CreateSeveraApiService = (): SeveraApiService => {
     },
 
     /**
+     * Gets Work week from Severa
+     * 
+     * @param severaUserId Severa user id
+     * @returns Workdays of a user
+     */
+    getWorkWeek: async (severaUserId: string) => {
+
+      const demoDataDate = process.env.DEMO_DATA_DATE;
+      const today = demoDataDate ? DateTime.fromISO(demoDataDate).toISODate() : DateTime.now().toISODate();
+      const weekAgo = demoDataDate ? DateTime.fromISO(demoDataDate).minus({ days: 7 }).toISODate() : DateTime.now().minus({ days: 7 }).toISODate();
+      const startDate = weekAgo;
+      const endDate = today;
+
+      const url = `${baseUrl}/v1/users/${severaUserId}/workdays?startDate=${startDate}&endDate=${endDate}`;
+
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${await getSeveraAccessToken()}`,
+          "Client_Id": process.env.SEVERA_DEMO_CLIENT_ID,
+          "Content-Type": "application/json",
+        },
+      });
+      if (!response.ok) {
+        throw new Error(
+          `Failed to fetch workdays: ${response.status} - ${response.statusText}`,
+        );
+      }
+      return response.json();
+    },
+
+    /**
      * Gets resourceallocations from Severa
      */
     getResourceAllocations: async () => {
@@ -205,13 +239,43 @@ export const CreateSeveraApiService = (): SeveraApiService => {
      * Gets previous workdays Workhours from Severa
      */
     getPreviousWorkHours: async () => {
-      const eventDateYesterday = TimeUtilities.getPreviousTwoWorkdays().yesterday.toISODate();
-      const today = DateTime.now().toISODate();
-      const isProduction = process.env.NODE_ENV === "production";
-      const startDate = isProduction ? eventDateYesterday : "2024-11-26";
-      const endDate = isProduction ? today : "2024-11-26";
-
+      const demoDataDate = process.env.DEMO_DATA_DATE;
+      const startDate = demoDataDate ? DateTime.fromISO(demoDataDate).minus({ days: 1 }).toISODate() : TimeUtilities.getPreviousTwoWorkdays().yesterday.toISODate();
+      const endDate = demoDataDate ? DateTime.fromISO(demoDataDate).toISODate() : DateTime.now().toISODate();
+      
       const url = `${baseUrl}/v1/workhours?eventDateStart=${startDate}&eventDateEnd=${endDate}`;
+
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${await getSeveraAccessToken()}`,
+          "Client_Id": process.env.SEVERA_DEMO_CLIENT_ID,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(
+          `Failed to fetch work hours: ${response.status} - ${response.statusText}`,
+        );
+      }
+      return response.json();
+    },
+
+    /**
+     * Gets previous workweeks Workhours from Severa
+     *
+     * @param severaUserId Severa user id
+     * @returns Previous workweek workhours for the user
+     */
+    getPreviousWeekHours: async (severaUserId: string) => {
+      const demoDataDate = process.env.DEMO_DATA_DATE;
+      const today = demoDataDate ? DateTime.fromISO(demoDataDate).toISODate() : DateTime.now().toISODate();
+      const weekAgo = demoDataDate ? DateTime.fromISO(demoDataDate).minus({ days: 7 }).toISODate() : DateTime.now().minus({ days: 7 }).toISODate();
+      const startDate = weekAgo;
+      const endDate = today;
+
+      const url = `${baseUrl}/v1/users/${severaUserId}/workhours?eventDateStart=${startDate}&eventDateEnd=${endDate}`;
 
       const response = await fetch(url, {
         method: "GET",

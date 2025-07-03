@@ -11,61 +11,32 @@ import type SeveraResponseWorkHours from "src/types/severa/workHour/severaRespon
  * @param event - API Gateway event containing the userId, projectId, and phaseId.
  */
 export const getWorkHoursHandler: APIGatewayProxyHandler = async (event) => {
-  const { startDate: startDate, endDate: endDate, severaProjectId, severaPhaseId, severaUserId } = event.queryStringParameters || {};
+  const { startDate, endDate, severaProjectId, severaPhaseId, severaUserId } = event.queryStringParameters || {};
 
   try {
     const api = CreateSeveraApiService();
-    // Getting the list of opted in users
     const optInUsers = await api.getOptInUsers();
     const optInUserGuids = new Set(optInUsers.map((u) => u.guid));
 
-    let errors: Array<{ userGuid: string, error: any }> = [];
     // If severaProjectId is specified and severaUserId is not, make requests for each opted-in user
     let allWorkHours: SeveraResponseWorkHours[] = [];
     if (severaProjectId) {
-      // Request in parallel for each opted-in user
-      const workHoursResults = await Promise.all(
-        optInUsers.map(async (user) => {
-          try {
-            const url = new URL(`${process.env.SEVERA_DEMO_BASE_URL}/v1/users/${user.guid}/workhours`);
-            // This endpoint/query parameter is working but it is not documented proper in Severa API spec
-            url.searchParams.append("projectGuid", severaProjectId);
-            if (startDate) url.searchParams.append("startDate", startDate);
-            if (endDate) url.searchParams.append("endDate", endDate);
-            const userWorkHours = await api.getWorkHours(url);
-            return userWorkHours;
-          } catch (e) {
-            errors.push({ userGuid: user.guid, error: e });
-            return [];
-          }
-        })
-      );
-      // Combine all results
-      allWorkHours = workHoursResults.flat();
-      // Filtering only for the specified project
-      allWorkHours = allWorkHours.filter(
-        (workHours) => workHours.project?.guid == severaProjectId
-      );
+      allWorkHours = await api.getFilteredWorkHoursForUsers(optInUsers, severaProjectId, startDate, endDate);
+      allWorkHours = allWorkHours.filter((workHours) => workHours.project?.guid == severaProjectId);
     } else {
-      // Standard logic for other cases (by userId or without projectId)
-      // Manually build the URL since buildWorkHoursUrl does not exist
-      let url: URL;
       if (severaUserId) {
-        url = new URL(`${process.env.SEVERA_DEMO_BASE_URL}/v1/users/${severaUserId}/workhours`);
+        if (!optInUserGuids.has(severaUserId)) {
+          allWorkHours = [];
+        } else {
+          allWorkHours = await api.getWorkHoursForUser(severaUserId, startDate, endDate);
+        }
       } else {
         throw new Error("severaUserId is required when severaProjectId is not specified");
       }
-      if (startDate) url.searchParams.append("startDate", startDate);
-      if (endDate) url.searchParams.append("endDate", endDate);
-
-      allWorkHours = await api.getWorkHours(url);
     }
 
-    // Filter by opted-in users (just in case there are any "unauthorized" users in the response)
+    // Filter work hours by phase if severaPhaseId is provided
     const filteredWorkHours = allWorkHours.filter((workHours: SeveraResponseWorkHours) => {
-      if (!workHours.user?.guid || !optInUserGuids.has(workHours.user.guid)) {
-        return false;
-      }
       if (severaPhaseId) {
         const filteredWorkHoursPhase = FilterUtilities.filterByPhaseSevera(workHours.phase?.guid, severaPhaseId);
         if (!filteredWorkHoursPhase) return false;

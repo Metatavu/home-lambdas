@@ -23,6 +23,8 @@ export interface SeveraApiService {
   getResourceAllocations: () => Promise<SeveraResponseResourceAllocation>;
   getUser: (severaUserId: string) => Promise<SeveraResponseUser>;
   getKeywordIdForUser: (severaUserId: string, keywordValue: string) => Promise<string>;
+  getFilteredWorkHoursForUsers: (users: { guid: string }[], severaProjectId: string, startDate?: string, endDate?: string) => Promise<SeveraResponseWorkHours[]>;
+  getWorkHoursForUser: (severaUserId: string, startDate?: string, endDate?: string) => Promise<SeveraResponseWorkHours[]>;
 }
 
 /**
@@ -284,7 +286,70 @@ export const CreateSeveraApiService = (): SeveraApiService => {
       }
 
       return match.guid;
+    },
+
+    /**
+     * Gets work hours for multiple users filtered by project and dates.
+     *
+     * @param users Array of users (must have .guid)
+     * @param severaProjectId Project GUID
+     * @param startDate Optional start date
+     * @param endDate Optional end date
+     * @returns Array of work hours for all users
+     */
+    getFilteredWorkHoursForUsers: async (
+      users,
+      severaProjectId,
+      startDate,
+      endDate
+    ) => {
+      const errors: Array<{ userGuid: string, error: any }> = [];
+      const workHoursResults = await Promise.all(
+        users.map(async (user) => {
+          try {
+            const url = new URL(`${baseUrl}/v1/users/${user.guid}/workhours`);
+            // This endpoint/query parameter is working but it is not documented proper in Severa API spec
+            url.searchParams.append("projectGuid", severaProjectId);
+            if (startDate) url.searchParams.append("startDate", startDate);
+            if (endDate) url.searchParams.append("endDate", endDate);
+            const userWorkHours = await (await fetch(url.toString(), {
+              method: "GET",
+              headers: {
+                Authorization: `Bearer ${await getSeveraAccessToken()}`,
+                Client_Id: process.env.SEVERA_DEMO_CLIENT_ID,
+                "Content-Type": "application/json"
+              }
+            })).json();
+            return userWorkHours;
+          } catch (e) {
+            errors.push({ userGuid: user.guid, error: e });
+            return [];
+          }
+        })
+      );
+      return workHoursResults.flat();
+    },
+
+    getWorkHoursForUser: async (severaUserId, startDate, endDate) => {
+      const url = new URL(`${process.env.SEVERA_DEMO_BASE_URL}/v1/users/${severaUserId}/workhours`);
+      if (startDate) url.searchParams.append("startDate", startDate);
+      if (endDate) url.searchParams.append("endDate", endDate);
+
+      const response = await fetch(url.toString(), {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${await getSeveraAccessToken()}`,
+          Client_Id: process.env.SEVERA_DEMO_CLIENT_ID,
+          "Content-Type": "application/json"
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch work hours: ${response.status} - ${response.statusText}`);
+      }
+      return response.json();
     }
+
   };
 };
 
@@ -477,3 +542,61 @@ export const updateSeveraOptInKeyword = async (
 
   return await updateResponse.json();
 };
+
+/**
+ * Gets resource allocations for a specific user or for all opt-in users if no user is specified.
+ *
+ * @param severaUserId - The GUID of the Severa user (optional).
+ * @param optInUsers - Array of opted-in users ({ guid: string }[]).
+ * @returns {Promise<SeveraResponseResourceAllocation[]>} - Array of resource allocations.
+ */
+export async function getResourceAllocationsByUserOrAll(
+  severaUserId: string | undefined,
+  optInUsers: { guid: string }[]
+): Promise<SeveraResponseResourceAllocation[]> {
+  const api = CreateSeveraApiService();
+
+  /**
+   * Builds the resource allocation URL for a specific user or returns null if no user is specified.
+   *
+   * @param severaUserId - The GUID of the Severa user.
+   * @returns {URL | null} - The constructed URL for the user's resource allocations, or null if severaUserId is not provided.
+   */
+  const buildResourceAllocationUrl = (severaUserId?: string): URL | null => {
+    let endpointPath: string;
+
+    if (severaUserId) {
+      endpointPath = `users/${severaUserId}/resourceallocations/allocations`;
+      const customUrl = new URL(`${process.env.SEVERA_DEMO_BASE_URL}/v1/${endpointPath}`);
+      return customUrl;
+    } else {
+      // If severaUserId is not specified, we make requests for each opted-in user and merge the results
+      return null; // special marker that we need to iterate over all opted-in
+    }
+  };
+
+  const url = buildResourceAllocationUrl(severaUserId);
+  let allResourceAllocations: SeveraResponseResourceAllocation[] = [];
+
+  if (url) {
+    // Normal case: for a specific user
+    const response = await api.getResourceAllocation(url);
+    allResourceAllocations = response;
+  } else {
+    const resourceAllocationsResults = await Promise.all(
+      optInUsers.map(async (user: { guid: string }) => {
+        try {
+          const userUrl = new URL(`${process.env.SEVERA_DEMO_BASE_URL}/v1/users/${user.guid}/resourceallocations/allocations`);
+          const userResourceAllocations = await api.getResourceAllocation(userUrl);
+          return userResourceAllocations;
+        } catch (e) {
+          console.error(`Error fetching resource allocations for user ${user.guid}:`, e);
+          return [];
+        }
+      })
+    );
+    allResourceAllocations = resourceAllocationsResults.flat();
+  }
+
+  return allResourceAllocations;
+}

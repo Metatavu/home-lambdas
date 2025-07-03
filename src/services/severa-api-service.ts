@@ -239,12 +239,10 @@ export const CreateSeveraApiService = (): SeveraApiService => {
      * Gets previous workdays Workhours from Severa
      */
     getPreviousWorkHours: async () => {
-      const eventDateYesterday = TimeUtilities.getPreviousTwoWorkdays().yesterday.toISODate();
-      const today = DateTime.now().toISODate();
-      const isProduction = process.env.NODE_ENV === "production";
-      const startDate = isProduction ? eventDateYesterday : "2024-11-26";
-      const endDate = isProduction ? today : "2024-11-26";
-
+      const demoDataDate = process.env.DEMO_DATA_DATE;
+      const startDate = demoDataDate ? DateTime.fromISO(demoDataDate).minus({ days: 1 }).toISODate() : TimeUtilities.getPreviousTwoWorkdays().yesterday.toISODate();
+      const endDate = demoDataDate ? DateTime.fromISO(demoDataDate).toISODate() : DateTime.now().toISODate();
+      
       const url = `${baseUrl}/v1/workhours?eventDateStart=${startDate}&eventDateEnd=${endDate}`;
 
       const response = await fetch(url, {

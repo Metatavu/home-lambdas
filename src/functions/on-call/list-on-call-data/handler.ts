@@ -1,8 +1,5 @@
-import { S3 } from "aws-sdk"
-import { OnCallEntry, PaidData } from "../../../types/on-call";
-import S3Utils from "@libs/s3-utils";
+import { DynamoDB } from "aws-sdk"
 import { middyfy } from "@libs/lambda";
-import Config from "../../../app/config";
 import { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
 
 /**
@@ -28,18 +25,33 @@ export const listOnCallDataHandler: ValidatedEventAPIGatewayProxyEvent<any> = as
     }
   }
 
-  const s3 = new S3();
+  const dynamoDb = new DynamoDB.DocumentClient();
 
-  const nameMapFile = "name-map.json";
-  const yearFile = `${year}.json`;
-  const paidFile = "paid.json";
+  // Получаем все записи за указанный год
+  const dataResult = await dynamoDb.query({
+    TableName: "OnCallSchedule",
+    KeyConditionExpression: "#yr = :year",
+    ExpressionAttributeNames: {
+      "#yr": "Year"
+    },
+    ExpressionAttributeValues: {
+      ":year": year
+    }
+  }).promise();
 
-  const bucket = Config.get().onCall.bucketName;
-  const nameMap = await S3Utils.loadJson<{ [key: string]: string }>(s3, bucket, nameMapFile) || {};
-  const data = await S3Utils.loadJson<OnCallEntry[]>(s3, bucket, yearFile);
-  const paidData = await S3Utils.loadJson<PaidData>(s3, bucket, paidFile) || {};
+  const data = dataResult.Items || [];
 
-  if (!data || !nameMap || !paidData) {
+  // Загружаем nameMap из отдельной таблицы
+  const nameMapResult = await dynamoDb.scan({
+    TableName: "OnCallNameMap"
+  }).promise();
+
+  const nameMap: { [key: string]: string } = {};
+  (nameMapResult.Items || []).forEach(item => {
+    nameMap[item.Username] = item.FullName;
+  });
+
+  if (!data.length) {
     return {
       statusCode: 204,
       body: "No content"
@@ -48,13 +60,11 @@ export const listOnCallDataHandler: ValidatedEventAPIGatewayProxyEvent<any> = as
 
   return {
     statusCode: 200,
-    body: JSON.stringify(data.map((entry: any) => {
-      return {
-        ...entry,
-        Person: nameMap[entry.Person] || entry.Person,
-        Paid: paidData[year] && paidData[year][entry.Week] || false
-      }
-    }))
+    body: JSON.stringify(data.map((entry: any) => ({
+      ...entry,
+      Person: nameMap[entry.Person] || entry.Person,
+      Paid: entry.Paid || false
+    })))
   };
 }
 

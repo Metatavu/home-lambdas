@@ -2,6 +2,8 @@ import type { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway";
 import { middyfy } from "@libs/lambda";
 import { vacationRequestService } from "src/database/services";
 import type vacationRequestSchema from "src/schema/vacationRequest";
+import { notifyAdminsVacationSubmitted } from "src/slack/vacation-slack-utils";
+import { notifyUserVacationStatusUpdated } from "src/slack/vacation-slack-utils";
 
 /**
  * Lambda function to update a vacation request
@@ -12,8 +14,7 @@ const updateVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
   typeof vacationRequestSchema
 > = async (event) => {
   const { pathParameters, body } = event;
-  const { createdAt, createdBy, days, draft, endDate, startDate, status, type, updatedAt, userId } =
-    body;
+  const { createdAt, createdBy, days, draft, endDate, startDate, status, type, updatedAt, userId } = body;
   const id = pathParameters?.id;
 
   if (!id) {
@@ -47,6 +48,7 @@ const updateVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
       body: `Vacation request ${id} not found`
     };
   }
+  const statusChanged = existingVacationRequest.status !== status;
 
   const vacationRequestUpdates = {
     id: existingVacationRequest.id,
@@ -65,6 +67,18 @@ const updateVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
   try {
     const updatedVacationRequest =
       await vacationRequestService.updateVacationRequest(vacationRequestUpdates);
+
+    if (statusChanged) {
+      await notifyUserVacationStatusUpdated(createdBy, status);
+    }
+
+    await notifyAdminsVacationSubmitted({
+      requesterName: createdBy,
+      startDate,
+      endDate,
+      reason: type 
+    });
+
     return {
       statusCode: 200,
       body: JSON.stringify(updatedVacationRequest)

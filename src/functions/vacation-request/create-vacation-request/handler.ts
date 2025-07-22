@@ -3,6 +3,7 @@ import { vacationRequestService } from "src/database/services";
 import { v4 as uuidv4 } from "uuid";
 import type { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
 import type vacationRequestSchema from "src/schema/vacationRequest";
+import { notifyAdminsVacationSubmitted } from "src/slack/vacation-slack-utils";
 
 /**
  * Handler for creating a new vacation request entry in DynamoDB.
@@ -20,8 +21,7 @@ export const createVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
       body: JSON.stringify({ error: "Request body is required." })
     };
   }
-  const { createdAt, createdBy, days, draft, endDate, startDate, status, type, updatedAt, userId } =
-    body;
+  const { createdAt, createdBy, days, draft, endDate, startDate, status, type, updatedAt, userId } = body;
 
   if (
     !userId ||
@@ -56,6 +56,15 @@ export const createVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
       createdAt: createdAt,
       updatedAt: updatedAt
     });
+    
+    await notifyAdminsVacationSubmitted(
+      {
+        requesterName: createdBy,
+        startDate,
+        endDate,
+        reason: type  
+      }
+    );
 
     return {
       statusCode: 201,

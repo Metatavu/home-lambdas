@@ -3,7 +3,8 @@ import { vacationRequestService } from "src/database/services";
 import { v4 as uuidv4 } from "uuid";
 import type { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
 import type vacationRequestSchema from "src/schema/vacationRequest";
-import { notifyAdminsVacationSubmitted } from "src/slack/vacation-slack-utils";
+import { notifyAdminsVacationSubmitted } from "src/notifications/vacation-slack-utils";
+import { notifyAdminsVacationSubmittedByEmail } from "src/notifications/vacation-email-utils";
 
 /**
  * Handler for creating a new vacation request entry in DynamoDB.
@@ -57,14 +58,19 @@ export const createVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
       updatedAt: updatedAt
     });
     
-    await notifyAdminsVacationSubmitted(
-      {
-        requesterName: createdBy,
-        startDate,
-        endDate,
-        reason: type  
-      }
-    );
+    await notifyAdminsVacationSubmitted({
+      userId: createdBy,
+      startDate,
+      endDate,
+      type: type  
+    });
+
+    await notifyAdminsVacationSubmittedByEmail({
+      userId: createdBy,
+      startDate,
+      endDate,
+      type: type
+    });
 
     return {
       statusCode: 201,

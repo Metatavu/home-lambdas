@@ -2,8 +2,11 @@ import type { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway";
 import { middyfy } from "@libs/lambda";
 import { vacationRequestService } from "src/database/services";
 import type vacationRequestSchema from "src/schema/vacationRequest";
-import { notifyAdminsVacationSubmitted } from "src/slack/vacation-slack-utils";
-import { notifyUserVacationStatusUpdated } from "src/slack/vacation-slack-utils";
+import { notifyAdminsVacationSubmitted, notifyUserVacationStatusUpdated } from "src/notifications/vacation-slack-utils";
+import {
+  notifyAdminsVacationSubmittedByEmail,
+  notifyUserVacationStatusUpdatedByEmail
+} from "src/notifications/vacation-email-utils";
 
 /**
  * Lambda function to update a vacation request
@@ -70,13 +73,24 @@ const updateVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
 
     if (statusChanged) {
       await notifyUserVacationStatusUpdated(createdBy, status);
+      await notifyUserVacationStatusUpdatedByEmail({
+        to: body.userEmail,
+        updatedStatus: status
+      });
     }
 
     await notifyAdminsVacationSubmitted({
-      requesterName: createdBy,
+      userId: createdBy,
       startDate,
       endDate,
-      reason: type 
+      type: type 
+    });
+
+    await notifyAdminsVacationSubmittedByEmail({
+      userId: createdBy,
+      startDate,
+      endDate,
+      type: type
     });
 
     return {

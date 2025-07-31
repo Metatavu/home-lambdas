@@ -52,10 +52,10 @@ async function sendSlackMessage(channelId: string, message: string): Promise<Cha
  */
 export async function notifyAdminsVacationSubmitted(
     vacationDetails: {
-        requesterName: string;
+        userId: string;
         startDate: string;
         endDate: string;
-        reason?: string;
+        type?: string;
     }
 ) {
     const adminUserIds = process.env.ADMIN_SLACK_USERS?.split(",") || [];
@@ -66,10 +66,10 @@ export async function notifyAdminsVacationSubmitted(
 
     const message = `
         :new: *New Vacation Submitted* :new:
-        Requester: ${vacationDetails.requesterName}
+        User ID: ${vacationDetails.userId}
         Start date: ${vacationDetails.startDate}
         End date: ${vacationDetails.endDate}
-        Type: ${vacationDetails.reason || "Not provided"}
+        Type: ${vacationDetails.type || "Not provided"}
     `;
 
     for (const userId of adminUserIds) {
@@ -77,7 +77,6 @@ export async function notifyAdminsVacationSubmitted(
         await sendSlackMessage(dmChannelId, message);
     }
 }
-
 
 /**
  * Notify user when their vacation status is updated

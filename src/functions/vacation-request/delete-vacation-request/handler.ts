@@ -1,6 +1,8 @@
 import type {APIGatewayProxyEvent, APIGatewayProxyHandler} from "aws-lambda";
 import {vacationRequestService} from "src/database/services";
 import {middyfy} from "src/libs/lambda";
+import { notifyAdminsVacationDeleted } from "src/notifications/vacation-slack-utils";
+import { notifyAdminsVacationDeletedByEmail } from "src/notifications/vacation-email-utils";
 
 /**
  * Lambda for deleting a vacation request entry from DynamoDB.
@@ -32,6 +34,20 @@ const deleteVacationRequestHandler: APIGatewayProxyHandler = async (event: APIGa
     ;
 
     await vacationRequestService.deleteVacationRequest(id);
+
+    await notifyAdminsVacationDeleted({
+      userId: foundVacationRequestById.userId,
+      startDate: foundVacationRequestById.startDate,
+      endDate: foundVacationRequestById.endDate,
+      type: foundVacationRequestById.type
+    });
+    
+    await notifyAdminsVacationDeletedByEmail({
+      userId: foundVacationRequestById.userId,
+      startDate: foundVacationRequestById.startDate,
+      endDate: foundVacationRequestById.endDate,
+      type: foundVacationRequestById.type
+    });
 
     return {
       statusCode: 204,

@@ -42,15 +42,11 @@ async function sendSlackMessage(channelId: string, message: string): Promise<Cha
 }
 
 /**
- * Notify admins when a vacation is submitted
+ * Generic function to notify admins about a vacation
  */
-export async function notifyAdminsVacationSubmitted(
-    vacationDetails: {
-        user: string;
-        startDate: string;
-        endDate: string;
-        type?: string;
-    }
+async function notifyAdminsVacation(
+    vacationDetails: { user: string; startDate: string; endDate: string; type?: string },
+    messageHeader: string
 ) {
     const adminUserIds = process.env.ADMIN_SLACK_USERS?.split(",") || [];
 
@@ -59,7 +55,7 @@ export async function notifyAdminsVacationSubmitted(
     }
 
     const message = `
-        :new: *New Vacation Submitted* :new:
+        ${messageHeader}
         User: ${vacationDetails.user}
         Start date: ${vacationDetails.startDate}
         End date: ${vacationDetails.endDate}
@@ -73,13 +69,28 @@ export async function notifyAdminsVacationSubmitted(
 }
 
 /**
+ * Notify admins when a vacation is submitted
+ */
+export async function notifyAdminsVacationSubmitted(vacationDetails: Parameters<typeof notifyAdminsVacation>[0]) {
+    await notifyAdminsVacation(vacationDetails, ":new: *New Vacation Submitted* :new:");
+}
+
+/**
+ * Notify admins when a vacation request is deleted
+ */
+export async function notifyAdminsVacationDeleted(vacationDetails: Parameters<typeof notifyAdminsVacation>[0]) {
+    await notifyAdminsVacation(vacationDetails, ":x: *Vacation Request Deleted* :x:");
+}
+
+
+/**
  * Notify user when their vacation status is updated
  */
 export async function notifyUserVacationStatusUpdated(userEmail: string, updatedStatus: string) {
     const user = await findSlackUserByEmail(userEmail);
 
     if (!user || !user.id) {
-        throw new Error(`Slack user not found for name: ${userEmail}`);
+        throw new Error(`Slack user not found for email: ${userEmail}`);
     }
 
     const dmChannelId = await openDirectMessageChannel(user.id);
@@ -90,35 +101,4 @@ export async function notifyUserVacationStatusUpdated(userEmail: string, updated
     `;
 
     return await sendSlackMessage(dmChannelId, message);
-}
-
-/**
- * Notify admins when a vacation request is deleted
- */
-export async function notifyAdminsVacationDeleted(
-    vacationDetails: {
-        user: string;
-        startDate: string;
-        endDate: string;
-        type?: string;
-    }
-    ) {
-    const adminUserIds = process.env.ADMIN_SLACK_USERS?.split(",") || [];
-
-    if (adminUserIds.length === 0) {
-        throw new Error("No admin Slack user IDs provided in ADMIN_SLACK_USERS");
-    }
-
-    const message = `
-        :x: *Vacation Request Deleted* :x:
-        User: ${vacationDetails.user}
-        Start date: ${vacationDetails.startDate}
-        End date: ${vacationDetails.endDate}
-        Type: ${vacationDetails.type || "Not provided"}
-    `;
-
-    for (const userId of adminUserIds) {
-        const dmChannelId = await openDirectMessageChannel(userId.trim());
-        await sendSlackMessage(dmChannelId, message);
-    }
 }

@@ -5,6 +5,7 @@ import type { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
 import type vacationRequestSchema from "src/schema/vacationRequest";
 import { notifyAdminsVacationSubmitted } from "src/notifications/vacation-slack-utils";
 import { notifyAdminsVacationSubmittedByEmail } from "src/notifications/vacation-email-utils";
+import { CreateKeycloakApiService } from "src/database/services/keycloak-api-service";
 
 /**
  * Handler for creating a new vacation request entry in DynamoDB.
@@ -42,6 +43,8 @@ export const createVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
   }
 
   const newVacationRequestId = uuidv4();
+  const api = CreateKeycloakApiService();
+  const userDetails = await api.findUser(userId);
 
   try {
     const createdVacationRequest = await vacationRequestService.createVacationRequest({
@@ -59,14 +62,14 @@ export const createVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
     });
     
     await notifyAdminsVacationSubmitted({
-      userId: createdBy,
+      user: userDetails.firstName,
       startDate,
       endDate,
       type: type  
     });
 
     await notifyAdminsVacationSubmittedByEmail({
-      userId: createdBy,
+      user: userDetails.firstName,
       startDate,
       endDate,
       type: type

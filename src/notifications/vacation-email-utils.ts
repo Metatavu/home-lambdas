@@ -13,7 +13,7 @@ if (!process.env.RESEND_API_KEY) {
  * Notify admins when a vacation is submitted
  */
 export async function notifyAdminsVacationSubmittedByEmail(vacationDetails: {
-    userId: string;
+    user: string;
     startDate: string;
     endDate: string;
     type?: string;
@@ -25,7 +25,7 @@ export async function notifyAdminsVacationSubmittedByEmail(vacationDetails: {
     const subject = "New Vacation Request Submitted";
     const html = `
         <p><strong>New Vacation Submitted</strong></p>
-        <p>User ID: ${vacationDetails.userId}</p>
+        <p>User: ${vacationDetails.user}</p>
         <p>Start Date: ${vacationDetails.startDate}</p>
         <p>End Date: ${vacationDetails.endDate}</p>
         <p>Reason: ${vacationDetails.type || "Not provided"}</p>
@@ -56,7 +56,7 @@ export async function notifyUserVacationStatusUpdatedByEmail({ to, updatedStatus
  * Notify admins when a vacation request is deleted
  */
 export async function notifyAdminsVacationDeletedByEmail(vacationDetails: {
-    userId: string;
+    user: string;
     startDate: string;
     endDate: string;
     type?: string;
@@ -68,7 +68,7 @@ export async function notifyAdminsVacationDeletedByEmail(vacationDetails: {
     const subject = "Vacation Request Deleted";
     const html = `
         <p><strong>Vacation Request Deleted</strong></p>
-        <p>User ID: ${vacationDetails.userId}</p>
+        <p>User: ${vacationDetails.user}</p>
         <p>Start Date: ${vacationDetails.startDate}</p>
         <p>End Date: ${vacationDetails.endDate}</p>
         <p>Reason: ${vacationDetails.type || "Not provided"}</p>

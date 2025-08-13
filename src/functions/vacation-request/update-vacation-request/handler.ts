@@ -7,6 +7,7 @@ import {
   notifyAdminsVacationSubmittedByEmail,
   notifyUserVacationStatusUpdatedByEmail
 } from "src/notifications/vacation-email-utils";
+import { CreateKeycloakApiService } from "src/database/services/keycloak-api-service";
 
 /**
  * Lambda function to update a vacation request
@@ -67,27 +68,30 @@ const updateVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
     updatedAt: updatedAt
   };
 
+  const api = CreateKeycloakApiService();
+  const userDetails = await api.findUser(userId);
+
   try {
     const updatedVacationRequest =
       await vacationRequestService.updateVacationRequest(vacationRequestUpdates);
 
     if (statusChanged) {
-      await notifyUserVacationStatusUpdated(createdBy, status);
+      await notifyUserVacationStatusUpdated(userDetails.email, status);
       await notifyUserVacationStatusUpdatedByEmail({
-        to: body.userEmail,
+        to: userDetails.email,
         updatedStatus: status
       });
     }
 
     await notifyAdminsVacationSubmitted({
-      userId: createdBy,
+      user: userDetails.firstName,
       startDate,
       endDate,
       type: type 
     });
 
     await notifyAdminsVacationSubmittedByEmail({
-      userId: createdBy,
+      user: userDetails.firstName,
       startDate,
       endDate,
       type: type

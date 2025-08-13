@@ -10,20 +10,14 @@ if (!SLACK_BOT_TOKEN) {
 const slackClient = new WebClient(SLACK_BOT_TOKEN, { logLevel: LogLevel.DEBUG });
 
 /**
- * Get list of Slack users
+ * Find Slack user by email (requires users:read.email scope)
  */
-async function getSlackUsers() {
-    const result = await slackClient.users.list();
-    if (!result.ok) throw new Error(`Failed to get Slack users: ${result.error}`);
-    return result.members || [];
-}
-
-/**
- * Find Slack user by full name 
- */
-async function findSlackUserByFullName(fullName: string) {
-    const users = await getSlackUsers();
-    return users.find(user => user.real_name === fullName);
+async function findSlackUserByEmail(email: string) {
+    const result = await slackClient.users.lookupByEmail({ email });
+    if (!result.ok || !result.user) {
+        throw new Error(`Slack user not found for email: ${email}`);
+    }
+    return result.user;
 }
 
 /**
@@ -52,7 +46,7 @@ async function sendSlackMessage(channelId: string, message: string): Promise<Cha
  */
 export async function notifyAdminsVacationSubmitted(
     vacationDetails: {
-        userId: string;
+        user: string;
         startDate: string;
         endDate: string;
         type?: string;
@@ -66,7 +60,7 @@ export async function notifyAdminsVacationSubmitted(
 
     const message = `
         :new: *New Vacation Submitted* :new:
-        User ID: ${vacationDetails.userId}
+        User: ${vacationDetails.user}
         Start date: ${vacationDetails.startDate}
         End date: ${vacationDetails.endDate}
         Type: ${vacationDetails.type || "Not provided"}
@@ -81,11 +75,11 @@ export async function notifyAdminsVacationSubmitted(
 /**
  * Notify user when their vacation status is updated
  */
-export async function notifyUserVacationStatusUpdated(userFullName: string, updatedStatus: string) {
-    const user = await findSlackUserByFullName(userFullName);
+export async function notifyUserVacationStatusUpdated(userEmail: string, updatedStatus: string) {
+    const user = await findSlackUserByEmail(userEmail);
 
     if (!user || !user.id) {
-        throw new Error(`Slack user not found for name: ${userFullName}`);
+        throw new Error(`Slack user not found for name: ${userEmail}`);
     }
 
     const dmChannelId = await openDirectMessageChannel(user.id);
@@ -103,7 +97,7 @@ export async function notifyUserVacationStatusUpdated(userFullName: string, upda
  */
 export async function notifyAdminsVacationDeleted(
     vacationDetails: {
-        userId: string;
+        user: string;
         startDate: string;
         endDate: string;
         type?: string;
@@ -117,7 +111,7 @@ export async function notifyAdminsVacationDeleted(
 
     const message = `
         :x: *Vacation Request Deleted* :x:
-        User ID: ${vacationDetails.userId}
+        User: ${vacationDetails.user}
         Start date: ${vacationDetails.startDate}
         End date: ${vacationDetails.endDate}
         Type: ${vacationDetails.type || "Not provided"}

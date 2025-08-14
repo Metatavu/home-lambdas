@@ -65,14 +65,14 @@ export const createVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
       user: userDetails.firstName,
       startDate,
       endDate,
-      type: type  
+      type
     });
 
     await notifyAdminsVacationSubmittedByEmail({
       user: userDetails.firstName,
       startDate,
       endDate,
-      type: type
+      type
     });
 
     return {

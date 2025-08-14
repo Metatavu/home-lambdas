@@ -45,7 +45,7 @@ const deleteVacationRequestHandler: APIGatewayProxyHandler = async (event: APIGa
       endDate: foundVacationRequestById.endDate,
       type: foundVacationRequestById.type
     });
-    
+
     await notifyAdminsVacationDeletedByEmail({
       user: userDetails.firstName,
       startDate: foundVacationRequestById.startDate,

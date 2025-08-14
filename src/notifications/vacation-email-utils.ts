@@ -10,76 +10,6 @@ if (!process.env.RESEND_API_KEY) {
 }
 
 /**
- * Notify admins when a vacation is submitted
- */
-export async function notifyAdminsVacationSubmittedByEmail(vacationDetails: {
-    user: string;
-    startDate: string;
-    endDate: string;
-    type?: string;
-    }) {
-    if (adminEmails.length === 0) {
-        throw new Error("ADMIN_EMAILS environment variable is empty or not set.");
-    }
-
-    const subject = "New Vacation Request Submitted";
-    const html = `
-        <p><strong>New Vacation Submitted</strong></p>
-        <p>User: ${vacationDetails.user}</p>
-        <p>Start Date: ${vacationDetails.startDate}</p>
-        <p>End Date: ${vacationDetails.endDate}</p>
-        <p>Reason: ${vacationDetails.type || "Not provided"}</p>
-    `;
-
-    for (const to of adminEmails) {
-        await sendEmail({ to: to.trim(), subject, html });
-    }
-}
-
-/**
- * Notify user when their vacation status is updated
- */
-export async function notifyUserVacationStatusUpdatedByEmail({ to, updatedStatus }: {
-        to: string;
-        updatedStatus: string;
-    }) {
-    const subject = "Your Vacation Request Status Was Updated";
-    const html = `
-        <p>Your vacation request status has been updated to <strong>${updatedStatus}</strong>.</p>
-        <p>If you have questions, please contact your admin.</p>
-    `;
-
-    await sendEmail({ to, subject, html });
-}
-
-/**
- * Notify admins when a vacation request is deleted
- */
-export async function notifyAdminsVacationDeletedByEmail(vacationDetails: {
-    user: string;
-    startDate: string;
-    endDate: string;
-    type?: string;
-    }) {
-    if (adminEmails.length === 0) {
-        throw new Error("ADMIN_EMAILS environment variable is empty or not set.");
-    }
-
-    const subject = "Vacation Request Deleted";
-    const html = `
-        <p><strong>Vacation Request Deleted</strong></p>
-        <p>User: ${vacationDetails.user}</p>
-        <p>Start Date: ${vacationDetails.startDate}</p>
-        <p>End Date: ${vacationDetails.endDate}</p>
-        <p>Reason: ${vacationDetails.type || "Not provided"}</p>
-    `;
-
-    for (const to of adminEmails) {
-        await sendEmail({ to: to.trim(), subject, html });
-    }
-}
-
-/**
  * Send a generic email
  */
 async function sendEmail({
@@ -90,7 +20,7 @@ async function sendEmail({
     to: string;
     subject: string;
     html: string;
-}) {
+    }) {
     const { error } = await resend.emails.send({
         from: "Metatavu Home <onboarding@resend.dev>",
         to,
@@ -102,6 +32,79 @@ async function sendEmail({
         console.error("Failed to send email:", error);
         throw error;
     }
-
-    console.log(`Email sent to ${to}`);
 }
+
+/**
+ * Generic function to notify admins about a vacation
+ */
+async function notifyAdminsVacationByEmail(
+    vacationDetails: {
+        user: string;
+        startDate: string;
+        endDate: string;
+        type?: string;
+    },
+    subject: string,
+    header: string
+    ) {
+    if (adminEmails.length === 0) {
+        throw new Error("ADMIN_EMAILS environment variable is empty or not set.");
+    }
+
+    const html = `
+        <p><strong>${header}</strong></p>
+        <p>User: ${vacationDetails.user}</p>
+        <p>Start Date: ${vacationDetails.startDate}</p>
+        <p>End Date: ${vacationDetails.endDate}</p>
+        <p>Reason: ${vacationDetails.type || "Not provided"}</p>
+    `;
+
+    for (const to of adminEmails) {
+        await sendEmail({ to: to.trim(), subject, html });
+    }
+}
+
+/**
+ * Notify admins when a vacation is submitted
+ */
+export async function notifyAdminsVacationSubmittedByEmail(
+    vacationDetails: Parameters<typeof notifyAdminsVacationByEmail>[0]
+    ) {
+    await notifyAdminsVacationByEmail(
+        vacationDetails,
+        "New Vacation Request Submitted",
+        "New Vacation Submitted"
+    );
+}
+
+/**
+ * Notify admins when a vacation request is deleted
+ */
+export async function notifyAdminsVacationDeletedByEmail(
+    vacationDetails: Parameters<typeof notifyAdminsVacationByEmail>[0]
+    ) {
+    await notifyAdminsVacationByEmail(
+        vacationDetails,
+        "Vacation Request Deleted",
+        "Vacation Request Deleted"
+    );
+}
+
+/**
+ * Notify user when their vacation status is updated
+ */
+export async function notifyUserVacationStatusUpdatedByEmail({
+    to,
+    updatedStatus
+    }: {
+    to: string;
+    updatedStatus: string;
+    }) {
+    const subject = "Your Vacation Request Status Was Updated";
+    const html = `
+        <p>Your vacation request status has been updated to <strong>${updatedStatus}</strong>.</p>
+        <p>If you have questions, please contact your admin.</p>
+    `;
+
+    await sendEmail({ to, subject, html });
+    }

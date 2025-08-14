@@ -45,7 +45,12 @@ async function sendSlackMessage(channelId: string, message: string): Promise<Cha
  * Generic function to notify admins about a vacation
  */
 async function notifyAdminsVacation(
-    vacationDetails: { user: string; startDate: string; endDate: string; type?: string },
+    vacationDetails: {
+        user: string;
+        startDate: string;
+        endDate: string;
+        type?: string;
+    },
     messageHeader: string
 ) {
     const adminUserIds = process.env.ADMIN_SLACK_USERS?.split(",") || [];
@@ -53,10 +58,10 @@ async function notifyAdminsVacation(
     if (adminUserIds.length === 0) {
         throw new Error("No admin Slack user IDs provided in ADMIN_SLACK_USERS");
     }
-
+    
     const message = `
         ${messageHeader}
-        User: ${vacationDetails.user}
+        Applicant: ${vacationDetails.user}
         Start date: ${vacationDetails.startDate}
         End date: ${vacationDetails.endDate}
         Type: ${vacationDetails.type || "Not provided"}

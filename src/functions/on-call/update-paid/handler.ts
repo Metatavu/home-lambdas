@@ -25,7 +25,6 @@ export const updatePaidHandler: ValidatedEventAPIGatewayProxyEvent<any> = async 
 
   const dynamoDb = new DynamoDB.DocumentClient();
 
-  // Update only after Set Paid for record direct Year adn Week
   await dynamoDb.update({
     TableName: "OnCallSchedule",
     Key: {

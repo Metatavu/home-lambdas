@@ -365,23 +365,6 @@ const serverlessConfiguration: AWS = {
           }
         }
       },
-      OnCallNameMap: {
-        Type: "AWS::DynamoDB::Table",
-        DeletionPolicy: "Delete",
-        Properties: {
-          TableName: "OnCallNameMap",
-          AttributeDefinitions: [
-            { AttributeName: "Username", AttributeType: "S" }
-          ],
-          KeySchema: [
-            { AttributeName: "Username", KeyType: "HASH" }
-          ],
-          ProvisionedThroughput: {
-            ReadCapacityUnits: 1,
-            WriteCapacityUnits: 1
-          }
-        }
-      },
     },
   },
 };

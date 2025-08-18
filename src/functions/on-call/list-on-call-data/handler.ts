@@ -1,6 +1,7 @@
 import { DynamoDB } from "aws-sdk"
 import { middyfy } from "@libs/lambda";
 import { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
+import { OnCallEntry } from "src/database/models/oncall";
 
 /**
  * Lambda method for loading on-call data
@@ -27,7 +28,7 @@ export const listOnCallDataHandler: ValidatedEventAPIGatewayProxyEvent<any> = as
 
   const dynamoDb = new DynamoDB.DocumentClient();
 
-  // Получаем все записи за указанный год
+  // Get data for the specified year
   const dataResult = await dynamoDb.query({
     TableName: "OnCallSchedule",
     KeyConditionExpression: "#yr = :year",
@@ -39,17 +40,7 @@ export const listOnCallDataHandler: ValidatedEventAPIGatewayProxyEvent<any> = as
     }
   }).promise();
 
-  const data = dataResult.Items || [];
-
-  // Загружаем nameMap из отдельной таблицы
-  const nameMapResult = await dynamoDb.scan({
-    TableName: "OnCallNameMap"
-  }).promise();
-
-  const nameMap: { [key: string]: string } = {};
-  (nameMapResult.Items || []).forEach(item => {
-    nameMap[item.Username] = item.FullName;
-  });
+  const data = (dataResult.Items as OnCallEntry[]) || [];
 
   if (!data.length) {
     return {
@@ -60,9 +51,9 @@ export const listOnCallDataHandler: ValidatedEventAPIGatewayProxyEvent<any> = as
 
   return {
     statusCode: 200,
-    body: JSON.stringify(data.map((entry: any) => ({
+    body: JSON.stringify(data.map((entry) => ({
       ...entry,
-      Person: nameMap[entry.Person] || entry.Person,
+      Person: entry.Person,
       Paid: entry.Paid || false
     })))
   };

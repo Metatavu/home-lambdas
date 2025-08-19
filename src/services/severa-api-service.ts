@@ -394,6 +394,15 @@ export const CreateSeveraApiService = (): SeveraApiService => {
       return workHoursResults.flat();
     },
 
+    /**
+     * Fetches work hours for a specific user from Severa API.
+     *
+     * @param severaUserId - The GUID of the Severa user whose work hours are being retrieved.
+     * @param startDate - (Optional) The start date for filtering work hours (ISO format).
+     * @param endDate - (Optional) The end date for filtering work hours (ISO format).
+     * @returns {Promise<SeveraResponseWorkHours[]>} - A promise that resolves to an array of work hours for the specified user.
+     * @throws {Error} If the request to the Severa API fails.
+     */
     getWorkHoursForUser: async (severaUserId, startDate, endDate) => {
       const url = new URL(`${process.env.SEVERA_DEMO_BASE_URL}/v1/users/${severaUserId}/workhours`);
       if (startDate) url.searchParams.append("startDate", startDate);

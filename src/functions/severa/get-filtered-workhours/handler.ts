@@ -26,10 +26,12 @@ export const getWorkHoursHandler: APIGatewayProxyHandler = async (event) => {
     } else {
       if (severaUserId) {
         if (!optInUserGuids.has(severaUserId)) {
-          allWorkHours = [];
-        } else {
-          allWorkHours = await api.getWorkHoursForUser(severaUserId, startDate, endDate);
+          return {
+            statusCode: 404,
+            body: JSON.stringify({ error: "User not found or not opted-in" }),
+          };
         }
+        allWorkHours = await api.getWorkHoursForUser(severaUserId, startDate, endDate);
       } else {
         throw new Error("severaUserId is required when severaProjectId is not specified");
       }

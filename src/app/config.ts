@@ -10,7 +10,11 @@ const env = cleanEnv(process.env, {
   SPLUNK_API_ID: str(),
   SPLUNK_TEAM_ONCALL_URL: str(),
   SPLUNK_SCHEDULE_POLICY_NAME : str(),
-  SEVERA_TEST_USER_EMAIL: str({ default: undefined })
+  SEVERA_TEST_USER_EMAIL: str({ default: undefined }),
+  RESEND_API_KEY: str(),
+  ADMIN_EMAILS: str(),  
+  METATAVU_BOT_TOKEN: str(),       
+  ADMIN_SLACK_USERS: str(),   
 });
 
 export default class Config {
@@ -39,6 +43,14 @@ export default class Config {
     },
     testUser: {
       email: env.SEVERA_TEST_USER_EMAIL,
+    },
+    email: {
+      resendApiKey: env.RESEND_API_KEY,
+      adminEmails: env.ADMIN_EMAILS.split(","),
+    },
+    slack: {
+      botToken: env.METATAVU_BOT_TOKEN,
+      adminUsers: env.ADMIN_SLACK_USERS.split(","),
     }
   });
 }

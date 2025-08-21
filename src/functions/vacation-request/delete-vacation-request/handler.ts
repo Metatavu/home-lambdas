@@ -1,8 +1,7 @@
 import type {APIGatewayProxyEvent, APIGatewayProxyHandler} from "aws-lambda";
 import {vacationRequestService} from "src/database/services";
 import {middyfy} from "src/libs/lambda";
-import { notifyAdminsVacationDeleted } from "src/notifications/vacation-slack-utils";
-import { notifyAdminsVacationDeletedByEmail } from "src/notifications/vacation-email-utils";
+import { notifyAdminsVacationDeletedAll } from "src/notifications/vacation-notifications";
 import { CreateKeycloakApiService } from "src/database/services/keycloak-api-service";
 
 /**
@@ -39,14 +38,7 @@ const deleteVacationRequestHandler: APIGatewayProxyHandler = async (event: APIGa
     const api = CreateKeycloakApiService();
     const userDetails = await api.findUser(foundVacationRequestById.userId);
 
-    await notifyAdminsVacationDeleted({
-      user: userDetails.firstName,
-      startDate: foundVacationRequestById.startDate,
-      endDate: foundVacationRequestById.endDate,
-      type: foundVacationRequestById.type
-    });
-
-    await notifyAdminsVacationDeletedByEmail({
+    await notifyAdminsVacationDeletedAll({
       user: userDetails.firstName,
       startDate: foundVacationRequestById.startDate,
       endDate: foundVacationRequestById.endDate,

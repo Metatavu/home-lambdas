@@ -3,8 +3,7 @@ import { vacationRequestService } from "src/database/services";
 import { v4 as uuidv4 } from "uuid";
 import type { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
 import type vacationRequestSchema from "src/schema/vacationRequest";
-import { notifyAdminsVacationSubmitted } from "src/notifications/vacation-slack-utils";
-import { notifyAdminsVacationSubmittedByEmail } from "src/notifications/vacation-email-utils";
+import { notifyAdminsVacationSubmittedAll } from "src/notifications/vacation-notifications";
 import { CreateKeycloakApiService } from "src/database/services/keycloak-api-service";
 
 /**
@@ -61,14 +60,7 @@ export const createVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
       updatedAt: updatedAt
     });
     
-    await notifyAdminsVacationSubmitted({
-      user: userDetails.firstName,
-      startDate,
-      endDate,
-      type
-    });
-
-    await notifyAdminsVacationSubmittedByEmail({
+    await notifyAdminsVacationSubmittedAll({
       user: userDetails.firstName,
       startDate,
       endDate,

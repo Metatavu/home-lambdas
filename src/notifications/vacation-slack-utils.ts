@@ -1,16 +1,27 @@
 import { WebClient, LogLevel, ChatPostMessageResponse } from "@slack/web-api";
-import * as dotenv from "dotenv";
-dotenv.config();
+import Config from "src/app/config";
 
-const SLACK_BOT_TOKEN = process.env.METATAVU_BOT_TOKEN;
-if (!SLACK_BOT_TOKEN) {
-    throw new Error("Missing METATAVU_BOT_TOKEN in environment variables");
+const slackConfig = Config.get().slack;
+
+if (!slackConfig.botToken) {
+    throw new Error("Missing Slack bot token in configuration");
 }
 
-const slackClient = new WebClient(SLACK_BOT_TOKEN, { logLevel: LogLevel.DEBUG });
+const slackClient = new WebClient(slackConfig.botToken, { logLevel: LogLevel.DEBUG });
+
+/** Interface for vacation details */
+export interface VacationDetails {
+    user: string;
+    startDate: string;
+    endDate: string;
+    type?: string;
+}
 
 /**
  * Find Slack user by email (requires users:read.email scope)
+ *
+ * @param email - Email address of the Slack user
+ * @returns Slack user object
  */
 async function findSlackUserByEmail(email: string) {
     const result = await slackClient.users.lookupByEmail({ email });
@@ -21,7 +32,10 @@ async function findSlackUserByEmail(email: string) {
 }
 
 /**
- * Open a direct message channel with a user
+ * Open a direct message channel with a Slack user
+ *
+ * @param userId - Slack user ID
+ * @returns Channel ID for the direct message
  */
 async function openDirectMessageChannel(userId: string): Promise<string> {
     const result = await slackClient.conversations.open({ users: userId });
@@ -32,7 +46,11 @@ async function openDirectMessageChannel(userId: string): Promise<string> {
 }
 
 /**
- * Send Slack message to a channel or user ID
+ * Send a Slack message to an admin or user
+ *
+ * @param channelId - Slack channel ID
+ * @param message - Message text to send
+ * @returns Slack API response for the message
  */
 async function sendSlackMessage(channelId: string, message: string): Promise<ChatPostMessageResponse> {
     return await slackClient.chat.postMessage({
@@ -43,28 +61,22 @@ async function sendSlackMessage(channelId: string, message: string): Promise<Cha
 
 /**
  * Generic function to notify admins about a vacation
+ *
+ * @param vacationDetails - Vacation details for the notification
+ * @param messageHeader - Message header to display
  */
 async function notifyAdminsVacation(
-    vacationDetails: {
-        user: string;
-        startDate: string;
-        endDate: string;
-        type?: string;
-    },
+    vacationDetails: VacationDetails,
     messageHeader: string
 ) {
-    const adminUserIds = process.env.ADMIN_SLACK_USERS?.split(",") || [];
+    const adminUserIds = slackConfig.adminUsers;
 
-    if (adminUserIds.length === 0) {
-        throw new Error("No admin Slack user IDs provided in ADMIN_SLACK_USERS");
-    }
-    
     const message = `
-        ${messageHeader}
-        Applicant: ${vacationDetails.user}
-        Start date: ${vacationDetails.startDate}
-        End date: ${vacationDetails.endDate}
-        Type: ${vacationDetails.type || "Not provided"}
+      ${messageHeader}
+      Applicant: ${vacationDetails.user}
+      Start date: ${vacationDetails.startDate}
+      End date: ${vacationDetails.endDate}
+      Type: ${vacationDetails.type || "Not provided"}
     `;
 
     for (const userId of adminUserIds) {
@@ -75,23 +87,33 @@ async function notifyAdminsVacation(
 
 /**
  * Notify admins when a vacation is submitted
+ *
+ * @param vacationDetails - Details of the submitted vacation
  */
-export async function notifyAdminsVacationSubmitted(vacationDetails: Parameters<typeof notifyAdminsVacation>[0]) {
+export async function notifyAdminsVacationSubmittedSlack(vacationDetails: VacationDetails) {
     await notifyAdminsVacation(vacationDetails, ":new: *New Vacation Submitted* :new:");
 }
 
 /**
  * Notify admins when a vacation request is deleted
+ *
+ * @param vacationDetails - Details of the deleted vacation
  */
-export async function notifyAdminsVacationDeleted(vacationDetails: Parameters<typeof notifyAdminsVacation>[0]) {
+export async function notifyAdminsVacationDeletedSlack(vacationDetails: VacationDetails) {
     await notifyAdminsVacation(vacationDetails, ":x: *Vacation Request Deleted* :x:");
 }
 
-
 /**
- * Notify user when their vacation status is updated
+ * Notify a user when their vacation status is updated
+ *
+ * @param userEmail - Email of the user
+ * @param updatedStatus - New status of the vacation
+ * @returns Slack API response for the message
  */
-export async function notifyUserVacationStatusUpdated(userEmail: string, updatedStatus: string) {
+export async function notifyUserVacationStatusUpdatedSlack(
+    userEmail: string,
+    updatedStatus: string
+): Promise<ChatPostMessageResponse> {
     const user = await findSlackUserByEmail(userEmail);
 
     if (!user || !user.id) {
@@ -101,8 +123,8 @@ export async function notifyUserVacationStatusUpdated(userEmail: string, updated
     const dmChannelId = await openDirectMessageChannel(user.id);
 
     const message = `
-    :information_source: Your vacation status has been updated to *${updatedStatus}*.
-    If you have questions, please contact your admin.
+      :information_source: Your vacation status has been updated to *${updatedStatus}*.
+      If you have questions, please contact your admin.
     `;
 
     return await sendSlackMessage(dmChannelId, message);

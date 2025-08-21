@@ -2,8 +2,7 @@ import type { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway";
 import { middyfy } from "@libs/lambda";
 import { vacationRequestService } from "src/database/services";
 import type vacationRequestSchema from "src/schema/vacationRequest";
-import { notifyUserVacationStatusUpdated } from "src/notifications/vacation-slack-utils";
-import { notifyUserVacationStatusUpdatedByEmail } from "src/notifications/vacation-email-utils";
+import { notifyUserVacationStatusUpdatedAll } from "src/notifications/vacation-notifications";
 import { CreateKeycloakApiService } from "src/database/services/keycloak-api-service";
 
 /**
@@ -73,10 +72,9 @@ const updateVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
       await vacationRequestService.updateVacationRequest(vacationRequestUpdates);
 
     if (statusChanged) {
-      await notifyUserVacationStatusUpdated(userDetails.email, status);
-      await notifyUserVacationStatusUpdatedByEmail({
-        to: userDetails.email,
-        updatedStatus: status
+      await notifyUserVacationStatusUpdatedAll({
+        email: userDetails.email,
+        updatedStatus: status,
       });
     }
 

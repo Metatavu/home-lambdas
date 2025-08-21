@@ -29,4 +29,12 @@ export interface Configuration {
     testUser: {
         email: string
     }
+    email: {                             
+        resendApiKey: string;
+        adminEmails: string[];
+    }
+    slack: {
+        botToken: string;
+        adminUsers: string[];
+    };
 }

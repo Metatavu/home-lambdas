@@ -1,5 +1,5 @@
 import type { APIGatewayProxyHandler } from "aws-lambda";
-import { CreateSeveraApiService, getResourceAllocationsByUserOrAll } from "src/services/severa-api-service";
+import { CreateSeveraApiService } from "src/services/severa-api-service";
 import { middyfy } from "src/libs/lambda";
 import type ResourceAllocationModel from "src/types/severa/resourceAllocation/resourceAllocation";
 import type SeveraResponseResourceAllocation from "src/types/severa/resourceAllocation/severaResponseResourceAllocation";
@@ -16,7 +16,7 @@ export const getResourceAllocationHandler: APIGatewayProxyHandler = async (event
     const api = CreateSeveraApiService();
     const optInUsers = await api.getOptInUsers();
 
-    const allResourceAllocations = await getResourceAllocationsByUserOrAll(severaUserId, optInUsers);
+    const allResourceAllocations = await api.getResourceAllocationsByUserOrAll(severaUserId, optInUsers);
 
     /**
      * Maps the Severa API response data to the ResourceAllocation model.

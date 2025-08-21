@@ -18,6 +18,16 @@ export interface VacationDetails {
 }
 
 /**
+ * Format a date string from yyyy-mm-dd to dd-mm-yyyy
+ *
+ * @param date - Date string in yyyy-mm-dd format
+ * @returns Date string in dd-mm-yyyy format
+ */
+function formatDate(date: string): string {
+    return date.split("-").reverse().join("-");
+}
+
+/**
  * Find Slack user by email (requires users:read.email scope)
  *
  * @param email - Email address of the Slack user
@@ -74,8 +84,8 @@ async function notifyAdminsVacation(
     const message = `
       ${messageHeader}
       Applicant: ${vacationDetails.user}
-      Start date: ${vacationDetails.startDate}
-      End date: ${vacationDetails.endDate}
+      Start date: ${formatDate(vacationDetails.startDate)}
+      End date: ${formatDate(vacationDetails.endDate)}
       Type: ${vacationDetails.type || "Not provided"}
     `;
 

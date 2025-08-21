@@ -13,6 +13,16 @@ export interface VacationDetails {
 }
 
 /**
+ * Format a date string from yyyy-mm-dd to dd-mm-yyyy
+ *
+ * @param date - Date string in yyyy-mm-dd format
+ * @returns Date string in dd-mm-yyyy format
+ */
+function formatDate(date: string): string {
+    return date.split("-").reverse().join("-");
+}
+
+/**
  * Send a generic email
  *
  * @param to - Recipient email address
@@ -60,8 +70,8 @@ async function notifyAdminsVacationByEmail(
   const html = `
     <p><strong>${header}</strong></p>
     <p>User: ${vacationDetails.user}</p>
-    <p>Start Date: ${vacationDetails.startDate}</p>
-    <p>End Date: ${vacationDetails.endDate}</p>
+    <p>Start Date: ${formatDate(vacationDetails.startDate)}</p>
+    <p>End Date: ${formatDate(vacationDetails.endDate)}</p>
     <p>Reason: ${vacationDetails.type || "Not provided"}</p>
   `;
 

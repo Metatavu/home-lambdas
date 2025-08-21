@@ -1,5 +1,5 @@
 import type { APIGatewayProxyHandler } from "aws-lambda";
-import { CreateSeveraApiService } from "src/services/severa-api-service";
+import { CreateSeveraApiService, getResourceAllocationsByUserOrAll } from "src/services/severa-api-service";
 import { middyfy } from "src/libs/lambda";
 import type ResourceAllocationModel from "src/types/severa/resourceAllocation/resourceAllocation";
 import type SeveraResponseResourceAllocation from "src/types/severa/resourceAllocation/severaResponseResourceAllocation";
@@ -14,23 +14,9 @@ export const getResourceAllocationHandler: APIGatewayProxyHandler = async (event
 
   try {
     const api = CreateSeveraApiService();
+    const optInUsers = await api.getOptInUsers();
 
-    const buildResourceAllocationUrl = (severaUserId?: string) => {
-      let endpointPath: string;
-
-      if (severaUserId) {
-        endpointPath = `users/${severaUserId}/resourceallocations/allocations`;
-      } else {
-        endpointPath = "resourceallocations";
-      }
-
-    const customUrl = new URL(`${process.env.SEVERA_DEMO_BASE_URL}/v1/${endpointPath}`);
-
-    return customUrl;
-    }
-
-    const url = buildResourceAllocationUrl(severaUserId);
-    const response = await api.getResourceAllocation(url);
+    const allResourceAllocations = await getResourceAllocationsByUserOrAll(severaUserId, optInUsers);
 
     /**
      * Maps the Severa API response data to the ResourceAllocation model.
@@ -57,9 +43,8 @@ export const getResourceAllocationHandler: APIGatewayProxyHandler = async (event
           isInternal: resourceAllocation.project?.isInternal,
         },
       }))
-  );
-  
-    const resourceAllocations = mappedResourceAllocations(response);
+    );
+    const resourceAllocations = mappedResourceAllocations(allResourceAllocations);
 
     return {
       statusCode: 200,

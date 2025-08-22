@@ -1,4 +1,4 @@
-import type { DailyCombinedData, WeeklyCombinedData, TimeRegistrations, PreviousWorkdayDates, NonProjectTime, DailyMessageData, DailyMessageResult, WeeklyMessageData, WeeklyMessageResult } from "src/types/meta-assistant/index";
+import type { DailyCombinedData, WeeklyCombinedData, PreviousWorkdayDates, DailyMessageData, DailyMessageResult, WeeklyMessageData, WeeklyMessageResult } from "src/types/meta-assistant/index";
 import { type ChatPostMessageResponse, LogLevel, WebClient } from "@slack/web-api";
 import type { Member } from "@slack/web-api/dist/response/UsersListResponse";
 import { DateTime } from "luxon";
@@ -10,9 +10,8 @@ import type { NotificationMessageResult } from "src/types/trello-notification";
  * Namespace for Slack utilities
  */
 namespace SlackUtilities {
-
   export const client = new WebClient(process.env.METATAVU_BOT_TOKEN, {
-    logLevel: LogLevel.DEBUG
+    logLevel: LogLevel.WARN
   });
 
   const slackOverride = process.env.SLACK_USER_OVERRIDE ? process.env.SLACK_USER_OVERRIDE.split(",") : undefined;
@@ -105,7 +104,6 @@ namespace SlackUtilities {
       displayDate: displayDate,
       displayTotalLoggedTime: totalLoggedTime,
       displayExpected: expectedHours,
-      displayNonBillableProject: nonBillableProject,
     };
   };
 
@@ -117,10 +115,9 @@ namespace SlackUtilities {
    * @param weekEnd date for data
    * @returns message
    */
-  const constructWeeklySummaryMessage = (user: WeeklyCombinedData, weekStart: string, weekEnd: string, vacationTime: number): WeeklyMessageData => {
-    const { name, firstName } = user;
-    user.selectedWeek.expected -= vacationTime;
-    const week = Number(user.selectedWeek.timePeriod.split(",")[2]);
+  const constructWeeklySummaryMessage = (user: WeeklyCombinedData, weekStart: string, weekEnd: string): WeeklyMessageData => {
+    const { firstName } = user;
+    const week = Number(user.week);
     // TODO: minimumBillableRate should come from the user but this needs to be updated on the back end for most users, so using this for now
     const minimumBillableRate = 75;
 
@@ -128,42 +125,37 @@ namespace SlackUtilities {
     const endDate = DateTime.fromISO(weekEnd).toFormat("dd.MM.yyyy");
 
     const {
-      logged,
-      loggedProject,
-      expected,
-      internal,
-      billableProject,
-      nonBillableProject
-    } = TimeUtilities.handleTimeFormatting(user.selectedWeek);
-
+      totalEnteredHours,
+      projectTime,
+      totalExpectedHours,
+    } = TimeUtilities.handleTimeFormattingWeekly(user);
+    
     const {
       message,
       billableHoursPercentage
-    } = MessageUtilities.calculateWorkedTimeAndBillableHours(user.selectedWeek);
+    } = MessageUtilities.calculateWorkedTimeAndBillableHoursWeekly(user);
 
     const customMessage = `
-Hi ${firstName},
-Last week (week: ${week}, ${startDate} - ${endDate}) you worked ${logged} with an expected time of ${expected}.
-${message}
-Logged project time: ${loggedProject}, Billable project time: ${billableProject}, Non billable project time: ${nonBillableProject}, Internal time: ${internal}.
-Your percentage of billable hours was: ${billableHoursPercentage}%
-You ${+parseInt(billableHoursPercentage) >= minimumBillableRate ? `worked the target ${minimumBillableRate}% billable hours last week:+1:` : `did not work the target ${minimumBillableRate}% billable hours last week:-1:`}.
-Have a great week!
-    `;
+      Hi ${firstName},
+      Last week (week: ${week}, ${startDate} - ${endDate}) you worked ${totalEnteredHours} with an expected time of ${totalExpectedHours}.
+      ${message}
+      Logged project time: ${projectTime}.
+      Your percentage of billable hours was: ${billableHoursPercentage}%
+      You ${+parseInt(billableHoursPercentage) >= minimumBillableRate ? `worked the target ${minimumBillableRate}% billable hours last week:+1:` : `did not work the target ${minimumBillableRate}% billable hours last week:-1:`}.
 
+      Have a great week!
+    `;
+    
     return {
       message: customMessage,
-      name: name,
+      name: firstName,
       week: week,
       startDate: startDate,
       endDate: endDate,
-      displayLogged: logged,
-      displayLoggedProject: loggedProject,
-      displayExpected: expected,
-      displayBillableProject: billableProject,
-      displayNonBillableProject: nonBillableProject,
-      displayInternal: internal,
-      billableHoursPercentage: billableHoursPercentage
+      displayLogged: totalEnteredHours,
+      displayLoggedProject: projectTime,
+      displayExpected: totalExpectedHours,
+      billableHoursPercentage: billableHoursPercentage,
     };
   };
 
@@ -214,6 +206,7 @@ Have a great week!
     for (const userData of dailyCombinedData) {
       const { slackId } = userData;
       const message = constructDailyMessage(userData, numberOfToday);
+
         if (!slackOverride) {
           messageResults.push({
             message: message,
@@ -242,35 +235,25 @@ Have a great week!
    */
   export const postWeeklyMessageToUsers = async (
     weeklyCombinedData: WeeklyCombinedData[],
-    timeRegistrations:TimeRegistrations[],
-    previousWorkDays: PreviousWorkdayDates,
-    nonProjectTimes: NonProjectTime[]
   ): Promise<WeeklyMessageResult[]> => {
     const { weekStartDate, weekEndDate } = TimeUtilities.getlastWeeksDates();
-    const { yesterday, today } = previousWorkDays;
-
     const messageResults: WeeklyMessageResult[] = [];
 
     for (const userData of weeklyCombinedData) {
-      const { slackId, personId, expected } = userData;
-      const vacationTime = TimeUtilities.checkIfVacationCaseExists(personId, timeRegistrations, nonProjectTimes, weekStartDate, weekEndDate);
-      const isAway = TimeUtilities.checkIfUserShouldRecieveMessage(timeRegistrations, personId, expected, today.toISODate(), nonProjectTimes);
-      const firstDayBack = TimeUtilities.checkIfUserShouldRecieveMessage(timeRegistrations, personId, expected, yesterday.toISODate(), nonProjectTimes);
-      const message = constructWeeklySummaryMessage(userData, weekStartDate.toISODate(), weekEndDate.toISODate(), vacationTime);
+      const { userId } = userData;
+      const message = constructWeeklySummaryMessage(userData, weekStartDate.toISODate(), weekEndDate.toISODate());
 
-      if (!isAway && !firstDayBack) {
-        if (!slackOverride) {
+      if (!slackOverride) {
+        messageResults.push({
+          message: message,
+          response: await sendMessage(userId, message.message)
+        });
+      } else {
+        for (const stagingid of slackOverride) {
           messageResults.push({
             message: message,
-            response: await sendMessage(slackId, message.message)
+            response: await sendMessage(stagingid, message.message)
           });
-        } else {
-          for (const stagingid of slackOverride) {
-            messageResults.push({
-              message: message,
-              response: await sendMessage(stagingid, message.message)
-            });
-          }
         }
       }
     }

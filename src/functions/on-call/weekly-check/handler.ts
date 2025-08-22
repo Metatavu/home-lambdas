@@ -1,10 +1,10 @@
-import { S3 } from "aws-sdk"
+import { DynamoDB} from "aws-sdk"
 import fetch from "node-fetch";
 import { DateTime } from "luxon";
-import S3Utils from "@libs/s3-utils";
 import Config from "src/app/config";
-import { OnCallEntry, SplunkSchedule } from "src/types/on-call";
+import { SplunkSchedule } from "src/types/on-call";
 import { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
+import { OnCallEntry } from "src/database/models/oncall";
 
 /**
  * Resolve next week from schedule
@@ -54,22 +54,23 @@ export const weeklyCheckHandler : ValidatedEventAPIGatewayProxyEvent<any> = asyn
     throw new Error("Next week not found");
   }
 
-  const yearFile = `${nextThursday.year}.json`;
-  const s3 = new S3();
-  const bucket = Config.get().onCall.bucketName;
-  const yearJson = (await S3Utils.loadJson<OnCallEntry[]>(s3, bucket, yearFile)) || [];
+  const dynamoDb = new DynamoDB.DocumentClient();
+  const year = nextThursday.year;
+  const week = nextWeek.week;
+  const person = nextWeek.user;
 
-  const selectedWeekIndex = yearJson.findIndex(entry => entry.Week == nextWeek.week);
-  if (selectedWeekIndex > -1) {
-    yearJson[selectedWeekIndex].Person = nextWeek.user;
-  } else {
-    yearJson.push({
-      Week: nextWeek.week,
-      Person: nextWeek.user
-    });
-  }
+  const entry: OnCallEntry = {
+    Year: year,
+    Week: week,
+    Person: person,
+    Paid: false
+  };
 
-  await S3Utils.saveJson(s3, bucket, yearFile, yearJson);
+  // Update or create a new record in DynamoDB
+  await dynamoDb.put({
+    TableName: "OnCallSchedule",
+    Item: entry
+  }).promise();
 
   return {
     statusCode: 200,

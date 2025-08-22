@@ -1,7 +1,5 @@
-import { S3 } from "aws-sdk"
-import { PaidData, UpdatePaidRequestBody } from "../../../types/on-call"
-import S3Utils from "@libs/s3-utils";
-import Config from "src/app/config";
+import { DynamoDB } from "aws-sdk"
+import { UpdatePaidRequestBody } from "../../../types/on-call"
 import { middyfy } from "@libs/lambda";
 import { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
 
@@ -25,19 +23,24 @@ export const updatePaidHandler: ValidatedEventAPIGatewayProxyEvent<any> = async 
     throw new Error("Invalid paid status");
   }
 
-  const s3 = new S3();
-  const bucket = Config.get().onCall.bucketName;
-  const paidFile = "paid.json";
+  const dynamoDb = new DynamoDB.DocumentClient();
 
-  const paidData = await S3Utils.loadJson<PaidData>(s3, bucket, paidFile) || {};
-  if (!paidData[year]) paidData[year] = {}
-  paidData[year][week] = paid;
-  await S3Utils.saveJson(s3, bucket, paidFile, paidData);
+  await dynamoDb.update({
+    TableName: "OnCallSchedule",
+    Key: {
+      Year: year,
+      Week: week
+    },
+    UpdateExpression: "set Paid = :paid",
+    ExpressionAttributeValues: {
+      ":paid": paid
+    }
+  }).promise();
 
   return {
     statusCode: 200,
     body: "Paid status updated"
   };
-
 };
+
 export const main = middyfy(updatePaidHandler);

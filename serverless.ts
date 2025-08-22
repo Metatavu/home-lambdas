@@ -348,6 +348,25 @@ const serverlessConfiguration: AWS = {
           }
         }
       },
+      OnCallSchedule: {
+        Type: "AWS::DynamoDB::Table",
+        DeletionPolicy: "Delete",
+        Properties: {
+          TableName: "OnCallSchedule",
+          AttributeDefinitions: [
+            { AttributeName: "Year", AttributeType: "N" },
+            { AttributeName: "Week", AttributeType: "N" }
+          ],
+          KeySchema: [
+            { AttributeName: "Year", KeyType: "HASH" },
+            { AttributeName: "Week", KeyType: "RANGE" }
+          ],
+          ProvisionedThroughput: {
+            ReadCapacityUnits: 1,
+            WriteCapacityUnits: 1
+          }
+        }
+      },
     },
   },
 };

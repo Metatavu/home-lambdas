@@ -15,52 +15,33 @@ export const getWorkHoursHandler: APIGatewayProxyHandler = async (event) => {
 
   try {
     const api = CreateSeveraApiService();
+    const optInUsers = await api.getOptInUsers();
+    const optInUserGuids = new Set(optInUsers.map((u) => u.guid));
 
-    /**
-     * Construct a custom url for fetching workHours with required queryParams.
-     *
-     * @param severaProjectId - Severa project id
-     * @param severaUserId - Severa user id
-     * @param startDate - Start date for work hours
-     * @param endDate - End date for work hours
-     *
-     * @returns {string} - The constructed custom URL for fetching work hours.
-     */
-    const buildWorkHoursUrl = (severaProjectId?: string, severaUserId?: string, startDate?: string, endDate?: string) => {
-      let endpointPath: string;
-
-      if (severaProjectId) {
-        endpointPath = `projects/${severaProjectId}/workhours`;
-      } else if (severaUserId) {
-        endpointPath = `users/${severaUserId}/workhours`;
+    // If severaProjectId is specified and severaUserId is not, make requests for each opted-in user
+    let allWorkHours: SeveraResponseWorkHours[] = [];
+    if (severaProjectId) {
+      allWorkHours = await api.getFilteredWorkHoursForUsers(optInUsers, severaProjectId, startDate, endDate);
+      allWorkHours = allWorkHours.filter((workHours) => workHours.project?.guid == severaProjectId);
+    } else {
+      if (severaUserId) {
+        if (!optInUserGuids.has(severaUserId)) {
+          return {
+            statusCode: 404,
+            body: JSON.stringify({ error: "User not found or not opted-in" }),
+          };
+        }
+        allWorkHours = await api.getWorkHoursForUser(severaUserId, startDate, endDate);
       } else {
-        endpointPath = "workhours";
+        throw new Error("severaUserId is required when severaProjectId is not specified");
       }
+    }
 
-      const customUrl = new URL(`${process.env.SEVERA_DEMO_BASE_URL}/v1/${endpointPath}`);
-
-      if (startDate) customUrl.searchParams.append("startDate", startDate);
-      if (endDate) customUrl.searchParams.append("endDate", endDate);
-
-      return customUrl;
-    };
-
-    const url = buildWorkHoursUrl(severaProjectId, severaUserId, startDate, endDate);
-    const response = await api.getWorkHours(url);
-
-    const filteredWorkHours = response.filter((workHours: SeveraResponseWorkHours) => {
-    /**
-     * Note: If severaProjectId and severaUserId are both true, the work hours data
-     * will be filtered by project in the Severa API call due to workHours custom url.
-     */
-      if (severaProjectId && severaUserId) {
-        const filteredWorkHoursUserProject = FilterUtilities.filterByUserSevera(workHours.user?.guid, severaUserId);
-        if (!filteredWorkHoursUserProject) return false ;
-      }
-
+    // Filter work hours by phase if severaPhaseId is provided
+    const filteredWorkHours = allWorkHours.filter((workHours: SeveraResponseWorkHours) => {
       if (severaPhaseId) {
         const filteredWorkHoursPhase = FilterUtilities.filterByPhaseSevera(workHours.phase?.guid, severaPhaseId);
-        if (!filteredWorkHoursPhase) return false ;
+        if (!filteredWorkHoursPhase) return false;
       }
       return true;
     });
@@ -95,7 +76,7 @@ export const getWorkHoursHandler: APIGatewayProxyHandler = async (event) => {
       }))
     );
 
-    const workHours = mappedWorkHours(filteredWorkHours)
+    const workHours = mappedWorkHours(filteredWorkHours);
 
     return {
       statusCode: 200,

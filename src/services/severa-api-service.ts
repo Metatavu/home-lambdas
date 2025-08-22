@@ -23,6 +23,10 @@ export interface SeveraApiService {
   getResourceAllocations: () => Promise<SeveraResponseResourceAllocation>;
   getUser: (severaUserId: string) => Promise<SeveraResponseUser>;
   getKeywordIdForUser: (severaUserId: string, keywordValue: string) => Promise<string>;
+  getWorkWeek: (severaUserId: string) => Promise<SeveraResponseWorkDays[]>;
+  getPreviousWeekHours: (severaUserId: string) => Promise<SeveraResponsePreviousWorkHours[]>;
+  getFilteredWorkHoursForUsers: (users: { guid: string }[], severaProjectId: string, startDate?: string, endDate?: string) => Promise<SeveraResponseWorkHours[]>;
+  getWorkHoursForUser: (severaUserId: string, startDate?: string, endDate?: string) => Promise<SeveraResponseWorkHours[]>;
 }
 
 /**
@@ -157,6 +161,38 @@ export const CreateSeveraApiService = (): SeveraApiService => {
     },
 
     /**
+     * Gets Work week from Severa
+     * 
+     * @param severaUserId Severa user id
+     * @returns Workdays of a user
+     */
+    getWorkWeek: async (severaUserId: string) => {
+
+      const demoDataDate = process.env.DEMO_DATA_DATE;
+      const today = demoDataDate ? DateTime.fromISO(demoDataDate).toISODate() : DateTime.now().toISODate();
+      const weekAgo = demoDataDate ? DateTime.fromISO(demoDataDate).minus({ days: 7 }).toISODate() : DateTime.now().minus({ days: 7 }).toISODate();
+      const startDate = weekAgo;
+      const endDate = today;
+
+      const url = `${baseUrl}/v1/users/${severaUserId}/workdays?startDate=${startDate}&endDate=${endDate}`;
+
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${await getSeveraAccessToken()}`,
+          "Client_Id": process.env.SEVERA_DEMO_CLIENT_ID,
+          "Content-Type": "application/json",
+        },
+      });
+      if (!response.ok) {
+        throw new Error(
+          `Failed to fetch workdays: ${response.status} - ${response.statusText}`,
+        );
+      }
+      return response.json();
+    },
+
+    /**
      * Gets resourceallocations from Severa
      */
     getResourceAllocations: async () => {
@@ -205,13 +241,43 @@ export const CreateSeveraApiService = (): SeveraApiService => {
      * Gets previous workdays Workhours from Severa
      */
     getPreviousWorkHours: async () => {
-      const eventDateYesterday = TimeUtilities.getPreviousTwoWorkdays().yesterday.toISODate();
-      const today = DateTime.now().toISODate();
-      const isProduction = process.env.NODE_ENV === "production";
-      const startDate = isProduction ? eventDateYesterday : "2024-11-26";
-      const endDate = isProduction ? today : "2024-11-26";
-
+      const demoDataDate = process.env.DEMO_DATA_DATE;
+      const startDate = demoDataDate ? DateTime.fromISO(demoDataDate).minus({ days: 1 }).toISODate() : TimeUtilities.getPreviousTwoWorkdays().yesterday.toISODate();
+      const endDate = demoDataDate ? DateTime.fromISO(demoDataDate).toISODate() : DateTime.now().toISODate();
+      
       const url = `${baseUrl}/v1/workhours?eventDateStart=${startDate}&eventDateEnd=${endDate}`;
+
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${await getSeveraAccessToken()}`,
+          "Client_Id": process.env.SEVERA_DEMO_CLIENT_ID,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(
+          `Failed to fetch work hours: ${response.status} - ${response.statusText}`,
+        );
+      }
+      return response.json();
+    },
+
+    /**
+     * Gets previous workweeks Workhours from Severa
+     *
+     * @param severaUserId Severa user id
+     * @returns Previous workweek workhours for the user
+     */
+    getPreviousWeekHours: async (severaUserId: string) => {
+      const demoDataDate = process.env.DEMO_DATA_DATE;
+      const today = demoDataDate ? DateTime.fromISO(demoDataDate).toISODate() : DateTime.now().toISODate();
+      const weekAgo = demoDataDate ? DateTime.fromISO(demoDataDate).minus({ days: 7 }).toISODate() : DateTime.now().minus({ days: 7 }).toISODate();
+      const startDate = weekAgo;
+      const endDate = today;
+
+      const url = `${baseUrl}/v1/users/${severaUserId}/workhours?eventDateStart=${startDate}&eventDateEnd=${endDate}`;
 
       const response = await fetch(url, {
         method: "GET",
@@ -284,7 +350,79 @@ export const CreateSeveraApiService = (): SeveraApiService => {
       }
 
       return match.guid;
+    },
+
+    /**
+     * Gets work hours for multiple users filtered by project and dates.
+     *
+     * @param users Array of users (must have .guid)
+     * @param severaProjectId Project GUID
+     * @param startDate Optional start date
+     * @param endDate Optional end date
+     * @returns Array of work hours for all users
+     */
+    getFilteredWorkHoursForUsers: async (
+      users,
+      severaProjectId,
+      startDate,
+      endDate
+    ) => {
+      const errors: Array<{ userGuid: string, error: any }> = [];
+      const workHoursResults = await Promise.all(
+        users.map(async (user) => {
+          try {
+            const url = new URL(`${baseUrl}/v1/users/${user.guid}/workhours`);
+            // This endpoint/query parameter is working but it is not documented proper in Severa API spec
+            url.searchParams.append("projectGuid", severaProjectId);
+            if (startDate) url.searchParams.append("startDate", startDate);
+            if (endDate) url.searchParams.append("endDate", endDate);
+            const userWorkHours = await (await fetch(url.toString(), {
+              method: "GET",
+              headers: {
+                Authorization: `Bearer ${await getSeveraAccessToken()}`,
+                Client_Id: process.env.SEVERA_DEMO_CLIENT_ID,
+                "Content-Type": "application/json"
+              }
+            })).json();
+            return userWorkHours;
+          } catch (e) {
+            errors.push({ userGuid: user.guid, error: e });
+            return [];
+          }
+        })
+      );
+      return workHoursResults.flat();
+    },
+
+    /**
+     * Fetches work hours for a specific user from Severa API.
+     *
+     * @param severaUserId - The GUID of the Severa user whose work hours are being retrieved.
+     * @param startDate - (Optional) The start date for filtering work hours (ISO format).
+     * @param endDate - (Optional) The end date for filtering work hours (ISO format).
+     * @returns {Promise<SeveraResponseWorkHours[]>} - A promise that resolves to an array of work hours for the specified user.
+     * @throws {Error} If the request to the Severa API fails.
+     */
+    getWorkHoursForUser: async (severaUserId, startDate, endDate) => {
+      const url = new URL(`${process.env.SEVERA_DEMO_BASE_URL}/v1/users/${severaUserId}/workhours`);
+      if (startDate) url.searchParams.append("startDate", startDate);
+      if (endDate) url.searchParams.append("endDate", endDate);
+
+      const response = await fetch(url.toString(), {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${await getSeveraAccessToken()}`,
+          Client_Id: process.env.SEVERA_DEMO_CLIENT_ID,
+          "Content-Type": "application/json"
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch work hours: ${response.status} - ${response.statusText}`);
+      }
+      return response.json();
     }
+
   };
 };
 
@@ -477,3 +615,61 @@ export const updateSeveraOptInKeyword = async (
 
   return await updateResponse.json();
 };
+
+/**
+ * Gets resource allocations for a specific user or for all opt-in users if no user is specified.
+ *
+ * @param severaUserId - The GUID of the Severa user (optional).
+ * @param optInUsers - Array of opted-in users ({ guid: string }[]).
+ * @returns {Promise<SeveraResponseResourceAllocation[]>} - Array of resource allocations.
+ */
+export async function getResourceAllocationsByUserOrAll(
+  severaUserId: string | undefined,
+  optInUsers: { guid: string }[]
+): Promise<SeveraResponseResourceAllocation[]> {
+  const api = CreateSeveraApiService();
+
+  /**
+   * Builds the resource allocation URL for a specific user or returns null if no user is specified.
+   *
+   * @param severaUserId - The GUID of the Severa user.
+   * @returns {URL | null} - The constructed URL for the user's resource allocations, or null if severaUserId is not provided.
+   */
+  const buildResourceAllocationUrl = (severaUserId?: string): URL | null => {
+    let endpointPath: string;
+
+    if (severaUserId) {
+      endpointPath = `users/${severaUserId}/resourceallocations/allocations`;
+      const customUrl = new URL(`${process.env.SEVERA_DEMO_BASE_URL}/v1/${endpointPath}`);
+      return customUrl;
+    } else {
+      // If severaUserId is not specified, we make requests for each opted-in user and merge the results
+      return null; // special marker that we need to iterate over all opted-in
+    }
+  };
+
+  const url = buildResourceAllocationUrl(severaUserId);
+  let allResourceAllocations: SeveraResponseResourceAllocation[] = [];
+
+  if (url) {
+    // Normal case: for a specific user
+    const response = await api.getResourceAllocation(url);
+    allResourceAllocations = response;
+  } else {
+    const resourceAllocationsResults = await Promise.all(
+      optInUsers.map(async (user: { guid: string }) => {
+        try {
+          const userUrl = new URL(`${process.env.SEVERA_DEMO_BASE_URL}/v1/users/${user.guid}/resourceallocations/allocations`);
+          const userResourceAllocations = await api.getResourceAllocation(userUrl);
+          return userResourceAllocations;
+        } catch (e) {
+          console.error(`Error fetching resource allocations for user ${user.guid}:`, e);
+          return [];
+        }
+      })
+    );
+    allResourceAllocations = resourceAllocationsResults.flat();
+  }
+
+  return allResourceAllocations;
+}

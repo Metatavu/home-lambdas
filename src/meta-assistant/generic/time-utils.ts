@@ -1,6 +1,6 @@
-import type { Dates, TimeRegistrations, PreviousWorkdayDates, NonProjectTime, DisplayValues } from "src/types/meta-assistant/index";
+import type { Dates, TimeRegistrations, PreviousWorkdayDates, NonProjectTime, DisplayValues, DisplayValuesWeekly } from "src/types/meta-assistant/index";
 import { DateTime, Duration } from "luxon";
-import type { TotalTime } from "src/types/severa/totalTime/totalTime";
+import type { TotalTime, TotalTimeWeekly } from "src/types/severa/totalTime/totalTime";
 
 /**
  * Namespace for time utilities
@@ -26,13 +26,12 @@ namespace TimeUtilities {
    * @returns various date formats/ numbers for start and end of previous week
    */
   export const getlastWeeksDates = (date?: DateTime): Dates => {
-    let startOfWeek = DateTime.now().startOf("week");
+    let startOfWeek = getBaseDate().startOf("week");
     if (date) {
       startOfWeek = date.startOf("week");
     }
     const weekStartDate = startOfWeek.minus({ weeks: 1 });
     const weekEndDate = startOfWeek.minus({ days: 1 });
-
     return { weekEndDate: weekEndDate, weekStartDate: weekStartDate };
   };
 
@@ -43,8 +42,7 @@ namespace TimeUtilities {
    * @returns human friendly time formats
    */
   export const handleTimeFormatting = (user: TotalTime): DisplayValues => {
-    const { totalLoggedTime, expectedHours, projectTime, totalBillableTime, nonBillableProject } = user;
-
+    const { totalLoggedTime, expectedHours, projectTime, totalBillableTime, nonBillableProject  } = user;
     const displayTotalLoggedTime = TimeUtilities.timeConversion(totalLoggedTime);
     const displayExpectedHours = TimeUtilities.timeConversion(expectedHours);
     const displayProjectTime = TimeUtilities.timeConversion(projectTime);
@@ -53,10 +51,30 @@ namespace TimeUtilities {
 
     return {
       totalLoggedTime: displayTotalLoggedTime,
-      expectedHours: displayExpectedHours,
       projectTime: displayProjectTime,
+      expectedHours: displayExpectedHours,
       totalBillableTime: displayTotalBillableTime,
-      nonBillableProject: displayNonBillableProject
+      nonBillableProject: displayNonBillableProject,
+    };
+  };
+
+  /**
+   * Handle formatting multiple time variables for weekly data
+   *
+   * @param user data from severa
+   * 
+   * @returns human friendly time formats
+   */
+  export const handleTimeFormattingWeekly = (user: TotalTimeWeekly): DisplayValuesWeekly => {
+    const { totalEnteredHours, totalExpectedHours, projectTime   } = user;
+    const displayTotalLoggedTime = TimeUtilities.timeConversion(totalEnteredHours);
+    const displayExpectedHours = TimeUtilities.timeConversion(totalExpectedHours);
+    const displayProjectTime = TimeUtilities.timeConversion(projectTime);
+
+    return {
+      totalEnteredHours: displayTotalLoggedTime,
+      projectTime: displayProjectTime,
+      totalExpectedHours: displayExpectedHours,
     };
   };
 
@@ -141,6 +159,14 @@ namespace TimeUtilities {
       dayBeforeYesterday: dayBeforePreviousWorkDay
     };
   };
+
+  /**
+   * Returns the base date for all time calculations, using DEMO_DATA_DATE if set
+   */
+  const getBaseDate = (): DateTime => {
+    const demoDataDate = process.env.DEMO_DATA_DATE;
+    return demoDataDate ? DateTime.fromISO(demoDataDate) : DateTime.now();
+  }
 }
 
 export default TimeUtilities;

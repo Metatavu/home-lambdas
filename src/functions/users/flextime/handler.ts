@@ -11,8 +11,9 @@ import { middyfy } from "src/libs/lambda";
  */
 export const listUsersFlextimeHandler: APIGatewayProxyHandler = async (event) => {
   try {
-    const keywordId = event.queryStringParameters?.keywordId;
-    if (!keywordId) {
+    // Comment: keywowordID not necessary
+    // const keywordId = event.queryStringParameters?.keywordId;
+    /*
       return {
         statusCode: 400,
         body: JSON.stringify({
@@ -21,6 +22,7 @@ export const listUsersFlextimeHandler: APIGatewayProxyHandler = async (event) =>
         })
       };
     }
+    */
     const api = CreateSeveraApiService();
     const optedInUsers = await api.getOptInUsers();
     if (!optedInUsers || optedInUsers.length === 0) {
@@ -32,6 +34,8 @@ export const listUsersFlextimeHandler: APIGatewayProxyHandler = async (event) =>
     const usersWithFlextime = await Promise.allSettled(
       optedInUsers.map(async (severaUser) => {
         try {
+          // TODO: This should be typed according to the spec response type for the lambda function
+          // Spec in the lambdas for the future
           const flextime = await api.getFlextimeBySeveraUserId(severaUser.guid);
           return {
             user: {
@@ -50,16 +54,31 @@ export const listUsersFlextimeHandler: APIGatewayProxyHandler = async (event) =>
             }
           };
         } catch (error) {
-          throw error;
+          return {
+            user: {
+              id: severaUser.guid,
+              firstName: severaUser.firstName || "",
+              lastName: severaUser.lastName || "",
+              email: severaUser.email || "",
+              attributes: {
+                severaUserId: severaUser.guid,
+                isActive: true
+              }
+            },
+            flextime: null,
+            error: true,
+            statusCode: 500,
+            message: `Failed to fetch flextime for user ${severaUser.guid}: ${error instanceof Error ? error.message : "Unknown error"}`
+          };
         }
       })
     );
-    const successfulResults = usersWithFlextime
-      .filter((result): result is PromiseFulfilledResult<any> => result.status === "fulfilled")
-      .map(result => result.value);
+    const results = usersWithFlextime.map((result) => 
+      result.status === "fulfilled" ? result.value : { error: true, message: "Unexpected promise rejection" }
+    );
     return {
       statusCode: 200,
-      body: JSON.stringify(successfulResults)
+      body: JSON.stringify(results)
     };
   } catch (error) {
     return {

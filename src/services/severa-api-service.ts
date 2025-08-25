@@ -1,4 +1,7 @@
 import fetch from "node-fetch";
+import type { KeywordModel } from "../generated/severaClient/models/KeywordModel";
+import type { UserOutputModel } from "../generated/severaClient/models/UserOutputModel";
+import type { UserKeywordModel } from "../generated/severaClient/models/UserKeywordModel";
 import type { Flextime } from "../types/severa/flexTime/flexTime";
 import { DateTime } from "luxon";
 import TimeUtilities from "src/meta-assistant/generic/time-utils";
@@ -28,10 +31,10 @@ export interface SeveraApiService {
   getFilteredWorkHoursForUsers: (users: { guid: string }[], severaProjectId: string, startDate?: string, endDate?: string) => Promise<SeveraResponseWorkHours[]>;
   getWorkHoursForUser: (severaUserId: string, startDate?: string, endDate?: string) => Promise<SeveraResponseWorkHours[]>;
   getResourceAllocationsByUserOrAll: (severaUserId: string | undefined, optInUsers: { guid: string }[]) => Promise<SeveraResponseResourceAllocation[]>;
-  checkKeywordExists: (keyword: string) => Promise<any>;
-  fetchUserByEmail: (email: string) => Promise<any>;
-  getUserKeywords: (userGuid: string) => Promise<any>;
-  updateSeveraOptInKeyword: (userGuid: string, isSeveraOptIn: string, isSeveraOptInKeywordGuid: string) => Promise<any>;
+  checkKeywordExists: (keyword: string) => Promise<KeywordModel>;
+  fetchUserByEmail: (email: string) => Promise<UserOutputModel>;
+  getUserKeywords: (userGuid: string) => Promise<UserKeywordModel[]>;
+  updateSeveraOptInKeyword: (userGuid: string, isSeveraOptIn: string, isSeveraOptInKeywordGuid: string) => Promise<UserKeywordModel>;
 }
 
 /**
@@ -55,7 +58,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
         method: "GET",
         headers: {
           Authorization: `Bearer ${await getSeveraAccessToken()}`,
-          Client_Id: process.env.SEVERA_DEMO_CLIENT_ID,
+          Client_Id: getSeveraClientId(),
           "Content-Type": "application/json"
         }
       });
@@ -77,7 +80,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
         method: "GET",
         headers: {
           Authorization: `Bearer ${await getSeveraAccessToken()}`,
-          Client_Id: process.env.SEVERA_DEMO_CLIENT_ID,
+          Client_Id: getSeveraClientId(),
           "Content-Type": "application/json"
         }
       });
@@ -103,7 +106,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
         method: "GET",
         headers: {
           Authorization: `Bearer ${await getSeveraAccessToken()}`,
-          Client_Id: process.env.SEVERA_DEMO_CLIENT_ID,
+          Client_Id: getSeveraClientId(),
           "Content-Type": "application/json"
         }
       });
@@ -125,7 +128,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
         method: "GET",
         headers: {
           Authorization: `Bearer ${await getSeveraAccessToken()}`,
-          Client_Id: process.env.SEVERA_DEMO_CLIENT_ID,
+          Client_Id: getSeveraClientId(),
           "Content-Type": "application/json"
         }
       });
@@ -155,7 +158,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
         method: "GET",
         headers: {
           Authorization: `Bearer ${await getSeveraAccessToken()}`,
-          Client_Id: process.env.SEVERA_DEMO_CLIENT_ID,
+          Client_Id: getSeveraClientId(),
           "Content-Type": "application/json"
         }
       });
@@ -185,7 +188,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
         method: "GET",
         headers: {
           Authorization: `Bearer ${await getSeveraAccessToken()}`,
-          "Client_Id": process.env.SEVERA_DEMO_CLIENT_ID,
+          Client_Id: getSeveraClientId(),
           "Content-Type": "application/json",
         },
       });
@@ -207,7 +210,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
         method: "GET",
         headers: {
           Authorization: `Bearer ${await getSeveraAccessToken()}`,
-          Client_Id: process.env.SEVERA_DEMO_CLIENT_ID,
+          Client_Id: getSeveraClientId(),
           "Content-Type": "application/json"
         }
       });
@@ -231,7 +234,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
         method: "GET",
         headers: {
           Authorization: `Bearer ${await getSeveraAccessToken()}`,
-          Client_Id: process.env.SEVERA_DEMO_CLIENT_ID,
+          Client_Id: getSeveraClientId(),
           "Content-Type": "application/json"
         }
       });
@@ -256,7 +259,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
         method: "GET",
         headers: {
           Authorization: `Bearer ${await getSeveraAccessToken()}`,
-          "Client_Id": process.env.SEVERA_DEMO_CLIENT_ID,
+          Client_Id: getSeveraClientId(),
           "Content-Type": "application/json",
         },
       });
@@ -288,7 +291,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
         method: "GET",
         headers: {
           Authorization: `Bearer ${await getSeveraAccessToken()}`,
-          Client_Id: process.env.SEVERA_DEMO_CLIENT_ID,
+          Client_Id: getSeveraClientId(),
           "Content-Type": "application/json"
         }
       });
@@ -312,7 +315,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
         method: "GET",
         headers: {
           Authorization: `Bearer ${await getSeveraAccessToken()}`,
-          Client_Id: process.env.SEVERA_DEMO_CLIENT_ID,
+          Client_Id: getSeveraClientId(),
           "Content-Type": "application/json"
         }
       });
@@ -338,7 +341,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
         method: "GET",
         headers: {
           Authorization: `Bearer ${await getSeveraAccessToken()}`,
-          Client_Id: process.env.SEVERA_DEMO_CLIENT_ID,
+          Client_Id: getSeveraClientId(),
           "Content-Type": "application/json"
         }
       });
@@ -385,7 +388,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
               method: "GET",
               headers: {
                 Authorization: `Bearer ${await getSeveraAccessToken()}`,
-                Client_Id: process.env.SEVERA_DEMO_CLIENT_ID,
+                Client_Id: getSeveraClientId(),
                 "Content-Type": "application/json"
               }
             })).json();
@@ -417,7 +420,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
         method: "GET",
         headers: {
           Authorization: `Bearer ${await getSeveraAccessToken()}`,
-          Client_Id: process.env.SEVERA_DEMO_CLIENT_ID,
+          Client_Id: getSeveraClientId(),
           "Content-Type": "application/json"
         }
       });
@@ -458,7 +461,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
           method: "GET",
           headers: {
             Authorization: `Bearer ${await getSeveraAccessToken()}`,
-            Client_Id: process.env.SEVERA_DEMO_CLIENT_ID,
+            Client_Id: getSeveraClientId(),
             "Content-Type": "application/json"
           }
         })).json();
@@ -472,7 +475,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
                 method: "GET",
                 headers: {
                   Authorization: `Bearer ${await getSeveraAccessToken()}`,
-                  Client_Id: process.env.SEVERA_DEMO_CLIENT_ID,
+                  Client_Id: getSeveraClientId(),
                   "Content-Type": "application/json"
                 }
               })).json();
@@ -501,7 +504,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
         method: "GET",
         headers: {
           Authorization: `Bearer ${await getSeveraAccessToken()}`,
-          Client_Id: process.env.SEVERA_DEMO_CLIENT_ID,
+          Client_Id: getSeveraClientId(),
           "Content-Type": "application/json"
         }
       });
@@ -524,7 +527,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
         method: "POST",
         headers: {
           Authorization: `Bearer ${await getSeveraAccessToken()}`,
-          Client_Id: process.env.SEVERA_DEMO_CLIENT_ID,
+          Client_Id: getSeveraClientId(),
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
@@ -556,7 +559,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
         method: "GET",
         headers: {
           Authorization: `Bearer ${await getSeveraAccessToken()}`,
-          Client_Id: process.env.SEVERA_DEMO_CLIENT_ID,
+          Client_Id: getSeveraClientId(),
           "Content-Type": "application/json"
         }
       });
@@ -585,7 +588,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
         method: "GET",
         headers: {
           Authorization: `Bearer ${await getSeveraAccessToken()}`,
-          Client_Id: process.env.SEVERA_DEMO_CLIENT_ID,
+          Client_Id: getSeveraClientId(),
           "Content-Type": "application/json"
         }
       });
@@ -617,7 +620,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
         method: "POST",
         headers: {
           Authorization: `Bearer ${await getSeveraAccessToken()}`,
-          Client_Id: process.env.SEVERA_DEMO_CLIENT_ID,
+          Client_Id: getSeveraClientId(),
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
@@ -644,7 +647,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
  */
 const getSeveraAccessToken = async (): Promise<string> => {
   const url: string = `${process.env.SEVERA_DEMO_BASE_URL}/v1/token`;
-  const client_Id: string = process.env.SEVERA_DEMO_CLIENT_ID;
+  const client_Id: string = getSeveraClientId();
   const client_Secret: string = process.env.SEVERA_DEMO_CLIENT_SECRET;
 
   const requestBody = {
@@ -674,4 +677,11 @@ const getSeveraAccessToken = async (): Promise<string> => {
   } catch (error) {
     throw new Error(`Failed to get Severa access token: ${error.message}`);
   }
+};
+
+// Utility function to get correct Severa client ID based on environment
+const getSeveraClientId = (): string => {
+  return process.env.NODE_ENV === "production"
+    ? process.env.SEVERA_CLIENT_ID
+    : process.env.SEVERA_DEMO_CLIENT_ID;
 };

@@ -36,7 +36,7 @@ export const optInSeveraUser = async (email: string, keyword: Record<string, str
       );
       return {
         guid: user.guid,
-        isSeveraOptIn: updatedKeyword.value,
+        isSeveraOptIn: updatedKeyword.keyword,
         email: userEmail
       };
     }

@@ -11,18 +11,6 @@ import { middyfy } from "src/libs/lambda";
  */
 export const listUsersFlextimeHandler: APIGatewayProxyHandler = async (event) => {
   try {
-    // Comment: keywowordID not necessary
-    // const keywordId = event.queryStringParameters?.keywordId;
-    /*
-      return {
-        statusCode: 400,
-        body: JSON.stringify({
-          code: 400,
-          message: "keywordId query parameter is required"
-        })
-      };
-    }
-    */
     const api = CreateSeveraApiService();
     const optedInUsers = await api.getOptInUsers();
     if (!optedInUsers || optedInUsers.length === 0) {
@@ -34,8 +22,10 @@ export const listUsersFlextimeHandler: APIGatewayProxyHandler = async (event) =>
     const usersWithFlextime = await Promise.allSettled(
       optedInUsers.map(async (severaUser) => {
         try {
-          // TODO: This should be typed according to the spec response type for the lambda function
-          // Spec in the lambdas for the future
+          /**
+           * TODO: This should be typed according to the spec response type for the lambda function
+           * Spec in the lambdas for the futur
+           */
           const flextime = await api.getFlextimeBySeveraUserId(severaUser.guid);
           return {
             user: {
@@ -49,7 +39,9 @@ export const listUsersFlextimeHandler: APIGatewayProxyHandler = async (event) =>
             }
           };
         } catch (error) {
-          // Per-user error handling
+          /**
+           * Per-user error handling
+           */
           console.error(`Error fetching flextime for user ${severaUser.guid}:`, error);
           return {
             user: {
@@ -63,12 +55,18 @@ export const listUsersFlextimeHandler: APIGatewayProxyHandler = async (event) =>
             },
             flextime: null,
             error: true,
+            /**
+             * Find the appropriate status code for the error
+             */
             statusCode: error instanceof Error && (error as any).statusCode ? (error as any).statusCode : 500,
             message: `Failed to fetch flextime for user ${severaUser.guid}: ${error instanceof Error ? error.message : "Unknown error"}`
           };
         }
       })
     );
+    /**
+     * Map the results to a more ui format
+     */
     const results = usersWithFlextime.map((result) => 
       result.status === "fulfilled" ? result.value : { error: true, message: "Unexpected promise rejection" }
     );

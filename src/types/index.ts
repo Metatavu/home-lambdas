@@ -7,6 +7,16 @@ export type DateRange = {
 };
 
 /**
+ * Details of a vacation request.
+ */
+export interface VacationDetails {
+    user: string;
+    startDate: string;
+    endDate: string;
+    type?: string;
+}
+
+/**
  * Application configuration
  */
 export interface Configuration {
@@ -36,5 +46,6 @@ export interface Configuration {
     slack: {
         botToken: string;
         adminUsers: string[];
-    };
+    }
+    vacationDetails?: VacationDetails;
 }

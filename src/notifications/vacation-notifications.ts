@@ -9,14 +9,7 @@ import {
   notifyAdminsVacationDeletedByEmail,
   notifyUserVacationStatusUpdatedByEmail
 } from "./vacation-email-utils";
-
-/** Interface for vacation details */
-export interface VacationDetails {
-  user: string;
-  startDate: string;
-  endDate: string;
-  type?: string;
-}
+import { VacationDetails } from "src/types";
 
 /**
  * Combined: Notify admins when a vacation is submitted (Slack + Email)

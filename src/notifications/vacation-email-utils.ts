@@ -1,16 +1,9 @@
 import { Resend } from "resend";
 import Config from "src/app/config"; 
+import { VacationDetails } from "src/types";
 
 const resend = new Resend(Config.get().email.resendApiKey);
 const adminEmails = Config.get().email.adminEmails;
-
-/** Interface for vacation details */
-export interface VacationDetails {
-  user: string;
-  startDate: string;
-  endDate: string;
-  type?: string;
-}
 
 /**
  * Format a date string from yyyy-mm-dd to dd-mm-yyyy

@@ -1,5 +1,6 @@
 import { WebClient, LogLevel, ChatPostMessageResponse } from "@slack/web-api";
 import Config from "src/app/config";
+import { VacationDetails } from "src/types";
 
 const slackConfig = Config.get().slack;
 
@@ -8,14 +9,6 @@ if (!slackConfig.botToken) {
 }
 
 const slackClient = new WebClient(slackConfig.botToken, { logLevel: LogLevel.DEBUG });
-
-/** Interface for vacation details */
-export interface VacationDetails {
-    user: string;
-    startDate: string;
-    endDate: string;
-    type?: string;
-}
 
 /**
  * Format a date string from yyyy-mm-dd to dd-mm-yyyy
@@ -100,7 +93,7 @@ async function notifyAdminsVacation(
  *
  * @param vacationDetails - Details of the submitted vacation
  */
-export async function notifyAdminsVacationSubmittedSlack(vacationDetails: VacationDetails) {
+export async function notifyAdminsVacationSubmittedSlack(vacationDetails: VacationDetails ) {
     await notifyAdminsVacation(vacationDetails, ":new: *New Vacation Submitted* :new:");
 }
 
@@ -109,7 +102,7 @@ export async function notifyAdminsVacationSubmittedSlack(vacationDetails: Vacati
  *
  * @param vacationDetails - Details of the deleted vacation
  */
-export async function notifyAdminsVacationDeletedSlack(vacationDetails: VacationDetails) {
+export async function notifyAdminsVacationDeletedSlack(vacationDetails: VacationDetails ) {
     await notifyAdminsVacation(vacationDetails, ":x: *Vacation Request Deleted* :x:");
 }
 

@@ -49,12 +49,13 @@ export const listUsersFlextimeHandler: APIGatewayProxyHandler = async (event) =>
             }
           };
         } catch (error) {
+          // Per-user error handling
+          console.error(`Error fetching flextime for user ${severaUser.guid}:`, error);
           return {
             user: {
               id: severaUser.guid,
               firstName: severaUser.firstName || "",
               lastName: severaUser.lastName || "",
-              email: severaUser.email || "",
               attributes: {
                 severaUserId: severaUser.guid,
                 isActive: true
@@ -62,7 +63,7 @@ export const listUsersFlextimeHandler: APIGatewayProxyHandler = async (event) =>
             },
             flextime: null,
             error: true,
-            statusCode: 500,
+            statusCode: error instanceof Error && (error as any).statusCode ? (error as any).statusCode : 500,
             message: `Failed to fetch flextime for user ${severaUser.guid}: ${error instanceof Error ? error.message : "Unknown error"}`
           };
         }

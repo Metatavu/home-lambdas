@@ -9,7 +9,7 @@
   },
   "queryStringParameters": {
     "startDate": "2020-11-03",
-    "endDate": "2021-11-03",
-    "keywordId": "isServeraOptIn"
+    "endDate": "2021-11-03"
+    
   }
 }

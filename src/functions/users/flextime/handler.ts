@@ -42,11 +42,6 @@ export const listUsersFlextimeHandler: APIGatewayProxyHandler = async (event) =>
               id: severaUser.guid,
               firstName: severaUser.firstName || "",
               lastName: severaUser.lastName || "",
-              email: severaUser.email || "",
-              attributes: {
-                severaUserId: severaUser.guid,
-                isActive: true
-              }
             },
             flextime: {
               totalFlextimeBalance: flextime?.totalFlextimeBalance || 0,

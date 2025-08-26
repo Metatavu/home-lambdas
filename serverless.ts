@@ -141,28 +141,9 @@ const serverlessConfiguration: AWS = {
       HOME_BUCKET_NAME: "${self:custom.s3BucketName.dev}",
       HOME_BUCKET_REGION: region
     },
-    s3: {
-      "on-call": {
-        bucketName: isLocal ? "local-on-call-data" : "${opt:stage}-on-call-data"
-      }
-    },
     iam: {
       role: {
         statements: [
-          {
-            Effect: "Allow",
-            Action: ["s3:GetObject"],
-            Resource: isLocal
-              ? "*"
-              : "arn:aws:s3:::${opt:stage}-on-call-data/*",
-          },
-          {
-            Effect: "Allow",
-            Action: ["s3:PutObject"],
-            Resource: isLocal
-              ? "*"
-              : "arn:aws:s3:::${opt:stage}-on-call-data/*",
-          },
           {
             Effect: "Allow",
             Action: [
@@ -353,7 +334,9 @@ const serverlessConfiguration: AWS = {
           TableName: "OnCallSchedule",
           AttributeDefinitions: [
             { AttributeName: "Year", AttributeType: "N" },
-            { AttributeName: "Week", AttributeType: "N" }
+            { AttributeName: "Week", AttributeType: "N" },
+            { AttributeName: "Username", AttributeType: "S" },
+            { AttributeName: "Paid", AttributeType: "BOOL" }
           ],
           KeySchema: [
             { AttributeName: "Year", KeyType: "HASH" },

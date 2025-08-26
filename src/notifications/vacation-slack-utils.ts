@@ -73,13 +73,16 @@ async function notifyAdminsVacation(
     messageHeader: string
 ) {
     const adminUserIds = slackConfig.adminUsers;
+    const homeUrl = Config.get().homeBaseUrl;
+    const vacationLink = `${homeUrl}/admin/vacations/${vacationDetails.id}`;
 
     const message = `
-      ${messageHeader}
-      Applicant: ${vacationDetails.user}
-      Start date: ${formatDate(vacationDetails.startDate)}
-      End date: ${formatDate(vacationDetails.endDate)}
-      Type: ${vacationDetails.type || "Not provided"}
+        ${messageHeader}
+        Applicant: ${vacationDetails.user}
+        Start date: ${formatDate(vacationDetails.startDate)}
+        End date: ${formatDate(vacationDetails.endDate)}
+        Type: ${vacationDetails.type || "Not provided"}
+        Update status: ${vacationLink}
     `;
 
     for (const userId of adminUserIds) {

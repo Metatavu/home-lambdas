@@ -59,13 +59,16 @@ async function notifyAdminsVacationByEmail(
   if (adminEmails.length === 0) {
     throw new Error("ADMIN_EMAILS environment variable is empty or not set.");
   }
+  const homeUrl = Config.get().homeBaseUrl;
+  const vacationLink = `${homeUrl}/admin/vacations/${vacationDetails.id}`;
 
   const html = `
     <p><strong>${header}</strong></p>
     <p>User: ${vacationDetails.user}</p>
     <p>Start Date: ${formatDate(vacationDetails.startDate)}</p>
     <p>End Date: ${formatDate(vacationDetails.endDate)}</p>
-    <p>Reason: ${vacationDetails.type || "Not provided"}</p>
+    <p>Type: ${vacationDetails.type || "Not provided"}</p>
+    <p>Update status: ${vacationLink}</p>
   `;
 
   for (const to of adminEmails) {

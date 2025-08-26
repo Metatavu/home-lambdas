@@ -15,6 +15,7 @@ const env = cleanEnv(process.env, {
   ADMIN_EMAILS: str(),  
   METATAVU_BOT_TOKEN: str(),       
   ADMIN_SLACK_USERS: str(),   
+  HOME_BASE_URL: str({ default: "http://localhost:5173" })
 });
 
 export default class Config {
@@ -51,6 +52,7 @@ export default class Config {
     slack: {
       botToken: env.METATAVU_BOT_TOKEN,
       adminUsers: env.ADMIN_SLACK_USERS.split(","),
-    }
+    },
+    homeBaseUrl: env.HOME_BASE_URL || "http://localhost:5173",
   });
 }

@@ -334,9 +334,7 @@ const serverlessConfiguration: AWS = {
           TableName: "OnCallSchedule",
           AttributeDefinitions: [
             { AttributeName: "Year", AttributeType: "N" },
-            { AttributeName: "Week", AttributeType: "N" },
-            { AttributeName: "Username", AttributeType: "S" },
-            { AttributeName: "Paid", AttributeType: "BOOL" }
+            { AttributeName: "Week", AttributeType: "N" }
           ],
           KeySchema: [
             { AttributeName: "Year", KeyType: "HASH" },

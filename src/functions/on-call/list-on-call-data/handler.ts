@@ -8,7 +8,7 @@ import { OnCallEntry } from "src/database/models/oncall";
  *
  * @param event event
  */
-export const listOnCallDataHandler: ValidatedEventAPIGatewayProxyEvent<any> = async (event: { queryStringParameters: { [key: string]: string } }) => {
+export const onCallListDataHandler: ValidatedEventAPIGatewayProxyEvent<any> = async (event: { queryStringParameters: { [key: string]: string } }) => {
   const { queryStringParameters } = event;
 
   if (!queryStringParameters || !queryStringParameters.year) {
@@ -59,4 +59,4 @@ export const listOnCallDataHandler: ValidatedEventAPIGatewayProxyEvent<any> = as
   };
 }
 
-export const main = middyfy(listOnCallDataHandler);
+export const main = middyfy(onCallListDataHandler);

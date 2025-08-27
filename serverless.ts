@@ -12,9 +12,9 @@ import removeInterestFromDealHandler from "@functions/pipedrive/remove-interest-
 import removeInterestFromLeadHandler from "@functions/pipedrive/remove-interest-from-lead";
 import sendDailyMessage from "@functions/meta-assistant/send-daily-message";
 import sendWeeklyMessage from "@functions/meta-assistant/send-weekly-message";
-import updatePaidHandler from "@/functions/on-call/update-paid";
-import listOnCallDataHandler from "src/functions/on-call/list-on-call-data";
-import weeklyCheckHandler from "@/functions/on-call/weekly-check";
+import onCallUpdatePaidHandler from "@/functions/on-call/update-paid";
+import onCallListDataHandler from "src/functions/on-call/list-on-call-data";
+import onCallWeeklyCheckHandler from "@/functions/on-call/weekly-check";
 import getSlackUserAvatar from "src/functions/slack-user-avatar";
 import createSoftwareHandler from "@/functions/software-registry/create-software";
 import findSoftwareHandler from "@/functions/software-registry/find-software";
@@ -168,7 +168,8 @@ const serverlessConfiguration: AWS = {
               "arn:aws:dynamodb:${self:provider.region}:*:table/Questionnaires",
               "arn:aws:dynamodb:${self:provider.region}:*:table/VacationRequests",
               "arn:aws:dynamodb:${self:provider.region}:*:table/Articles",
-              "arn:aws:dynamodb:${self:provider.region}:*:table/Articles/index/GSI_Path"
+              "arn:aws:dynamodb:${self:provider.region}:*:table/Articles/index/GSI_Path",
+              "arn:aws:dynamodb:${self:provider.region}:*:table/OnCallSchedule"
             ]
           }
         ]
@@ -184,11 +185,11 @@ const serverlessConfiguration: AWS = {
     addInterestToLeadHandler,
     removeInterestFromDealHandler,
     removeInterestFromLeadHandler,
-    listOnCallDataHandler,
-    weeklyCheckHandler,
+    onCallListDataHandler,
+    onCallWeeklyCheckHandler,
     sendDailyMessage,
     sendWeeklyMessage,
-    updatePaidHandler,
+    onCallUpdatePaidHandler,
     getSlackUserAvatar,
     createSoftwareHandler,
     findSoftwareHandler,

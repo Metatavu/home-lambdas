@@ -8,7 +8,7 @@ import { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
  * 
  * @param event event
  */
-export const updatePaidHandler: ValidatedEventAPIGatewayProxyEvent<any> = async (event) => {
+export const onCallUpdatePaidHandler: ValidatedEventAPIGatewayProxyEvent<any> = async (event) => {
   const { year, week, paid } = event.body as UpdatePaidRequestBody;
 
   if (!year || year < 2020 || year > new Date().getFullYear()) {
@@ -43,4 +43,4 @@ export const updatePaidHandler: ValidatedEventAPIGatewayProxyEvent<any> = async 
   };
 };
 
-export const main = middyfy(updatePaidHandler);
+export const main = middyfy(onCallUpdatePaidHandler);

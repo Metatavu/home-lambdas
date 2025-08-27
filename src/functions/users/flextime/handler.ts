@@ -9,7 +9,7 @@ import { middyfy } from "src/libs/lambda";
  * @param event - API Gateway proxy event containing query parameters
  * @returns Promise resolving to API Gateway proxy result with user flextime data
  */
-export const listUsersFlextimeHandler: APIGatewayProxyHandler = async (event) => {
+export const listUsersFlextimeHandler: APIGatewayProxyHandler = async () => {
   try {
     const api = CreateSeveraApiService();
     const optedInUsers = await api.getOptInUsers();
@@ -22,10 +22,8 @@ export const listUsersFlextimeHandler: APIGatewayProxyHandler = async (event) =>
     const usersWithFlextime = await Promise.allSettled(
       optedInUsers.map(async (severaUser) => {
         try {
-          /**
-           * TODO: This should be typed according to the spec response type for the lambda function
-           * Spec in the lambdas for the futur
-           */
+          //TODO: This should be typed according to the spec response type for the lambda function
+          // Spec in the lambdas for the future
           const flextime = await api.getFlextimeBySeveraUserId(severaUser.guid);
           return {
             user: {
@@ -39,40 +37,23 @@ export const listUsersFlextimeHandler: APIGatewayProxyHandler = async (event) =>
             }
           };
         } catch (error) {
-          /**
-           * Per-user error handling
-           */
-          console.error(`Error fetching flextime for user ${severaUser.guid}:`, error);
           return {
-            user: {
-              id: severaUser.guid,
-              firstName: severaUser.firstName || "",
-              lastName: severaUser.lastName || "",
-              attributes: {
-                severaUserId: severaUser.guid,
-                isActive: true
-              }
-            },
-            flextime: null,
-            error: true,
-            /**
-             * Find the appropriate status code for the error
-             */
-            statusCode: error instanceof Error && (error as any).statusCode ? (error as any).statusCode : 500,
-            message: `Failed to fetch flextime for user ${severaUser.guid}: ${error instanceof Error ? error.message : "Unknown error"}`
+            code: error instanceof Error && (error as any).statusCode ? (error as any).statusCode : 500,
+            message: `Failed to fetch flextime for user ${severaUser.guid}`,
+            error: error instanceof Error ? error.message : "Unknown error"
           };
         }
       })
     );
     /**
-     * Map the results to a more ui format
+     * Extract only the successful flextime results from the settled promises
      */
-    const results = usersWithFlextime.map((result) => 
-      result.status === "fulfilled" ? result.value : { error: true, message: "Unexpected promise rejection" }
-    );
+    const successfulResults = usersWithFlextime
+      .filter((result): result is PromiseFulfilledResult<any> => result.status === "fulfilled")
+      .map((result) => result.value);
     return {
       statusCode: 200,
-      body: JSON.stringify(results)
+      body: JSON.stringify(successfulResults)
     };
   } catch (error) {
     return {

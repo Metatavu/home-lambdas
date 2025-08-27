@@ -35,7 +35,7 @@ const getNextWeekFromSchedule = (schedule: SplunkSchedule, nextThursday: DateTim
  *
  * @param event event
  */
-export const weeklyCheckHandler : ValidatedEventAPIGatewayProxyEvent<any> = async () => {
+export const onCallWeeklyCheckHandler : ValidatedEventAPIGatewayProxyEvent<any> = async () => {
   const { apiId, apiKey, schedulePolicyName, teamOnCallUrl } = Config.get().splunkApi
 
   const splunkTeamOnCallUrl = teamOnCallUrl
@@ -78,4 +78,4 @@ export const weeklyCheckHandler : ValidatedEventAPIGatewayProxyEvent<any> = asyn
   };
 };
 
-export const main = weeklyCheckHandler;
+export const main = onCallWeeklyCheckHandler;

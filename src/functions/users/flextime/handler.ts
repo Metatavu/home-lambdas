@@ -3,6 +3,20 @@ import { CreateSeveraApiService } from "src/services/severa-api-service";
 import { middyfy } from "src/libs/lambda";
 
 /**
+ * Type representing user with their flextime data.
+ */
+type UserWithFlextime = {
+  user: {
+    id: string;
+    firstName: string;
+    lastName: string;
+  };
+  flextime: {
+    totalFlextimeBalance: number;
+    monthFlextimeBalance: number;
+  };
+};
+/**
  * Lambda handler for listing users with their flextime data.
  * Only returns users who have opted in to Severa integration.
  * 
@@ -22,8 +36,7 @@ export const listUsersFlextimeHandler: APIGatewayProxyHandler = async () => {
     const usersWithFlextime = await Promise.allSettled(
       optedInUsers.map(async (severaUser) => {
         try {
-          //TODO: This should be typed according to the spec response type for the lambda function
-          // Spec in the lambdas for the future
+          //TODO: This should be typed according to the spec response type from the severa general spec generated client
           const flextime = await api.getFlextimeBySeveraUserId(severaUser.guid);
           return {
             user: {
@@ -37,10 +50,14 @@ export const listUsersFlextimeHandler: APIGatewayProxyHandler = async () => {
             }
           };
         } catch (error) {
+          const statusCode = error instanceof Error && (error as any).statusCode ? (error as any).statusCode : 500;
           return {
-            code: error instanceof Error && (error as any).statusCode ? (error as any).statusCode : 500,
-            message: `Failed to fetch flextime for user ${severaUser.guid}`,
-            error: error instanceof Error ? error.message : "Unknown error"
+            statusCode,
+            body: JSON.stringify({
+              code: statusCode,
+              message: `Failed to fetch flextime for user ${severaUser.guid}`,
+              error: error instanceof Error ? error.message : "Unknown error"
+            })
           };
         }
       })
@@ -49,7 +66,7 @@ export const listUsersFlextimeHandler: APIGatewayProxyHandler = async () => {
      * Extract only the successful flextime results from the settled promises
      */
     const successfulResults = usersWithFlextime
-      .filter((result): result is PromiseFulfilledResult<any> => result.status === "fulfilled")
+      .filter((result): result is PromiseFulfilledResult<UserWithFlextime> => result.status === "fulfilled")
       .map((result) => result.value);
     return {
       statusCode: 200,

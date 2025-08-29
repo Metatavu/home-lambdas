@@ -12,9 +12,9 @@ import removeInterestFromDealHandler from "@functions/pipedrive/remove-interest-
 import removeInterestFromLeadHandler from "@functions/pipedrive/remove-interest-from-lead";
 import sendDailyMessage from "@functions/meta-assistant/send-daily-message";
 import sendWeeklyMessage from "@functions/meta-assistant/send-weekly-message";
-import updatePaidHandler from "@/functions/on-call/update-paid";
-import listOnCallDataHandler from "src/functions/on-call/list-on-call-data";
-import weeklyCheckHandler from "@/functions/on-call/weekly-check";
+import onCallUpdatePaidHandler from "@/functions/on-call/update-paid";
+import onCallListDataHandler from "src/functions/on-call/list-on-call-data";
+import onCallWeeklyCheckHandler from "@/functions/on-call/weekly-check";
 import getSlackUserAvatar from "src/functions/slack-user-avatar";
 import createSoftwareHandler from "@/functions/software-registry/create-software";
 import findSoftwareHandler from "@/functions/software-registry/find-software";
@@ -22,6 +22,7 @@ import listSoftwareHandler from "@/functions/software-registry/list-software";
 import updateSoftwareHandler from "@/functions/software-registry/update-software";
 import deleteSoftwareHandler from "@/functions/software-registry/delete-software";
 import listUsersHandler from "@/functions/keycloak/list-users";
+import listUsersFlextimeHandler from "src/functions/users/flextime";
 import findUserHandler from "@/functions/keycloak/find-user";
 import updateUserAttributeHandler from "@/functions/keycloak/update-user-attributes";
 import removeUserAttributeHanndler from "src/functions/keycloak/remove-user-attribute";
@@ -141,28 +142,9 @@ const serverlessConfiguration: AWS = {
       HOME_BUCKET_NAME: "${self:custom.s3BucketName.dev}",
       HOME_BUCKET_REGION: region
     },
-    s3: {
-      "on-call": {
-        bucketName: isLocal ? "local-on-call-data" : "${opt:stage}-on-call-data"
-      }
-    },
     iam: {
       role: {
         statements: [
-          {
-            Effect: "Allow",
-            Action: ["s3:GetObject"],
-            Resource: isLocal
-              ? "*"
-              : "arn:aws:s3:::${opt:stage}-on-call-data/*",
-          },
-          {
-            Effect: "Allow",
-            Action: ["s3:PutObject"],
-            Resource: isLocal
-              ? "*"
-              : "arn:aws:s3:::${opt:stage}-on-call-data/*",
-          },
           {
             Effect: "Allow",
             Action: [
@@ -187,7 +169,8 @@ const serverlessConfiguration: AWS = {
               "arn:aws:dynamodb:${self:provider.region}:*:table/Questionnaires",
               "arn:aws:dynamodb:${self:provider.region}:*:table/VacationRequests",
               "arn:aws:dynamodb:${self:provider.region}:*:table/Articles",
-              "arn:aws:dynamodb:${self:provider.region}:*:table/Articles/index/GSI_Path"
+              "arn:aws:dynamodb:${self:provider.region}:*:table/Articles/index/GSI_Path",
+              "arn:aws:dynamodb:${self:provider.region}:*:table/OnCallSchedule"
             ]
           }
         ]
@@ -203,11 +186,11 @@ const serverlessConfiguration: AWS = {
     addInterestToLeadHandler,
     removeInterestFromDealHandler,
     removeInterestFromLeadHandler,
-    listOnCallDataHandler,
-    weeklyCheckHandler,
+    onCallListDataHandler,
+    onCallWeeklyCheckHandler,
     sendDailyMessage,
     sendWeeklyMessage,
-    updatePaidHandler,
+    onCallUpdatePaidHandler,
     getSlackUserAvatar,
     createSoftwareHandler,
     findSoftwareHandler,
@@ -215,6 +198,7 @@ const serverlessConfiguration: AWS = {
     updateSoftwareHandler,
     deleteSoftwareHandler,
     listUsersHandler,
+    listUsersFlextimeHandler,  
     findUserHandler,
     updateUserAttributeHandler,
     removeUserAttributeHanndler,

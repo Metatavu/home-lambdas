@@ -8,9 +8,9 @@ export { default as removeInterestFrmoDealHandler } from "./pipedrive/remove-int
 export { default as removeInterestFrmoLeadHandler } from "./pipedrive/remove-interest-from-lead";
 export { default as sendDailyMessage } from "./meta-assistant/send-daily-message";
 export { default as sendWeeklyMessage } from "./meta-assistant/send-weekly-message";
-export { default as listOnCallDataHandler } from "./on-call/list-on-call-data"
-export { default as weeklyCheckHandler } from "./on-call/weekly-check"
-export { default as updatePaidHandler } from "./on-call/update-paid"
+export { default as onCallListDataHandler } from "./on-call/list-on-call-data"
+export { default as onCallWeeklyCheckHandler } from "./on-call/weekly-check"
+export { default as onCallUpdatePaidHandler } from "./on-call/update-paid"
 export { default as createSoftwareHandler } from "./software-registry/create-software";
 export { default as findSoftwareHandler } from "./software-registry/find-software";
 export { default as listSoftwareHandler } from "./software-registry/list-software";

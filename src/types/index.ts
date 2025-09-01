@@ -10,7 +10,6 @@ export type DateRange = {
  * Details of a vacation request.
  */
 export interface VacationDetails {
-    id: string;
     user: string;
     startDate: string;
     endDate: string;

@@ -14,19 +14,30 @@ import { OnCallEntry } from "src/database/models/oncall";
  * @param policyName name of policy
  * @returns week from schedule
  */
-const getNextWeekFromSchedule = (schedule: SplunkSchedule, nextThursday: DateTime, policyName: string) => {
-  const scheduleFromSplunk = schedule.schedules.find(schedule => schedule.policy.name === policyName)?.schedule[0];
-  if (!scheduleFromSplunk) {
+const getCurrentOnCallFromSchedule = (schedule: SplunkSchedule, currentDate: DateTime, policyName: string) => {
+  const scheduleObj = schedule.schedules.find(schedule => schedule.policy.name === policyName)?.schedule[0];
+  if (!scheduleObj || !scheduleObj.rolls) {
+    return null;
+  }
+  
+  const foundRoll = scheduleObj.rolls.find(roll => {
+    const start = DateTime.fromISO(roll.start);
+    const end = DateTime.fromISO(roll.end);
+    return currentDate >= start && currentDate < end;
+  });
+
+  if (!foundRoll) {
     return null;
   }
 
-  const onCallUser = scheduleFromSplunk.onCallUser;
-  const overrideOnCallUser = scheduleFromSplunk.overrideOnCallUser;
-  const weekNumber = nextThursday.weekNumber;
+  const onCallUser = foundRoll.onCallUser;
+  const weekNumber = currentDate.weekNumber;
+  console.log(foundRoll);
+  console.log(`On call for week ${weekNumber} is ${onCallUser.username}`);
 
   return {
     week: weekNumber,
-    user: overrideOnCallUser == null ? onCallUser.username : overrideOnCallUser.username
+    user: onCallUser.username
   };
 };
 
@@ -48,21 +59,20 @@ export const onCallWeeklyCheckHandler : ValidatedEventAPIGatewayProxyEvent<any> 
     }
   })).json() as SplunkSchedule;
 
-  const nextThursday = DateTime.now().plus({ days: 4 });
-  const nextWeek = getNextWeekFromSchedule(schedule, nextThursday, schedulePolicyName);
-  if (!nextWeek) {
-    throw new Error("Next week not found");
+  const currentDate = DateTime.now();
+  const splunkOnCallData = getCurrentOnCallFromSchedule(schedule, currentDate, schedulePolicyName);
+  if (!splunkOnCallData) {
+    throw new Error("Current week not found");
   }
 
   const dynamoDb = new DynamoDB.DocumentClient();
-  const year = nextThursday.year;
-  const week = nextWeek.week;
-  const person = nextWeek.user;
+
+  console.log(`On call for week ${splunkOnCallData.week} of year ${currentDate.year} is ${splunkOnCallData.user}`);
 
   const entry: OnCallEntry = {
-    Year: year,
-    Week: week,
-    Person: person,
+    Year: currentDate.year,
+    Week: splunkOnCallData.week,
+    Person: splunkOnCallData.user,
     Paid: false
   };
 
@@ -74,7 +84,7 @@ export const onCallWeeklyCheckHandler : ValidatedEventAPIGatewayProxyEvent<any> 
 
   return {
     statusCode: 200,
-    body: JSON.stringify(nextWeek)
+    body: JSON.stringify(splunkOnCallData)
   };
 };
 

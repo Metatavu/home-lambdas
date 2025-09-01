@@ -82,7 +82,7 @@ async function notifyAdminsVacation(
         Start date: ${formatDate(vacationDetails.startDate)}
         End date: ${formatDate(vacationDetails.endDate)}
         Type: ${vacationDetails.type || "Not provided"}
-        Update status: ${vacationLink}
+        Update status: <${vacationLink}|Update status here>
     `;
 
     for (const userId of adminUserIds) {

@@ -68,7 +68,7 @@ async function notifyAdminsVacationByEmail(
     <p>Start Date: ${formatDate(vacationDetails.startDate)}</p>
     <p>End Date: ${formatDate(vacationDetails.endDate)}</p>
     <p>Type: ${vacationDetails.type || "Not provided"}</p>
-    <p>Update status: ${vacationLink}</p>
+    <p>Update status: <a href="${vacationLink}">Update status here</a></p>
   `;
 
   for (const to of adminEmails) {

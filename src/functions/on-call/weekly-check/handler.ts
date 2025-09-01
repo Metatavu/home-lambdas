@@ -32,8 +32,6 @@ const getCurrentOnCallFromSchedule = (schedule: SplunkSchedule, currentDate: Dat
 
   const onCallUser = foundRoll.onCallUser;
   const weekNumber = currentDate.weekNumber;
-  console.log(foundRoll);
-  console.log(`On call for week ${weekNumber} is ${onCallUser.username}`);
 
   return {
     week: weekNumber,
@@ -66,8 +64,6 @@ export const onCallWeeklyCheckHandler : ValidatedEventAPIGatewayProxyEvent<any> 
   }
 
   const dynamoDb = new DynamoDB.DocumentClient();
-
-  console.log(`On call for week ${splunkOnCallData.week} of year ${currentDate.year} is ${splunkOnCallData.user}`);
 
   const entry: OnCallEntry = {
     Year: currentDate.year,

@@ -9,7 +9,8 @@
     "lint": "eslint ./src --ext .ts",
     "sync-secrets": "vault kv get -format json -mount=$(cat .vault-mount) \"home-lambdas\"|jq -r '.data.data | to_entries[] | \"\\(.key)=\\(.value)\"' > .env",
     "postinstall": "npm run build-severa-client",
-    "build-severa-client": "openapi-generator-cli generate -i severa-API-spec/swagger.yaml -o ./src/generated/severaClient -c generator-config.json -g typescript-node"
+    "build-severa-client": "openapi-generator-cli generate -i severa-API-spec/swagger.yaml -o ./src/generated/severaClient -c generator-config.json -g typescript-node",
+    "import-oncall-data": "ts-node scripts/import-oncall-data.ts"
   },
   "engines": {
     "node": ">=14.15.0"

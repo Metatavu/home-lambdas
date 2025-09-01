@@ -14,6 +14,9 @@ export default {
       httpApi: {
         method: 'post',
         path: '/on-call/weekly-check',
+        authorizer: {
+          name: "homeKeycloakAuthorizer"
+        }
       }
     }
   ]

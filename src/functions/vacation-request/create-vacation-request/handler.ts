@@ -3,6 +3,8 @@ import { vacationRequestService } from "src/database/services";
 import { v4 as uuidv4 } from "uuid";
 import type { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
 import type vacationRequestSchema from "src/schema/vacationRequest";
+import { notifyAdminsVacationSubmittedAll } from "src/notifications/vacation-notifications";
+import { CreateKeycloakApiService } from "src/database/services/keycloak-api-service";
 
 /**
  * Handler for creating a new vacation request entry in DynamoDB.
@@ -20,8 +22,7 @@ export const createVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
       body: JSON.stringify({ error: "Request body is required." })
     };
   }
-  const { createdAt, createdBy, days, draft, endDate, startDate, status, type, updatedAt, userId } =
-    body;
+  const { createdAt, createdBy, days, draft, endDate, startDate, status, type, updatedAt, userId } = body;
 
   if (
     !userId ||
@@ -41,6 +42,8 @@ export const createVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
   }
 
   const newVacationRequestId = uuidv4();
+  const api = CreateKeycloakApiService();
+  const userDetails = await api.findUser(userId);
 
   try {
     const createdVacationRequest = await vacationRequestService.createVacationRequest({
@@ -55,6 +58,13 @@ export const createVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
       createdBy: createdBy,
       createdAt: createdAt,
       updatedAt: updatedAt
+    });
+    
+    await notifyAdminsVacationSubmittedAll({
+      user: userDetails.firstName,
+      startDate,
+      endDate,
+      type
     });
 
     return {

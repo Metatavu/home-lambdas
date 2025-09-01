@@ -7,6 +7,16 @@ export type DateRange = {
 };
 
 /**
+ * Details of a vacation request.
+ */
+export interface VacationDetails {
+    user: string;
+    startDate: string;
+    endDate: string;
+    type?: string;
+}
+
+/**
  * Application configuration
  */
 export interface Configuration {
@@ -29,4 +39,14 @@ export interface Configuration {
     testUser: {
         email: string
     }
+    email: {                             
+        resendApiKey: string;
+        adminEmails: string[];
+    }
+    slack: {
+        botToken: string;
+        adminUsers: string[];
+    }
+    vacationDetails?: VacationDetails;
+    homeBaseUrl: string;
 }

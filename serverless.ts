@@ -140,7 +140,10 @@ const serverlessConfiguration: AWS = {
       CHANNEL_ID: env.CHANNEL_ID,
       OPENAI_API_KEY: env.OPENAI_API_KEY,
       HOME_BUCKET_NAME: "${self:custom.s3BucketName.dev}",
-      HOME_BUCKET_REGION: region
+      HOME_BUCKET_REGION: region,
+      ADMIN_SLACK_USERS: env.ADMIN_SLACK_USERS,
+      RESEND_API_KEY: env.RESEND_API_KEY,
+      ADMIN_EMAILS: env.ADMIN_EMAILS
     },
     iam: {
       role: {

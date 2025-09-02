@@ -18,10 +18,12 @@
 import fs from "fs";
 import path from "path";
 import fetch from "node-fetch";
+import Auth from "../src/meta-assistant/auth/auth-provider";
 
 const ENDPOINT_URL = process.env.ONCALL_WEEKLY_CHECK_ENDPOINT || "http://localhost:3000/on-call/weekly-check";
 
 async function main() {
+	const access_token = await Auth.getAccessToken();
 	const filePath = process.argv[2];
 	if (!filePath) {
 		console.error("Please provide the path to the JSON file, e.g.: npm run import-oncall-data -- ./scripts/2025.json");
@@ -49,10 +51,14 @@ async function main() {
 	}
 
 	for (const entry of data) {
-		if (typeof entry.Week !== "number" || typeof entry.Person !== "string") {
-			console.warn("Skipped invalid entry:", entry);
-			continue;
-		}
+		if (
+			typeof entry.Week !== "number" ||
+			typeof entry.Person !== "string" ||
+			entry.Week < 1 || entry.Week > 52
+		) {
+			console.warn("Skipped invalid entry (week must be 1-52):", entry);
+				continue;
+			}
 		const payload = {
 			Year: year,
 			Week: entry.Week,
@@ -62,7 +68,10 @@ async function main() {
 		try {
 			const res = await fetch(ENDPOINT_URL, {
 				method: "POST",
-				headers: { "Content-Type": "application/json" },
+				headers: {
+					"Content-Type": "application/json",
+					"Authorization": `Bearer ${access_token}`
+				},
 				body: JSON.stringify(payload)
 			});
 			if (!res.ok) {

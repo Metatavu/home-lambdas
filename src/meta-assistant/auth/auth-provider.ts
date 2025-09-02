@@ -1,5 +1,6 @@
 import fetch from "node-fetch";
 import { ParsedAccessToken } from "src/types/meta-assistant/index";
+import "dotenv/config";
 
 /**
  * Namespace for Authentication

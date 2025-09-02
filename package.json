@@ -33,7 +33,8 @@
     "request": "^2.88.2",
     "resend": "^4.7.0",
     "serverless-dynamodb": "^0.2.53",
-    "undici": "^7.15.0"
+    "undici": "^7.15.0",
+    "web-streams-polyfill": "^4.2.0"
   },
   "devDependencies": {
     "@babel/core": "^7.17.9",

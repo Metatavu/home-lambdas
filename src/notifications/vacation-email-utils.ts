@@ -2,9 +2,7 @@ import { Resend } from "resend";
 import Config from "src/app/config"; 
 import { VacationDetails } from "src/types";
 
-/**
- * Temporary polyfill for Node <18, remove after node upgrade
- */
+// TODO: Needs to be removed after node upgrade
 import { fetch, Headers, Request, Response } from "undici";
 (globalThis as any).fetch = fetch;
 (globalThis as any).Headers = Headers;

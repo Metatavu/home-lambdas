@@ -59,7 +59,6 @@ export const createVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
       createdAt: createdAt,
       updatedAt: updatedAt
     });
-    
     await notifyAdminsVacationSubmittedAll({
       user: userDetails.firstName,
       startDate,

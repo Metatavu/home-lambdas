@@ -2,6 +2,13 @@ import { Resend } from "resend";
 import Config from "src/app/config"; 
 import { VacationDetails } from "src/types";
 
+// TODO: Needs to be removed after node upgrade
+import { fetch, Headers, Request, Response } from "undici";
+(globalThis as any).fetch = fetch;
+(globalThis as any).Headers = Headers;
+(globalThis as any).Request = Request;
+(globalThis as any).Response = Response;
+
 const resend = new Resend(Config.get().email.resendApiKey);
 const adminEmails = Config.get().email.adminEmails;
 

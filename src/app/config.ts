@@ -11,10 +11,10 @@ const env = cleanEnv(process.env, {
   SPLUNK_TEAM_ONCALL_URL: str(),
   SPLUNK_SCHEDULE_POLICY_NAME : str(),
   SEVERA_TEST_USER_EMAIL: str({ default: undefined }),
-  RESEND_API_KEY: str(),
-  ADMIN_EMAILS: str(),  
+  RESEND_API_KEY: str({ default: undefined }),
+  ADMIN_EMAILS: str({ default: undefined }), 
   METATAVU_BOT_TOKEN: str(),       
-  ADMIN_SLACK_USERS: str(),   
+  ADMIN_SLACK_USERS: str({ default: undefined }),  
   HOME_BASE_URL: str({ default: "http://localhost:5173" })
 });
 
@@ -47,11 +47,11 @@ export default class Config {
     },
     email: {
       resendApiKey: env.RESEND_API_KEY,
-      adminEmails: env.ADMIN_EMAILS.split(","),
+      adminEmails: env.ADMIN_EMAILS ? env.ADMIN_EMAILS.split(",") : [],
     },
     slack: {
       botToken: env.METATAVU_BOT_TOKEN,
-      adminUsers: env.ADMIN_SLACK_USERS.split(","),
+      adminUsers: env.ADMIN_SLACK_USERS ? env.ADMIN_SLACK_USERS.split(",") : [],
     },
     homeBaseUrl: env.HOME_BASE_URL || "http://localhost:5173",
   });

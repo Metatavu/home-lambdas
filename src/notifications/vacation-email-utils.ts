@@ -3,9 +3,15 @@ import Config from "src/app/config";
 import { VacationDetails } from "src/types";
 
 // TODO: Needs to be removed after node upgrade
-const { ReadableStream } = require('web-streams-polyfill/ponyfill/es2018');
-(globalThis as any).ReadableStream = ReadableStream;
-const undici = require('undici');
+try {
+  if (typeof (globalThis as any).ReadableStream === "undefined") {
+    const { ReadableStream } = require("web-streams-polyfill");
+    (globalThis as any).ReadableStream = ReadableStream;
+  }
+} catch (error) {
+  console.warn("ReadableStream polyfill could not be loaded:", error);
+}
+import undici from 'undici';
 (globalThis as any).fetch = undici.fetch;
 (globalThis as any).Headers = undici.Headers;
 (globalThis as any).Request = undici.Request;

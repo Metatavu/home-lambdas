@@ -57,12 +57,12 @@ export const onCallWeeklyCheckHandler : ValidatedEventAPIGatewayProxyEvent<any> 
   const dynamoDb = new DynamoDB.DocumentClient();
   const year = nextThursday.year;
   const week = nextWeek.week;
-  const person = nextWeek.user;
+  const user = nextWeek.user;
 
   const entry: OnCallEntry = {
     Year: year,
     Week: week,
-    Person: person,
+    Username: user,
     Paid: false
   };
 

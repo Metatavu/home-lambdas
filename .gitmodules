@@ -1,3 +1,7 @@
 [submodule "severa-API-spec"]
 	path = severa-API-spec
 	url = https://github.com/Metatavu/severa-API-spec
+[submodule "home-lambdas-API-spec"]
+	path = home-lambdas-API-spec
+	url = https://github.com/Metatavu/home-lambdas-API-spec
+	branch = develop

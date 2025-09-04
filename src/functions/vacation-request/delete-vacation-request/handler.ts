@@ -35,10 +35,10 @@ const deleteVacationRequestHandler: APIGatewayProxyHandler = async (event: APIGa
 
     await vacationRequestService.deleteVacationRequest(id);
 
-    const api = CreateKeycloakApiService();
-    const userDetails = await api.findUser(foundVacationRequestById.userId);
-
     // TODO: Uncomment this once Node.js is upgraded (currently breaks due to resend dependency)
+    //const api = CreateKeycloakApiService();
+    //const userDetails = await api.findUser(foundVacationRequestById.userId);
+
     // await notifyAdminsVacationDeletedAll({
     //   user: userDetails.firstName,
     //   startDate: foundVacationRequestById.startDate,

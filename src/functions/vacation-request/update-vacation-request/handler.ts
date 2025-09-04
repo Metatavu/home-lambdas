@@ -64,8 +64,9 @@ const updateVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
     updatedAt: updatedAt
   };
 
-  const api = CreateKeycloakApiService();
-  const userDetails = await api.findUser(userId);
+  // TODO: Uncomment once Node.js is upgraded (required for notifications)
+  // const api = CreateKeycloakApiService();
+  // const userDetails = await api.findUser(userId);
 
   try {
     const updatedVacationRequest =

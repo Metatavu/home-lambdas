@@ -42,8 +42,9 @@ export const createVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
   }
 
   const newVacationRequestId = uuidv4();
-  const api = CreateKeycloakApiService();
-  const userDetails = await api.findUser(userId);
+  // TODO: Uncomment once Node.js is upgraded (required for notifications)
+  // const api = CreateKeycloakApiService();
+  // const userDetails = await api.findUser(userId);
 
   try {
     const createdVacationRequest = await vacationRequestService.createVacationRequest({

@@ -3,9 +3,6 @@ import { Configuration } from "src/types";
 
 const env = cleanEnv(process.env, {
   AUTH_ISSUER: str(),
-  ON_CALL_BUCKET_NAME: str(),
-  PIPEDRIVE_API_KEY: str(),
-  PIPEDRIVE_API_URL: str(),
   SPLUNK_API_KEY: str(),
   SPLUNK_API_ID: str(),
   SPLUNK_TEAM_ONCALL_URL: str(),
@@ -28,13 +25,6 @@ export default class Config {
   public static get = (): Configuration => ({
     auth: {
       issuer: env.AUTH_ISSUER
-    },
-    onCall: {
-      bucketName: env.ON_CALL_BUCKET_NAME
-    },
-    pipedriveApi: {
-      apiKey: env.PIPEDRIVE_API_KEY,
-      apiUrl: env.PIPEDRIVE_API_URL
     },
     splunkApi : {
       apiKey: env.SPLUNK_API_KEY,

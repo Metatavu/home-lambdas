@@ -1,7 +1,7 @@
 import type {APIGatewayProxyEvent, APIGatewayProxyHandler} from "aws-lambda";
 import {vacationRequestService} from "src/database/services";
 import {middyfy} from "src/libs/lambda";
-import { notifyAdminsVacationDeletedAll } from "src/notifications/vacation-notifications";
+//import { notifyAdminsVacationDeletedAll } from "src/notifications/vacation-notifications";
 import { CreateKeycloakApiService } from "src/database/services/keycloak-api-service";
 
 /**
@@ -35,15 +35,16 @@ const deleteVacationRequestHandler: APIGatewayProxyHandler = async (event: APIGa
 
     await vacationRequestService.deleteVacationRequest(id);
 
-    const api = CreateKeycloakApiService();
-    const userDetails = await api.findUser(foundVacationRequestById.userId);
+    // TODO: Uncomment this once Node.js is upgraded (currently breaks due to resend dependency)
+    //const api = CreateKeycloakApiService();
+    //const userDetails = await api.findUser(foundVacationRequestById.userId);
 
-    await notifyAdminsVacationDeletedAll({
-      user: userDetails.firstName,
-      startDate: foundVacationRequestById.startDate,
-      endDate: foundVacationRequestById.endDate,
-      type: foundVacationRequestById.type
-    });
+    // await notifyAdminsVacationDeletedAll({
+    //   user: userDetails.firstName,
+    //   startDate: foundVacationRequestById.startDate,
+    //   endDate: foundVacationRequestById.endDate,
+    //   type: foundVacationRequestById.type
+    // });
 
     return {
       statusCode: 204,

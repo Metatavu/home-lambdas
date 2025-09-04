@@ -2,7 +2,7 @@ import type { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway";
 import { middyfy } from "@libs/lambda";
 import { vacationRequestService } from "src/database/services";
 import type vacationRequestSchema from "src/schema/vacationRequest";
-import { notifyUserVacationStatusUpdatedAll } from "src/notifications/vacation-notifications";
+//import { notifyUserVacationStatusUpdatedAll } from "src/notifications/vacation-notifications";
 import { CreateKeycloakApiService } from "src/database/services/keycloak-api-service";
 
 /**
@@ -71,12 +71,13 @@ const updateVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
     const updatedVacationRequest =
       await vacationRequestService.updateVacationRequest(vacationRequestUpdates);
 
-    if (statusChanged) {
-      await notifyUserVacationStatusUpdatedAll({
-        email: userDetails.email,
-        updatedStatus: status,
-      });
-    }
+    // TODO: Uncomment this once Node.js is upgraded (currently breaks due to resend dependency)
+    // if (statusChanged) {
+    //   await notifyUserVacationStatusUpdatedAll({
+    //     email: userDetails.email,
+    //     updatedStatus: status,
+    //   });
+    // }
 
     return {
       statusCode: 200,

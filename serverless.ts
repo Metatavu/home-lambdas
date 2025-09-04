@@ -22,6 +22,7 @@ import listSoftwareHandler from "@/functions/software-registry/list-software";
 import updateSoftwareHandler from "@/functions/software-registry/update-software";
 import deleteSoftwareHandler from "@/functions/software-registry/delete-software";
 import listUsersHandler from "@/functions/keycloak/list-users";
+import listUsersFlextimeHandler from "src/functions/users/flextime";
 import findUserHandler from "@/functions/keycloak/find-user";
 import updateUserAttributeHandler from "@/functions/keycloak/update-user-attributes";
 import removeUserAttributeHanndler from "src/functions/keycloak/remove-user-attribute";
@@ -101,8 +102,6 @@ const serverlessConfiguration: AWS = {
       NODE_OPTIONS: "--enable-source-maps --stack-trace-limit=1000",
       SEVERA_TEST_USER_EMAIL: env.SEVERA_TEST_USER_EMAIL,
       AUTH_ISSUER: env.AUTH_ISSUER,
-      PIPEDRIVE_API_KEY: env.PIPEDRIVE_API_KEY,
-      PIPEDRIVE_API_URL: env.PIPEDRIVE_API_URL,
       METATAVU_BOT_TOKEN: env.METATAVU_BOT_TOKEN,
       KEYCLOAK_CLIENT_SECRET: env.KEYCLOAK_CLIENT_SECRET,
       KEYCLOAK_BASE_URL: env.KEYCLOAK_BASE_URL,
@@ -115,7 +114,6 @@ const serverlessConfiguration: AWS = {
       SLACK_USER_OVERRIDE: env.SLACK_USER_OVERRIDE,
       DAILY_SCHEDULE_TIMER: env.DAILY_SCHEDULE_TIMER,
       WEEKLY_SCHEDULE_TIMER: env.WEEKLY_SCHEDULE_TIMER,
-      ON_CALL_BUCKET_NAME: env.ON_CALL_BUCKET_NAME,
       SPLUNK_API_ID: env.SPLUNK_API_ID,
       SPLUNK_API_KEY: env.SPLUNK_API_KEY,
       SPLUNK_SCHEDULE_POLICY_NAME: env.SPLUNK_SCHEDULE_POLICY_NAME,
@@ -123,24 +121,16 @@ const serverlessConfiguration: AWS = {
       ONCALL_WEEKLY_SCHEDULE_TIMER: env.ONCALL_WEEKLY_SCHEDULE_TIMER,
       GOOGLE_MANAGEMENT_MINUTES_FOLDER_ID:
         env.GOOGLE_MANAGEMENT_MINUTES_FOLDER_ID,
-      GOOGLE_SERVICE_ACCOUNT_CLIENT_EMAIL:
-        env.GOOGLE_SERVICE_ACCOUNT_CLIENT_EMAIL,
-      GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY_ID:
-        env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY_ID,
-      GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY:
-        env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY,
-      GOOGLE_CLOUD_PROJECT_ID: env.GOOGLE_CLOUD_PROJECT_ID,
       SEVERA_DEMO_BASE_URL: env.SEVERA_DEMO_BASE_URL,
       SEVERA_DEMO_CLIENT_ID: env.SEVERA_DEMO_CLIENT_ID,
       SEVERA_DEMO_CLIENT_SECRET: env.SEVERA_DEMO_CLIENT_SECRET,
       DYNAMODB_ENDPOINT: isLocal ? "http://localhost:8000" : undefined,
-      TRELLO_API_KEY: env.TRELLO_API_KEY,
-      TRELLO_TOKEN: env.TRELLO_TOKEN,
-      TRELLO_MANAGEMENT_BOARD_ID: env.TRELLO_MANAGEMENT_BOARD_ID,
       CHANNEL_ID: env.CHANNEL_ID,
-      OPENAI_API_KEY: env.OPENAI_API_KEY,
       HOME_BUCKET_NAME: "${self:custom.s3BucketName.dev}",
-      HOME_BUCKET_REGION: region
+      HOME_BUCKET_REGION: region,
+      ADMIN_SLACK_USERS: env.ADMIN_SLACK_USERS || undefined,
+      RESEND_API_KEY: env.RESEND_API_KEY || undefined,
+      ADMIN_EMAILS: env.ADMIN_EMAILS || undefined
     },
     iam: {
       role: {
@@ -198,6 +188,7 @@ const serverlessConfiguration: AWS = {
     updateSoftwareHandler,
     deleteSoftwareHandler,
     listUsersHandler,
+    listUsersFlextimeHandler,  
     findUserHandler,
     updateUserAttributeHandler,
     removeUserAttributeHanndler,

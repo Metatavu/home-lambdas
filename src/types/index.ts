@@ -7,18 +7,21 @@ export type DateRange = {
 };
 
 /**
+ * Details of a vacation request.
+ */
+export interface VacationDetails {
+    user: string;
+    startDate: string;
+    endDate: string;
+    type?: string;
+}
+
+/**
  * Application configuration
  */
 export interface Configuration {
     auth: {
         issuer: string;
-    },
-    onCall: {
-        bucketName: string;
-    },
-    pipedriveApi: {
-        apiKey: string,
-        apiUrl: string
     },
     splunkApi: {
         apiKey: string
@@ -29,4 +32,14 @@ export interface Configuration {
     testUser: {
         email: string
     }
+    email: {                             
+        resendApiKey: string;
+        adminEmails: string[];
+    }
+    slack: {
+        botToken: string;
+        adminUsers: string[];
+    }
+    vacationDetails?: VacationDetails;
+    homeBaseUrl: string;
 }

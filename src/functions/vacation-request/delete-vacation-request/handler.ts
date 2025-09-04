@@ -1,6 +1,8 @@
 import type {APIGatewayProxyEvent, APIGatewayProxyHandler} from "aws-lambda";
 import {vacationRequestService} from "src/database/services";
 import {middyfy} from "src/libs/lambda";
+import { notifyAdminsVacationDeletedAll } from "src/notifications/vacation-notifications";
+import { CreateKeycloakApiService } from "src/database/services/keycloak-api-service";
 
 /**
  * Lambda for deleting a vacation request entry from DynamoDB.
@@ -32,6 +34,16 @@ const deleteVacationRequestHandler: APIGatewayProxyHandler = async (event: APIGa
     ;
 
     await vacationRequestService.deleteVacationRequest(id);
+
+    const api = CreateKeycloakApiService();
+    const userDetails = await api.findUser(foundVacationRequestById.userId);
+
+    await notifyAdminsVacationDeletedAll({
+      user: userDetails.firstName,
+      startDate: foundVacationRequestById.startDate,
+      endDate: foundVacationRequestById.endDate,
+      type: foundVacationRequestById.type
+    });
 
     return {
       statusCode: 204,

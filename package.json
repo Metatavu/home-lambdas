@@ -15,6 +15,8 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
+    "@aws-sdk/client-dynamodb": "3.882.0",
+    "@aws-sdk/lib-dynamodb": "3.882.0",
     "@aws-sdk/s3-request-presigner": "^3.812.0",
     "@googleapis/docs": "^3.3.0",
     "@googleapis/drive": "^8.14.0",

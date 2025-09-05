@@ -1,4 +1,5 @@
-import { DocumentClient } from "aws-sdk/clients/dynamodb";
+import { DynamoDBDocumentClient, ScanCommand, QueryCommand, GetCommand, PutCommand, DeleteCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
+import { ScanCommandInput, QueryCommandInput, GetCommandInput, PutCommandInput, DeleteCommandInput, UpdateCommandInput } from "@aws-sdk/lib-dynamodb";
 import { ArticleMetadataModel, ArticleModel } from "../models/article";
 
 const TABLE_NAME = "Articles";
@@ -10,9 +11,9 @@ const gsiPath = "GSI_Path";
 class ArticlesApiService {
   /**
    * Constructor
-   * @param docClient DynamoDB client
+   * @param docClient DynamoDBDocumentClient
    */
-  constructor(private readonly docClient: DocumentClient) {}
+  constructor(private readonly docClient: DynamoDBDocumentClient) {}
 
   /**
    * Lists all article entries
@@ -20,7 +21,7 @@ class ArticlesApiService {
    * @returns list of article entries (excluding content)
    */
   public listArticles = async(draft: string = "false", pathPrefix?: string): Promise<ArticleMetadataModel[]> => {
-    const params: AWS.DynamoDB.DocumentClient.ScanInput = {
+    const params: ScanCommandInput = {
       TableName: TABLE_NAME,
       ExpressionAttributeNames: {
         "#path": "path",
@@ -35,7 +36,7 @@ class ArticlesApiService {
       params.ExpressionAttributeValues[":path"] = pathPrefix;
     }
 
-    const articles = await this.docClient.scan(params).promise();
+    const articles = await this.docClient.send(new ScanCommand(params));
     return articles.Items as ArticleMetadataModel[];
   };
 
@@ -46,7 +47,7 @@ class ArticlesApiService {
    * @returns article entry or null if not found
    */
   public findArticleByPath = async(path: string): Promise<ArticleModel | null> => {
-    const params = {
+    const params: QueryCommandInput = {
       TableName: TABLE_NAME,
       IndexName: gsiPath,
       KeyConditionExpression: "#path = :path",
@@ -54,8 +55,8 @@ class ArticlesApiService {
       ExpressionAttributeValues: { ":path": path }
     };
 
-    const result = await this.docClient.query(params).promise();
-    const articleRecord = result.Items.length !== 0 ? result.Items[0] : undefined;
+    const result = await this.docClient.send(new QueryCommand(params));
+    const articleRecord = result.Items && result.Items.length !== 0 ? result.Items[0] : undefined;
 
     if (articleRecord?.id) {
       const article = await this.findArticleById(articleRecord.id);
@@ -70,12 +71,11 @@ class ArticlesApiService {
    * @returns article entry or null if not found
    */
   public findArticleById = async(id: string): Promise<ArticleModel | null> => {
-    const articles = await this.docClient
-      .get({
-        TableName: TABLE_NAME,
-        Key: { id: id },
-      }).promise();
-
+    const params: GetCommandInput = {
+      TableName: TABLE_NAME,
+      Key: { id: id },
+    };
+    const articles = await this.docClient.send(new GetCommand(params));
     return articles.Item as ArticleModel;
   };
 
@@ -86,12 +86,11 @@ class ArticlesApiService {
    * @returns created article entry
    */
   public createArticle = async(article: ArticleModel): Promise<ArticleModel> => {
-    await this.docClient
-      .put({
-        TableName: TABLE_NAME,
-        Item: article
-      }).promise();
-
+    const params: PutCommandInput = {
+      TableName: TABLE_NAME,
+      Item: article
+    };
+    await this.docClient.send(new PutCommand(params));
     return article;
   };
 
@@ -101,11 +100,11 @@ class ArticlesApiService {
    * @param id article id
    */
   public deleteArticle = async(id: string) => {
-    return this.docClient
-      .delete({
-        TableName: TABLE_NAME,
-        Key: { id: id },
-      }).promise();
+    const params: DeleteCommandInput = {
+      TableName: TABLE_NAME,
+      Key: { id: id },
+    };
+    return this.docClient.send(new DeleteCommand(params));
   };
 
   /**
@@ -115,11 +114,11 @@ class ArticlesApiService {
    * @returns updated article entry
    */
   public updateArticle = async(article: ArticleModel) => {
-    await this.docClient
-      .put({
-        TableName: TABLE_NAME,
-        Item: article
-      }).promise();
+    const params: PutCommandInput = {
+      TableName: TABLE_NAME,
+      Item: article
+    };
+    await this.docClient.send(new PutCommand(params));
   };
 
   /**
@@ -130,7 +129,7 @@ class ArticlesApiService {
    */
   public updateArticleReadBy = async(id: string, users: string[]) => {
     const newDate = new Date().toISOString();
-    const params = {
+    const params: UpdateCommandInput = {
       TableName: TABLE_NAME,
       Key: { id: id },
       UpdateExpression: "SET readBy = :users, lastReadAt = :newDate, lastUpdatedAt = :newDate",
@@ -139,8 +138,7 @@ class ArticlesApiService {
         ":newDate": newDate
       }
     };
-
-    await this.docClient.update(params).promise();
+    await this.docClient.send(new UpdateCommand(params));
   };
 }
 

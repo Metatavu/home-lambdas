@@ -53,7 +53,7 @@ export const onCallListDataHandler: ValidatedEventAPIGatewayProxyEvent<any> = as
     statusCode: 200,
     body: JSON.stringify(data.map((entry) => ({
       ...entry,
-      Person: entry.Person,
+      Username: entry.Username,
       Paid: entry.Paid || false
     })))
   };

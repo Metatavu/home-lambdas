@@ -1,33 +1,42 @@
 import { DynamoDB } from "aws-sdk";
 import { middyfy } from "@libs/lambda";
-import { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
 
 /**
+ * Lambda method for importing on-call data from JSON
+ *
+ * Expects body to be an array of objects with "Week" (number) and "Person" (string) properties
+ * and a query parameter "year" (number)
  */
-export const onCallImportFromJsonHandler: ValidatedEventAPIGatewayProxyEvent<any> = async (event) => {
-	const { year, data } = event.body || {};
-
+export const onCallImportFromJsonHandler = async (event) => {
+	const year = event.queryStringParameters?.year ? parseInt(event.queryStringParameters.year, 10) : undefined;
 	if (!year || year < 2020 || year > new Date().getFullYear()) {
 		return {
 			statusCode: 400,
-			body: "Invalid or missing year"
+			body: "Invalid or missing year in query parameter"
+		};
+	}
+	let data;
+	try {
+		data = typeof event.body === "string" ? JSON.parse(event.body) : event.body;
+	} catch (err) {
+		return {
+			statusCode: 400,
+			body: "Invalid JSON in body"
 		};
 	}
 	if (!Array.isArray(data)) {
 		return {
 			statusCode: 400,
-			body: "Data must be an array"
+			body: "Body must be an array"
 		};
 	}
-
 	const dynamoDb = new DynamoDB.DocumentClient();
 	let imported = 0;
 	let errors: any[] = [];
-
 	for (const entry of data) {
 		if (
 			typeof entry.Week !== "number" ||
-			typeof entry.Username !== "string" ||
+			typeof entry.Person !== "string" ||
 			entry.Week < 1 || entry.Week > 52
 		) {
 			errors.push({ entry, error: "Invalid entry" });
@@ -39,7 +48,7 @@ export const onCallImportFromJsonHandler: ValidatedEventAPIGatewayProxyEvent<any
 				Item: {
 					Year: year,
 					Week: entry.Week,
-					Username: entry.Username,
+					Username: entry.Person,
 					Paid: false
 				}
 			}).promise();
@@ -48,7 +57,6 @@ export const onCallImportFromJsonHandler: ValidatedEventAPIGatewayProxyEvent<any
 			errors.push({ entry, error: err });
 		}
 	}
-
 	return {
 		statusCode: errors.length ? 207 : 200,
 		body: JSON.stringify({ imported, errors })

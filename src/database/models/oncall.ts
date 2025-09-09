@@ -1,6 +1,6 @@
 export interface OnCallEntry {
   Year: number;
   Week: number;
-  Person: string;
+  Username: string;
   Paid?: boolean;
 }

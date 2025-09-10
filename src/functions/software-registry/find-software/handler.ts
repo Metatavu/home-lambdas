@@ -2,6 +2,7 @@ import { APIGatewayProxyEvent, APIGatewayProxyHandler } from "aws-lambda";
 import { DocumentClient } from "aws-sdk/clients/dynamodb";
 import SoftwareService from "src/database/services/software-service";
 import { middyfy } from "src/libs/lambda";
+import { SoftwareRegistry } from "src/generated/homeLambdasModels/model/softwareRegistry";
 
 const dynamoDb = new DocumentClient();
 const softwareService = new SoftwareService(dynamoDb);
@@ -31,10 +32,19 @@ export const findSoftwareHandler: APIGatewayProxyHandler = async (event: APIGate
     const software = await softwareService.findSoftware(id);
 
     if (software) {
-      console.log('Software found:', software);
+      const fixedSoftware: SoftwareRegistry = {
+        ...software,
+        // NOTE: TS types for status for status differ between SoftwareModel and SoftwareRegistry.
+        // This cast ensures compatibility with the OpenAPI spec model without modifying generated types.
+        status: software.status as unknown as SoftwareRegistry["status"],
+        // NOTE: createdAt and lastUpdatedAt are converted to Date objects to match the OpenAPI spec model.
+        createdAt: software.createdAt ? new Date(software.createdAt) : undefined,
+        lastUpdatedAt: software.lastUpdatedAt ? new Date(software.lastUpdatedAt) : undefined
+      };
+      console.log('Software found:', fixedSoftware);
       return {
         statusCode: 200,
-        body: JSON.stringify(software),
+        body: JSON.stringify(fixedSoftware),
       };
     } else {
       console.error("Software not found for id:", id);

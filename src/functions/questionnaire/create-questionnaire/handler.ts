@@ -1,9 +1,10 @@
 import { middyfy } from "src/libs/lambda";
 import { questionnaireService } from "src/database/services";
 import { v4 as uuidv4 } from "uuid";
-import type QuestionnaireModel from "src/database/models/questionnaire";
+//import type QuestionnaireModel from "src/database/models/questionnaire";
 import type { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
 import type questionnaireSchema from "src/schema/questionnaire";
+import { Questionnaire } from "src/generated/homeLambdasModels/model/questionnaire";
 
 /**
  * Handler for creating a new questionnaire entry in DynamoDB.
@@ -29,7 +30,7 @@ export const createQuestionnaireHandler: ValidatedEventAPIGatewayProxyEvent<type
   }
 
   const newQuestionnaireId: string = uuidv4();
-  let questionnaireResponse: QuestionnaireModel | undefined = undefined;
+  let questionnaireResponse: Questionnaire | undefined = undefined;
 
   try {
     const createdQuestionnaire = await questionnaireService.createQuestionnaire({
@@ -42,7 +43,8 @@ export const createQuestionnaireHandler: ValidatedEventAPIGatewayProxyEvent<type
       passScore: passScore
     });
 
-    questionnaireResponse = createdQuestionnaire;
+    // Ensure the response matches the Questionnaire OpenAPI spec model.
+    questionnaireResponse = createdQuestionnaire as unknown as Questionnaire;
 
     return {
       statusCode: 201,

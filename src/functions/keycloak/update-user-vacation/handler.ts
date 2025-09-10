@@ -1,8 +1,11 @@
 import { middyfy } from "src/libs/lambda";
 import { CreateKeycloakApiService } from "src/database/services/keycloak-api-service";
 import type { APIGatewayProxyHandlerV2 } from "aws-lambda";
-import type { VacationDays,VacationDayEntry } from "src/types/keycloak/vacations";
+// types folder will no longer needed
+//import type { VacationDays,VacationDayEntry } from "src/types/keycloak/vacations";
+import { YearlyVacationDays } from "src/generated/homeLambdasModels/api";
 
+// vacationDays matches the OpenAPI spec
 const keycloakApiService = CreateKeycloakApiService();
 
 /**
@@ -11,6 +14,7 @@ const keycloakApiService = CreateKeycloakApiService();
  * @param event - API Gateway event containing userId and vacationDays in body
  * @returns Response message as JSON string
  */
+// NOTE: Returned vacationDays matches the OpenAPI spec: object with years as keys and YearlyVacationDays as values.
 const updateVacationHandler: APIGatewayProxyHandlerV2 = async (event) => {
   const userId = event.pathParameters?.userId;
 
@@ -25,7 +29,7 @@ const updateVacationHandler: APIGatewayProxyHandlerV2 = async (event) => {
     const requestBody =
       typeof event.body === "string" ? JSON.parse(event.body) : event.body;
 
-    const { vacationDays } = requestBody as { vacationDays: VacationDays };
+    const { vacationDays } = requestBody as { vacationDays: Record<string, YearlyVacationDays> };
 
     if (
       !vacationDays ||
@@ -46,12 +50,11 @@ const updateVacationHandler: APIGatewayProxyHandlerV2 = async (event) => {
 
     const currentYear = new Date().getFullYear();
 
-    const updatedVacationDays: Record<string, VacationDayEntry> = {};
+    const updatedVacationDays: Record<string, YearlyVacationDays> = {};
 
-    
- /**
- * Formats a numeric value for a given year into a consistent "YYYY:NNN" string.
- * This format helps with easy lookup and updating in Keycloak user attributes.
+    /**
+     * Formats a numeric value for a given year into a consistent "YYYY:NNN" string.
+     * This format helps with easy lookup and updating in Keycloak user attributes.
  *
  * Example:
  *   formatValue("2024", 5) => "2024:005"

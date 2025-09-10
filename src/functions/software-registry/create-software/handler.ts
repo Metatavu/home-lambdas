@@ -1,7 +1,8 @@
 import { DocumentClient } from "aws-sdk/clients/dynamodb";
 import SoftwareService from "src/database/services/software-service";
 import { middyfy } from "src/libs/lambda";
-import { SoftwareModel } from "src/database/models/software";
+// import { SoftwareModel } from "src/database/models/software";
+import { SoftwareRegistry } from "src/generated/homeLambdasModels/model/softwareRegistry";
 import { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
 import { getAuthDataFromToken } from "src/libs/auth-utils";
 
@@ -14,7 +15,7 @@ const softwareService = new SoftwareService(dynamoDb);
  * @param event - API Gateway event containing the request body.
  * @returns Response object with status code and body.
  */
-export const createSoftwareHandler: ValidatedEventAPIGatewayProxyEvent<SoftwareModel> = async (event) => {
+export const createSoftwareHandler: ValidatedEventAPIGatewayProxyEvent<SoftwareRegistry> = async (event) => {
   console.log('Received event:', JSON.stringify(event));
   
   try {
@@ -26,11 +27,11 @@ export const createSoftwareHandler: ValidatedEventAPIGatewayProxyEvent<SoftwareM
       };
     }
 
-    let data: SoftwareModel;
+    let data: SoftwareRegistry;
     if (typeof event.body === 'string') {
       data = JSON.parse(event.body);
     } else {
-      data = event.body as SoftwareModel;
+      data = event.body as SoftwareRegistry;
     }
     console.log('Parsed request body:', data);
 
@@ -54,12 +55,12 @@ export const createSoftwareHandler: ValidatedEventAPIGatewayProxyEvent<SoftwareM
     const loggedUserId = authData.sub;
     console.log('Logged User ID (sub claim):', loggedUserId);
 
-    const newSoftware: SoftwareModel = {
+    const newSoftware = {
       name: data.name,
       url: data.url,
       image: data.image,
       description: data.description,
-      review: data.review,
+      review: data.review !== undefined ? data.review : "",
       recommend: data.recommend,
       tags: data.tags,
       users: data.users,

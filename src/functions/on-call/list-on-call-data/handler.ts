@@ -1,4 +1,5 @@
-import { DynamoDB } from "aws-sdk"
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { DynamoDBDocumentClient, QueryCommand } from "@aws-sdk/lib-dynamodb";
 import { middyfy } from "@libs/lambda";
 import { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
 import { OnCallEntry } from "src/database/models/oncall";
@@ -26,10 +27,11 @@ export const onCallListDataHandler: ValidatedEventAPIGatewayProxyEvent<any> = as
     }
   }
 
-  const dynamoDb = new DynamoDB.DocumentClient();
+  const dynamoClient = new DynamoDBClient({});
+  const docClient = DynamoDBDocumentClient.from(dynamoClient);
 
   // Get data for the specified year
-  const dataResult = await dynamoDb.query({
+  const params = {
     TableName: "OnCallSchedule",
     KeyConditionExpression: "#yr = :year",
     ExpressionAttributeNames: {
@@ -38,8 +40,8 @@ export const onCallListDataHandler: ValidatedEventAPIGatewayProxyEvent<any> = as
     ExpressionAttributeValues: {
       ":year": year
     }
-  }).promise();
-
+  };
+  const dataResult = await docClient.send(new QueryCommand(params));
   const data = (dataResult.Items as OnCallEntry[]) || [];
 
   if (!data.length) {

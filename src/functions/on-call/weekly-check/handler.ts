@@ -1,4 +1,5 @@
-import { DynamoDB} from "aws-sdk"
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { DynamoDBDocumentClient, PutCommand } from "@aws-sdk/lib-dynamodb";
 import fetch from "node-fetch";
 import { DateTime } from "luxon";
 import Config from "src/app/config";
@@ -54,7 +55,8 @@ export const onCallWeeklyCheckHandler : ValidatedEventAPIGatewayProxyEvent<any> 
     throw new Error("Next week not found");
   }
 
-  const dynamoDb = new DynamoDB.DocumentClient();
+  const dynamoClient = new DynamoDBClient({});
+  const docClient = DynamoDBDocumentClient.from(dynamoClient);
   const year = nextThursday.year;
   const week = nextWeek.week;
   const user = nextWeek.user;
@@ -67,10 +69,11 @@ export const onCallWeeklyCheckHandler : ValidatedEventAPIGatewayProxyEvent<any> 
   };
 
   // Update or create a new record in DynamoDB
-  await dynamoDb.put({
+  const params = {
     TableName: "OnCallSchedule",
     Item: entry
-  }).promise();
+  };
+  await docClient.send(new PutCommand(params));
 
   return {
     statusCode: 200,

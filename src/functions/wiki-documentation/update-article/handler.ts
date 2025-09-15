@@ -1,12 +1,14 @@
 import { middyfy } from "@libs/lambda";
 import { APIGatewayProxyEvent, APIGatewayProxyHandler } from "aws-lambda";
-import { DocumentClient } from "aws-sdk/clients/dynamodb";
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import { ArticleModel } from "src/database/models/article";
 import ArticlesApiService from "src/database/services/articles-api-service";
 import * as jwt from 'jsonwebtoken';
 
-const dynamoDb = new DocumentClient();
-const articleService = new ArticlesApiService(dynamoDb);
+const dynamoClient = new DynamoDBClient({});
+const docClient = DynamoDBDocumentClient.from(dynamoClient);
+const articleService = new ArticlesApiService(docClient);
 
 /**
  * Handler for updating an article entry in DynamoDB.

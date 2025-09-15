@@ -65,6 +65,7 @@ const region = (env.AWS_DEFAULT_REGION as any) || "eu-north-1";
 
 const serverlessConfiguration: AWS = {
   service: "home-lambdas",
+  useDotenv: true,
   frameworkVersion: "3",
   plugins: [
     "serverless-esbuild",
@@ -74,7 +75,7 @@ const serverlessConfiguration: AWS = {
   ],
   provider: {
     name: "aws",
-    runtime: "nodejs16.x",
+    runtime: "nodejs18.x",
     region: region,
     deploymentBucket: {
       name: isLocal
@@ -237,7 +238,7 @@ const serverlessConfiguration: AWS = {
       minify: false,
       sourcemap: true,
       exclude: ["aws-sdk"],
-      target: "node16",
+      target: "node18",
       define: { "require.resolve": undefined },
       platform: "node",
       concurrency: 10,

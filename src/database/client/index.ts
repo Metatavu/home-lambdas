@@ -1,20 +1,20 @@
-import * as AWS from "aws-sdk";
-import { DocumentClient } from "aws-sdk/clients/dynamodb";
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 
 /**
- * Creates DynamoDB client
+ * Creates DynamoDB DocumentClient (AWS SDK v3)
  * 
- * @returns created DynamoDB client
+ * @returns created DynamoDB DocumentClient
  */
-const createDynamoDBClient = (): DocumentClient => {
-  if (process.env.IS_OFFLINE) {
-    return new AWS.DynamoDB.DocumentClient({
-      region: "localhost",
-      endpoint: "http://localhost:8000",
-    });
-  }
+const createDynamoDBClient = (): DynamoDBDocumentClient => {
+  const client = process.env.IS_OFFLINE
+    ? new DynamoDBClient({
+        region: "localhost",
+        endpoint: "http://localhost:8000",
+      })
+    : new DynamoDBClient({});
 
-  return new AWS.DynamoDB.DocumentClient();
+  return DynamoDBDocumentClient.from(client);
 };
 
 export default createDynamoDBClient;

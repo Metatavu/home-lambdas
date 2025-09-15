@@ -1,4 +1,5 @@
-import { DocumentClient } from "aws-sdk/clients/dynamodb";
+import { DynamoDBDocumentClient, PutCommand, GetCommand, ScanCommand, UpdateCommand, DeleteCommand } from "@aws-sdk/lib-dynamodb";
+import { PutCommandInput, GetCommandInput, ScanCommandInput, UpdateCommandInput, DeleteCommandInput } from "@aws-sdk/lib-dynamodb";
 import { v4 as uuidv4 } from "uuid";
 import { SoftwareModel, Status } from "../models/software";
 
@@ -8,12 +9,11 @@ const tableName = "SoftwareRegistry";
  * Database service for software entries
  */
 class SoftwareService {
-
   /**
    * Constructor
-   * @param docClient DynamoDB client
+   * @param docClient DynamoDBDocumentClient
    */
-  constructor(private readonly docClient: DocumentClient) {}
+  constructor(private readonly docClient: DynamoDBDocumentClient) {}
 
   /**
    * Creates a software entry
@@ -30,10 +30,11 @@ class SoftwareService {
       lastUpdatedAt: new Date().toISOString(),
     };
     try {
-      await this.docClient.put({
+      const params: PutCommandInput = {
         TableName: tableName,
         Item: newSoftware,
-      }).promise();
+      };
+      await this.docClient.send(new PutCommand(params));
       return newSoftware;
     } catch (error) {
       console.error('Error in createSoftware:', error);
@@ -48,11 +49,11 @@ class SoftwareService {
    * @returns software entry or null if not found
    */
   public async findSoftware(id: string): Promise<SoftwareModel | null> {
-    const result = await this.docClient.get({
+    const params: GetCommandInput = {
       TableName: tableName,
       Key: { id },
-    }).promise();
-
+    };
+    const result = await this.docClient.send(new GetCommand(params));
     return result.Item as SoftwareModel;
   }
 
@@ -62,7 +63,8 @@ class SoftwareService {
    * @returns list of software entries
    */
   public async listSoftware(): Promise<SoftwareModel[]> {
-    const result = await this.docClient.scan({ TableName: tableName }).promise();
+    const params: ScanCommandInput = { TableName: tableName };
+    const result = await this.docClient.send(new ScanCommand(params));
     return result.Items as SoftwareModel[];
   }
 
@@ -88,7 +90,7 @@ class SoftwareService {
     expressionAttributeNames['#lastUpdatedAt'] = 'lastUpdatedAt';
     expressionAttributeValues[':lastUpdatedAt'] = new Date().toISOString();
 
-    const params = {
+    const params: UpdateCommandInput = {
       TableName: tableName,
       Key: { id },
       UpdateExpression: `set ${updateExpression.join(', ')}, #lastUpdatedAt = :lastUpdatedAt`,
@@ -97,7 +99,7 @@ class SoftwareService {
       ReturnValues: 'ALL_NEW',
     };
 
-    const result = await this.docClient.update(params).promise();
+    const result = await this.docClient.send(new UpdateCommand(params));
     return result.Attributes as SoftwareModel;
   }
 
@@ -107,10 +109,11 @@ class SoftwareService {
    * @param id software id
    */
   public async deleteSoftware(id: string): Promise<void> {
-    await this.docClient.delete({
+    const params: DeleteCommandInput = {
       TableName: tableName,
       Key: { id },
-    }).promise();
+    };
+    await this.docClient.send(new DeleteCommand(params));
   }
 }
 

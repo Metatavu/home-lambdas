@@ -3,7 +3,7 @@ import { questionnaireService } from "src/database/services";
 import { v4 as uuidv4 } from "uuid";
 //import type QuestionnaireModel from "src/database/models/questionnaire";
 import type { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
-import type questionnaireSchema from "src/schema/questionnaire";
+import questionnaireSchema from "src/schema/questionnaire";
 import { Questionnaire } from "src/generated/homeLambdasModels/model/questionnaire";
 
 /**

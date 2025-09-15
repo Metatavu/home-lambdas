@@ -1,4 +1,5 @@
-import type { DocumentClient } from "aws-sdk/clients/dynamodb";
+import { DynamoDBDocumentClient, PutCommand, GetCommand, ScanCommand, DeleteCommand } from "@aws-sdk/lib-dynamodb";
+import { PutCommandInput, GetCommandInput, ScanCommandInput, DeleteCommandInput } from "@aws-sdk/lib-dynamodb";
 import type QuestionnaireModel from "../models/questionnaire";
 
 const TABLE_NAME = "Questionnaires";
@@ -7,12 +8,11 @@ const TABLE_NAME = "Questionnaires";
  * Database service for questionnaires
  */
 class QuestionnaireService {
-
   /**
    * Constructor
-   * @param docClient DynamoDB client
+   * @param docClient DynamoDBDocumentClient
    */
-  constructor(private readonly docClient: DocumentClient) {}
+  constructor(private readonly docClient: DynamoDBDocumentClient) {}
 
   /**
    * Creates a questionnaire
@@ -21,13 +21,11 @@ class QuestionnaireService {
    * @returns created questionnaire
    */
   public createQuestionnaire = async (questionnaire: QuestionnaireModel): Promise<QuestionnaireModel> => {
-    await this.docClient
-      .put({
-        TableName: TABLE_NAME,
-        Item: questionnaire
-      })
-      .promise();
-
+    const params: PutCommandInput = {
+      TableName: TABLE_NAME,
+      Item: questionnaire
+    };
+    await this.docClient.send(new PutCommand(params));
     return questionnaire;
   }
 
@@ -38,16 +36,12 @@ class QuestionnaireService {
    * @returns questionnaire or null if not found
    */
   public findQuestionnaire = async (id: string): Promise<QuestionnaireModel | null> => {
-    const result = await this.docClient
-      .get({
-        TableName: TABLE_NAME,
-        Key: {
-          id: id
-        },
-      })
-      .promise();
-
-      return result.Item as QuestionnaireModel;
+    const params: GetCommandInput = {
+      TableName: TABLE_NAME,
+      Key: { id: id }
+    };
+    const result = await this.docClient.send(new GetCommand(params));
+    return result.Item as QuestionnaireModel;
   }
 
   /**
@@ -56,12 +50,10 @@ class QuestionnaireService {
    * @returns list of questionnaires
    */
   public listQuestionnaires = async (): Promise<QuestionnaireModel[]> => {
-    const result = await this.docClient
-      .scan({
-        TableName: TABLE_NAME
-      })
-      .promise();
-
+    const params: ScanCommandInput = {
+      TableName: TABLE_NAME
+    };
+    const result = await this.docClient.send(new ScanCommand(params));
     return result.Items as QuestionnaireModel[];
   }
   /**
@@ -71,14 +63,12 @@ class QuestionnaireService {
    * @returns updated questionnaire
    */
   public updateQuestionnaire = async (questionnaire: QuestionnaireModel): Promise<QuestionnaireModel> => {
-    await this.docClient
-      .put({
-        TableName: TABLE_NAME,
-        Item: questionnaire
-      })
-      .promise();
-
-      return questionnaire;
+    const params: PutCommandInput = {
+      TableName: TABLE_NAME,
+      Item: questionnaire
+    };
+    await this.docClient.send(new PutCommand(params));
+    return questionnaire;
   }
 
   /**
@@ -87,14 +77,11 @@ class QuestionnaireService {
    * @param id questionnaire id
    */
   public deleteQuestionnaire = async (id: string) => {
-    return this.docClient
-      .delete({
-        TableName: TABLE_NAME,
-        Key: {
-          id: id
-        },
-      })
-      .promise();
+    const params: DeleteCommandInput = {
+      TableName: TABLE_NAME,
+      Key: { id: id }
+    };
+    return this.docClient.send(new DeleteCommand(params));
   }
 
 }

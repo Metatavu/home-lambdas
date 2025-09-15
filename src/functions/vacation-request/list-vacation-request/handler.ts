@@ -2,14 +2,19 @@ import type { APIGatewayProxyHandler } from "aws-lambda";
 import type VacationRequestModel from "src/database/models/vacationRequest";
 import { vacationRequestService } from "src/database/services";
 import { middyfy } from "src/libs/lambda";
+import { VacationRequest } from "src/generated/homeLambdasModels/model/vacationRequest";
 
 /**
  * Labmda for listing all vacation requests from DynamoDB.
+ * Type mismatches between VacationRequestModel and VacationRequest:
+ * - VacationRequestModel may be missing 'message' property required by VacationRequest.
+ * - 'createdAt', 'updatedAt', 'startDate', 'endDate' are 'string' here, but VacationRequest expects 'Date'.
  */
 const listVacationRequestHandler: APIGatewayProxyHandler = async (event) => {
   const userId = event.queryStringParameters?.userId;
   try {
     if (userId) {
+      // NOTE: For now, we return VacationRequestModel as is, see OpenAPI spec for expected attributes.
       const filteredVacationRequests: VacationRequestModel[] =
         await vacationRequestService.listVacationRequests(userId);
 

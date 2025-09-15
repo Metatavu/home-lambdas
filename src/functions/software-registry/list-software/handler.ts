@@ -1,8 +1,13 @@
 import { APIGatewayProxyHandler } from "aws-lambda";
-import { DocumentClient } from "aws-sdk/clients/dynamodb";
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import SoftwareService from "src/database/services/software-service";
 import { middyfy } from "src/libs/lambda";
 import { SoftwareRegistry } from "src/generated/homeLambdasModels/model/softwareRegistry";
+
+const dynamoClient = new DynamoDBClient({});
+const docClient = DynamoDBDocumentClient.from(dynamoClient);
+const softwareService = new SoftwareService(docClient);
 
 /**
  * Handler for listing all software entries from DynamoDB.
@@ -13,8 +18,6 @@ import { SoftwareRegistry } from "src/generated/homeLambdasModels/model/software
  * 
  * @returns Response object with status code and body.
  */
-const dynamoDb = new DocumentClient();
-const softwareService = new SoftwareService(dynamoDb);
 
 export const listSoftwareHandler: APIGatewayProxyHandler = async () => {
   console.log('Received request to list software entries');

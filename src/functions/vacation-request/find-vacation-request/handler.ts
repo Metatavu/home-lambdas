@@ -1,15 +1,21 @@
 import { middyfy } from "src/libs/lambda";
 import type { APIGatewayProxyEvent, APIGatewayProxyHandler } from "aws-lambda";
 import { vacationRequestService } from "src/database/services";
+import { VacationRequest } from "src/generated/homeLambdasModels/model/vacationRequest";
 
 /**
  * Lambda for finding a vacation request entry from DynamoDB.
  *
  * @param event event
  * @returns vacation request information as object
+ *
+ * Type mismatches between VacationRequestModel and VacationRequest:
+ * - VacationRequestModel may be missing 'message' property required by VacationRequest.
+ * - 'createdAt', 'updatedAt', 'startDate', 'endDate' are 'string' here, but VacationRequest expects 'Date'.
  */
+
 const findVacationRequestHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
-  const {id} = event.pathParameters || {};
+  const { id } = event.pathParameters || {};
 
   if (!id) {
     return {
@@ -32,9 +38,13 @@ const findVacationRequestHandler: APIGatewayProxyHandler = async (event: APIGate
       }
     }
 
+    // NOTE: Type mismatches in fields like 'message', 'type', 'createdAt', 'updatedAt' (string vs Date).
+    // For now, just cast to VacationRequest as per spec.
+    const vacationRequest = vacationRequestById as unknown as VacationRequest;
+
     return {
       statusCode: 200,
-      body: JSON.stringify(vacationRequestById)
+      body: JSON.stringify(vacationRequest)
     }
   } catch (error) {
     return {
@@ -46,4 +56,5 @@ const findVacationRequestHandler: APIGatewayProxyHandler = async (event: APIGate
     }
   }
 }
+
 export const main = middyfy(findVacationRequestHandler);

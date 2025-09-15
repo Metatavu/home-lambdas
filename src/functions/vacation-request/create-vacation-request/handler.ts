@@ -3,14 +3,19 @@ import { vacationRequestService } from "src/database/services";
 import { v4 as uuidv4 } from "uuid";
 import type { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
 import type vacationRequestSchema from "src/schema/vacationRequest";
-import { notifyAdminsVacationSubmittedAll } from "src/notifications/vacation-notifications";
+//import { notifyAdminsVacationSubmittedAll } from "src/notifications/vacation-notifications";
 import { CreateKeycloakApiService } from "src/database/services/keycloak-api-service";
+import { VacationRequest } from "src/generated/homeLambdasModels/model/vacationRequest";
 
 /**
  * Handler for creating a new vacation request entry in DynamoDB.
  *
  * @param event - API Gateway event containing the request body.
  * @returns Response object with status code
+ * 
+ * Type mismatches between VacationRequestModel and VacationRequest:
+ * - VacationRequestModel may be missing 'message' property required by VacationRequest.
+ * - 'createdAt', 'updatedAt', 'startDate', 'endDate' are 'string' here, but VacationRequest expects 'Date'.
  */
 export const createVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
   typeof vacationRequestSchema
@@ -42,8 +47,9 @@ export const createVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
   }
 
   const newVacationRequestId = uuidv4();
-  const api = CreateKeycloakApiService();
-  const userDetails = await api.findUser(userId);
+  // TODO: Uncomment once Node.js is upgraded (required for notifications)
+  // const api = CreateKeycloakApiService();
+  // const userDetails = await api.findUser(userId);
 
   try {
     const createdVacationRequest = await vacationRequestService.createVacationRequest({
@@ -60,16 +66,19 @@ export const createVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
       updatedAt: updatedAt
     });
     
-    await notifyAdminsVacationSubmittedAll({
-      user: userDetails.firstName,
-      startDate,
-      endDate,
-      type
-    });
+    // TODO: Uncomment this once Node.js is upgraded (currently breaks due to resend dependency)
+    // await notifyAdminsVacationSubmittedAll({
+    //   user: userDetails.firstName,
+    //   startDate,
+    //   endDate,
+    //   type
+    // });
 
+
+    // NOTE: Forced type assertion to VacationRequest for OpenAPI compatibility, even if some fields don't match exactly.
     return {
       statusCode: 201,
-      body: JSON.stringify(createdVacationRequest)
+      body: JSON.stringify(createdVacationRequest as unknown as VacationRequest)
     };
   } catch (error) {
     return {

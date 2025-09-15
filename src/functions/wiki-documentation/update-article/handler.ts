@@ -1,18 +1,26 @@
 import { middyfy } from "@libs/lambda";
 import { APIGatewayProxyEvent, APIGatewayProxyHandler } from "aws-lambda";
-import { DocumentClient } from "aws-sdk/clients/dynamodb";
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import { ArticleModel } from "src/database/models/article";
 import ArticlesApiService from "src/database/services/articles-api-service";
 import * as jwt from 'jsonwebtoken';
+import { Article } from "src/generated/homeLambdasModels/model/article";
 
-const dynamoDb = new DocumentClient();
-const articleService = new ArticlesApiService(dynamoDb);
+const dynamoClient = new DynamoDBClient({});
+const docClient = DynamoDBDocumentClient.from(dynamoClient);
+const articleService = new ArticlesApiService(docClient);
 
 /**
  * Handler for updating an article entry in DynamoDB.
  *
  * @param event - API Gateway event.
  * @returns Response object with status code
+ * - ArticleModel uses 'string' for date fields ('createdAt', 'lastUpdatedAt', 'lastReadAt'), but Article expects 'Date'.
+ * - ArticleModel requires 'id', but Article has 'id' as optional.
+ * - ArticleModel does not have a 'content' field, but Article requires 'content'.
+ * - ArticleModel may have required fields that are optional in Article (e.g. 'description', 'coverImage', 'tags', 'readBy').
+ * - Property names and structures may differ for some fields.
  */
 const updateArticleHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
   const token = event.headers?.Authorization?.split(' ')[1];
@@ -81,11 +89,13 @@ const updateArticleHandler: APIGatewayProxyHandler = async (event: APIGatewayPro
     draft: isAdmin && draft
   };
 
+  // NOTE: Type mismatches between ArticleModel and Article (e.g. date fields, optional fields).
+  // For now, just cast to Article as per spec.
   try {
     await articleService.updateArticle(updatedArticle);
     return {
       statusCode: 200,
-      body: JSON.stringify(updatedArticle)
+      body: JSON.stringify(updatedArticle as unknown as Article)
     };
   } catch (error) {
     return {

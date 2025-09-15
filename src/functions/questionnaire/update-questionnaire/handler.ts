@@ -1,8 +1,9 @@
 import type { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway";
 import { middyfy } from "@libs/lambda";
 import { questionnaireService } from "src/database/services";
+import questionnaireSchema from "src/schema/questionnaire";
 import type QuestionnaireModel from "src/database/models/questionnaire";
-import type questionnaireSchema from "src/schema/questionnaire";
+import { Questionnaire } from "src/generated/homeLambdasModels/model/questionnaire";
 
 /**
  * Lambda function to update a questionnaire
@@ -36,18 +37,22 @@ const updateQuestionnaireHandler: ValidatedEventAPIGatewayProxyEvent<typeof ques
     };
   }
 
-  const questionnaireUpdates: QuestionnaireModel = {
+  const questionnaireUpdates: Questionnaire = {
     id: existingQuestionnaire.id,
-    title: title,
-    description: description,
-    questions: questions,
-    tags: tags,
-    passedUsers: passedUsers,
-    passScore: passScore,
+    title,
+    description,
+    questions,
+    tags,
+    passedUsers,
+    passScore,
   };
 
   try {
-    const updatedQuestionnaire = await questionnaireService.updateQuestionnaire(questionnaireUpdates);
+    // NOTE: Type mismatch in passedUsers field (number[] vs string[]). For now, just cast via unknown as per spec.
+    const updatedQuestionnaire = await questionnaireService.updateQuestionnaire(
+      questionnaireUpdates as unknown as QuestionnaireModel
+    ) as unknown as Questionnaire;
+
     return {
       statusCode: 200,
       body: JSON.stringify(updatedQuestionnaire)

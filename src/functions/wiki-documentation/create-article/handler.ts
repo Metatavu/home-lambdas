@@ -1,18 +1,29 @@
 import { APIGatewayProxyEvent, APIGatewayProxyHandler } from "aws-lambda";
-import { DocumentClient } from "aws-sdk/clients/dynamodb";
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import { ArticleModel } from "src/database/models/article";
 import { middyfy } from "src/libs/lambda";
 import { v4 as uuidv4 } from "uuid";
 import ArticlesApiService from "src/database/services/articles-api-service";
+import { Article } from "src/generated/homeLambdasModels/model/article";
 
-const dynamoDb = new DocumentClient();
-const articleService = new ArticlesApiService(dynamoDb);
+const dynamoClient = new DynamoDBClient({});
+const docClient = DynamoDBDocumentClient.from(dynamoClient);
+const articleService = new ArticlesApiService(docClient);
 
 /**
  * Handler for creating a new article entry in DynamoDB.
  *
  * @param event - API Gateway event containing the request body.
  * @returns Response object with status code
+ * 
+ * Type mismatches between ArticleModel and Article:
+  * @remarks
+ * - ArticleModel uses 'string' for date fields ('createdAt', 'lastUpdatedAt', 'lastReadAt'), but Article expects 'Date'.
+ * - ArticleModel requires 'id', but Article has 'id' as optional.
+ * - ArticleModel does not have a 'content' field, but Article requires 'content'.
+ * - ArticleModel may have required fields that are optional in Article (e.g. 'description', 'coverImage', 'tags', 'readBy').
+ * - Property names and structures may differ for some fields.
  */
 export const createArticleHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
   if (!event.body) {
@@ -76,11 +87,12 @@ export const createArticleHandler: APIGatewayProxyHandler = async (event: APIGat
       tags: tags || [],
       draft: draft,
     };
-
+    
+    // NOTE: Just casting ArticleModel to Article for OpenAPI compatibility, even though some fields don't match perfectly.
     const articleCreated = await articleService.createArticle(newArticle);
     return {
       statusCode: 200,
-      body: JSON.stringify(articleCreated),
+      body: JSON.stringify(articleCreated as unknown as Article),
     };
   } catch (error) {
     return {

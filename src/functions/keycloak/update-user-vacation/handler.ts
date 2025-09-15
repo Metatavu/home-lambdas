@@ -3,7 +3,7 @@ import { CreateKeycloakApiService } from "src/database/services/keycloak-api-ser
 import type { APIGatewayProxyHandlerV2 } from "aws-lambda";
 // types folder will no longer needed
 //import type { VacationDays,VacationDayEntry } from "src/types/keycloak/vacations";
-import { YearlyVacationDays } from "src/generated/homeLambdasModels/api";
+import { YearlyVacationDays } from "src/generated/homeLambdasModels/model/yearlyVacationDays";
 
 // vacationDays matches the OpenAPI spec
 const keycloakApiService = CreateKeycloakApiService();

@@ -1,5 +1,6 @@
 import type VacationRequestModel from "@database/models/vacationRequest";
-import type { DocumentClient } from "aws-sdk/clients/dynamodb";
+import { DynamoDBDocumentClient, PutCommand, GetCommand, ScanCommand, DeleteCommand } from "@aws-sdk/lib-dynamodb";
+import { PutCommandInput, GetCommandInput, ScanCommandInput, DeleteCommandInput } from "@aws-sdk/lib-dynamodb";
 
 const TABLE_NAME = "VacationRequests";
 
@@ -9,9 +10,9 @@ const TABLE_NAME = "VacationRequests";
 class VacationRequestService {
   /**
    * Constructor
-   * @param docClient DynamoDB client
+   * @param docClient DynamoDBDocumentClient
    */
-  constructor(private readonly docClient: DocumentClient) {}
+  constructor(private readonly docClient: DynamoDBDocumentClient) {}
 
   /**
    * Creates a vacation request
@@ -22,13 +23,11 @@ class VacationRequestService {
   public createVacationRequest = async (
     vacationRequest: VacationRequestModel
   ): Promise<VacationRequestModel> => {
-    await this.docClient
-      .put({
-        TableName: TABLE_NAME,
-        Item: vacationRequest
-      })
-      .promise();
-
+    const params: PutCommandInput = {
+      TableName: TABLE_NAME,
+      Item: vacationRequest
+    };
+    await this.docClient.send(new PutCommand(params));
     return vacationRequest;
   };
 
@@ -39,15 +38,11 @@ class VacationRequestService {
    * @returns vacation request or null if not found
    */
   public findVacationRequest = async (id: string): Promise<VacationRequestModel | null> => {
-    const result = await this.docClient
-      .get({
-        TableName: TABLE_NAME,
-        Key: {
-          id: id
-        }
-      })
-      .promise();
-
+    const params: GetCommandInput = {
+      TableName: TABLE_NAME,
+      Key: { id: id }
+    };
+    const result = await this.docClient.send(new GetCommand(params));
     return result.Item as VacationRequestModel;
   };
 
@@ -57,18 +52,16 @@ class VacationRequestService {
    * @returns list of vacation requests
    */
   public listVacationRequests = async (userId?: string): Promise<VacationRequestModel[]> => {
-    const scanParams: AWS.DynamoDB.DocumentClient.ScanInput = {
+    const params: ScanCommandInput = {
       TableName: TABLE_NAME
     };
-
     if (userId) {
-      scanParams.FilterExpression = "userId = :userId";
-      scanParams.ExpressionAttributeValues = {
+      params.FilterExpression = "userId = :userId";
+      params.ExpressionAttributeValues = {
         ":userId": userId
       };
     }
-
-    const result = await this.docClient.scan(scanParams).promise();
+    const result = await this.docClient.send(new ScanCommand(params));
     return result.Items as VacationRequestModel[];
   };
 
@@ -81,13 +74,11 @@ class VacationRequestService {
   public updateVacationRequest = async (
     vacationRequest: VacationRequestModel
   ): Promise<VacationRequestModel> => {
-    await this.docClient
-      .put({
-        TableName: TABLE_NAME,
-        Item: vacationRequest
-      })
-      .promise();
-
+    const params: PutCommandInput = {
+      TableName: TABLE_NAME,
+      Item: vacationRequest
+    };
+    await this.docClient.send(new PutCommand(params));
     return vacationRequest;
   };
 
@@ -97,14 +88,11 @@ class VacationRequestService {
    * @param id vacation request id
    */
   public deleteVacationRequest = async (id: string) => {
-    return this.docClient
-      .delete({
-        TableName: TABLE_NAME,
-        Key: {
-          id: id
-        }
-      })
-      .promise();
+    const params: DeleteCommandInput = {
+      TableName: TABLE_NAME,
+      Key: { id: id }
+    };
+    return this.docClient.send(new DeleteCommand(params));
   };
 }
 

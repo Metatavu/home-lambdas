@@ -23,13 +23,6 @@ export interface Configuration {
     auth: {
         issuer: string;
     },
-    onCall: {
-        bucketName: string;
-    },
-    pipedriveApi: {
-        apiKey: string,
-        apiUrl: string
-    },
     splunkApi: {
         apiKey: string
         apiId: string,

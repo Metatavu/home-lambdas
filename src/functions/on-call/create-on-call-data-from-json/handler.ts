@@ -1,6 +1,7 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, PutCommand } from "@aws-sdk/lib-dynamodb";
 import { middyfy } from "@libs/lambda";
+import type { OnCallImportEntry, OnCallImportError } from "src/database/models/oncall";
 
 /**
  * Lambda method for importing on-call data from JSON
@@ -18,13 +19,14 @@ export const onCallImportFromJsonHandler = async (event) => {
       body: "Invalid or missing year in query parameter",
     };
   }
-  let data;
+  let data: OnCallImportEntry[];
   try {
     data = typeof event.body === "string" ? JSON.parse(event.body) : event.body;
   } catch (err) {
     return {
       statusCode: 400,
       body: "Invalid JSON in body",
+      error: err.message,
     };
   }
   if (!Array.isArray(data)) {
@@ -38,12 +40,12 @@ export const onCallImportFromJsonHandler = async (event) => {
   const docClient = DynamoDBDocumentClient.from(dynamoClient);
 
   let imported = 0;
-  let errors: any[] = [];
+  const errors: OnCallImportError[] = [];
   for (const entry of data) {
     if (
       typeof entry.Week !== "number" ||
       typeof entry.Person !== "string" ||
-      entry.Week < 1 ||
+      entry.Week < 1 || 
       entry.Week > 52
     ) {
       errors.push({ entry, error: "Invalid entry" });

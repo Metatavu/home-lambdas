@@ -681,10 +681,9 @@ const getSeveraAccessToken = async (): Promise<string> => {
 
 // Utility function to get correct Severa client ID based on environment
 const getSeveraClientId = (): string => {
-  switch (process.env.STAGE) {
-    case "production":
-      return process.env.SEVERA_CLIENT_ID;
-    default:
-      return process.env.SEVERA_DEMO_CLIENT_ID;
+  if (process.env.STAGE === "production") {
+    return process.env.SEVERA_CLIENT_ID;
+  } else {
+    return process.env.SEVERA_DEMO_CLIENT_ID;
   }
 };

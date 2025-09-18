@@ -5,7 +5,7 @@ import { DateTime } from "luxon";
 import Config from "src/app/config";
 import { SplunkSchedule } from "src/types/on-call";
 import { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
-import { OnCallEntry } from "src/database/models/oncall";
+import { OnCall } from "src/generated/homeLambdasModels/api";
 
 /**
  * Resolve next week from schedule
@@ -36,7 +36,7 @@ const getNextWeekFromSchedule = (schedule: SplunkSchedule, nextThursday: DateTim
  *
  * @param event event
  */
-export const onCallWeeklyCheckHandler : ValidatedEventAPIGatewayProxyEvent<any> = async () => {
+export const onCallWeeklyCheckHandler : ValidatedEventAPIGatewayProxyEvent<OnCall> = async () => {
   const { apiId, apiKey, schedulePolicyName, teamOnCallUrl } = Config.get().splunkApi
 
   const splunkTeamOnCallUrl = teamOnCallUrl
@@ -61,11 +61,11 @@ export const onCallWeeklyCheckHandler : ValidatedEventAPIGatewayProxyEvent<any> 
   const week = nextWeek.week;
   const user = nextWeek.user;
 
-  const entry: OnCallEntry = {
-    Year: year,
-    Week: week,
-    Username: user,
-    Paid: false
+  const entry: OnCall = {
+    year: year,
+    week: week,
+    username: user,
+    paid: false
   };
 
   // Update or create a new record in DynamoDB

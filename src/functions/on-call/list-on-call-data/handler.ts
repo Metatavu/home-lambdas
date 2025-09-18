@@ -2,14 +2,14 @@ import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, QueryCommand } from "@aws-sdk/lib-dynamodb";
 import { middyfy } from "@libs/lambda";
 import { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
-import { OnCallEntry } from "src/database/models/oncall";
+import { OnCall } from "src/generated/homeLambdasModels/model/onCall";
 
 /**
  * Lambda method for loading on-call data
  *
  * @param event event
  */
-export const onCallListDataHandler: ValidatedEventAPIGatewayProxyEvent<any> = async (event: { queryStringParameters: { [key: string]: string } }) => {
+export const onCallListDataHandler: ValidatedEventAPIGatewayProxyEvent<OnCall> = async (event: { queryStringParameters: { [key: string]: string } }) => {
   const { queryStringParameters } = event;
 
   if (!queryStringParameters || !queryStringParameters.year) {
@@ -42,7 +42,7 @@ export const onCallListDataHandler: ValidatedEventAPIGatewayProxyEvent<any> = as
     }
   };
   const dataResult = await docClient.send(new QueryCommand(params));
-  const data = (dataResult.Items as OnCallEntry[]) || [];
+  const data = (dataResult.Items as OnCall[]) || [];
 
   if (!data.length) {
     return {
@@ -55,8 +55,8 @@ export const onCallListDataHandler: ValidatedEventAPIGatewayProxyEvent<any> = as
     statusCode: 200,
     body: JSON.stringify(data.map((entry) => ({
       ...entry,
-      Username: entry.Username,
-      Paid: entry.Paid || false
+      Username: entry.username,
+      Paid: entry.paid || false
     })))
   };
 }

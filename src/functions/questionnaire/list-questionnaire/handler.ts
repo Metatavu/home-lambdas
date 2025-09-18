@@ -1,5 +1,4 @@
 import type { APIGatewayProxyHandler } from "aws-lambda";
-//import type QuestionnaireModel from "src/database/models/questionnaire";
 import { questionnaireService } from "src/database/services";
 import { middyfy } from "src/libs/lambda";
 import { Questionnaire } from "src/generated/homeLambdasModels/model/questionnaire";

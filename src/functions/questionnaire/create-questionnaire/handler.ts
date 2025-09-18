@@ -1,17 +1,10 @@
 import { middyfy } from "src/libs/lambda";
 import { questionnaireService } from "src/database/services";
 import { v4 as uuidv4 } from "uuid";
-//import type QuestionnaireModel from "src/database/models/questionnaire";
 import type { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
 import questionnaireSchema from "src/schema/questionnaire";
 import { Questionnaire } from "src/generated/homeLambdasModels/model/questionnaire";
 
-/**
- * Handler for creating a new questionnaire entry in DynamoDB.
- *
- * @param event - API Gateway event containing the request body.
- * @returns Response object with status code
- */
 export const createQuestionnaireHandler: ValidatedEventAPIGatewayProxyEvent<typeof questionnaireSchema> = async (event) => {
   if (!event.body) {
     return {
@@ -19,9 +12,24 @@ export const createQuestionnaireHandler: ValidatedEventAPIGatewayProxyEvent<type
       body: JSON.stringify({ error: "Request body is required." })
     };
   }
-  
-  const { title, description, questions, tags, passedUsers, passScore } = event.body;
-  
+
+  // Parse body if needed
+  let body: unknown = event.body;
+  if (typeof event.body === "string") {
+    body = JSON.parse(event.body);
+  }
+
+  // Validate with questionnaireSchema
+  const parsed = questionnaireSchema.safeParse(body);
+  if (!parsed.success) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ error: "Invalid questionnaire data", details: parsed.error })
+    };
+  }
+
+  const { title, description, questions, tags, passedUsers, passScore } = parsed.data;
+
   if (!title || !description || !questions || !passScore) {
     return {
       statusCode: 400,
@@ -33,17 +41,22 @@ export const createQuestionnaireHandler: ValidatedEventAPIGatewayProxyEvent<type
   let questionnaireResponse: Questionnaire | undefined = undefined;
 
   try {
+    /**
+     * NOTE:
+     * There may be a type mismatch: OpenAPI model defines passedUsers as string[],
+     * but the service expects number[]. This may cause issues if user IDs are not numbers.
+     * Consider refactoring the service or updating the spec for consistency.
+     */
     const createdQuestionnaire = await questionnaireService.createQuestionnaire({
       id: newQuestionnaireId,
-      title: title,
-      description: description,
-      questions: questions,
-      tags: tags,
-      passedUsers: passedUsers,
-      passScore: passScore
+      title,
+      description,
+      questions,
+      tags,
+      passedUsers,
+      passScore
     });
 
-    // Ensure the response matches the Questionnaire OpenAPI spec model.
     questionnaireResponse = createdQuestionnaire as unknown as Questionnaire;
 
     return {

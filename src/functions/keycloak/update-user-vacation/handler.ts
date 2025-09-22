@@ -1,8 +1,6 @@
 import { middyfy } from "src/libs/lambda";
 import { CreateKeycloakApiService } from "src/database/services/keycloak-api-service";
 import type { APIGatewayProxyHandlerV2 } from "aws-lambda";
-// types folder will no longer needed
-//import type { VacationDays,VacationDayEntry } from "src/types/keycloak/vacations";
 import { YearlyVacationDays } from "src/generated/homeLambdasModels/model/yearlyVacationDays";
 
 // vacationDays matches the OpenAPI spec

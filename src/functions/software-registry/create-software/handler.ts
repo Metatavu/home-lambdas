@@ -61,7 +61,7 @@ export const createSoftwareHandler: ValidatedEventAPIGatewayProxyEvent<SoftwareR
       url: data.url,
       image: data.image,
       description: data.description,
-      review: data.review !== undefined ? data.review : "",
+      review: data.review ?? "",
       recommend: data.recommend,
       tags: data.tags,
       users: data.users,

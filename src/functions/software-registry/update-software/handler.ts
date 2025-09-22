@@ -5,6 +5,7 @@ import { middyfy } from "src/libs/lambda";
 import { getAuthDataFromToken } from "src/libs/auth-utils"
 import { SoftwareModel } from "src/database/models/software";
 import { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
+import * as jwt from "jsonwebtoken"
 
 const dynamoClient = new DynamoDBClient({});
 const docClient = DynamoDBDocumentClient.from(dynamoClient);
@@ -22,6 +23,35 @@ export const updateSoftwareHandler: ValidatedEventAPIGatewayProxyEvent<SoftwareM
   try {
     const { id } = event.pathParameters || {};
     console.log('Path parameter (id):', id);
+    const authorizationHeader = event.headers?.authorization;
+    if (!authorizationHeader) 
+        return {
+          statusCode: 400,
+          body: JSON.stringify({
+            code: 400,
+            message: "Missing Authorization header.",
+          }),
+        }
+
+    const token = authorizationHeader.split(' ')[1];
+    if (!token) 
+      return {
+        statusCode: 400,
+        body: JSON.stringify({
+          code: 400,
+          message: "Missing Bearer token.",
+        }),
+      }
+
+    const decodedJWT = jwt.decode(token);
+    if (!decodedJWT.realm_access.roles.includes("admin")) 
+      return {
+        statusCode: 403,
+        body: JSON.stringify({
+          code: 403,
+          message: "Access denied. Admin privileges required.",
+        }),
+      }
 
     if (!id) {
       return {
@@ -36,7 +66,7 @@ export const updateSoftwareHandler: ValidatedEventAPIGatewayProxyEvent<SoftwareM
         body: JSON.stringify({ error: 'Request body is required.' }),
       };
     }
-
+    
     let data: SoftwareModel;
     if (typeof event.body === 'string') {
       data = JSON.parse(event.body);

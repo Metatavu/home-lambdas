@@ -11,6 +11,7 @@ interface VacationRequestModel {
   endDate: string;
   days: number;
   type: VacationType;
+  message: string;
   status: VacationRequestStatus[];
   createdBy: string;
   createdAt: string;

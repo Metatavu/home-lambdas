@@ -50,9 +50,9 @@ const updateVacationHandler: APIGatewayProxyHandlerV2 = async (event) => {
 
     const updatedVacationDays: Record<string, YearlyVacationDays> = {};
 
-    /**
-     * Formats a numeric value for a given year into a consistent "YYYY:NNN" string.
-     * This format helps with easy lookup and updating in Keycloak user attributes.
+/**
+ * Formats a numeric value for a given year into a consistent "YYYY:NNN" string.
+ * This format helps with easy lookup and updating in Keycloak user attributes.
  *
  * Example:
  *   formatValue("2024", 5) => "2024:005"
@@ -65,7 +65,7 @@ const updateVacationHandler: APIGatewayProxyHandlerV2 = async (event) => {
     const formatValue = (year: string, value: number) =>
       `${year}:${String(value).padStart(3, "0")}`;
 
-    /**
+/**
  * Updates a year-specific value in a string array (e.g., ["2023:020"]).
  * If the year already exists in the array, its value is replaced.
  * If not, the new "year:value" string is added.

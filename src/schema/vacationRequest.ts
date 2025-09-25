@@ -20,6 +20,7 @@ const vacationRequestSchema = Type.Object({
   endDate: Type.String(),
   type: Type.String(),
   status: Type.Array(vacationRequestStatusSchema),
+  message: Type.String(),
   draft: Type.Optional(Type.Boolean()),
   createdBy: Type.String(),
   createdAt: Type.String(),

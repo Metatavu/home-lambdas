@@ -15,7 +15,7 @@ const articleService = new ArticlesApiService(docClient);
  * @param event - API Gateway event.
  */
 const deleteArticleHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
-  const authorizationHeader = event.headers?.Authorization;
+  const authorizationHeader = event.headers?.authorization;
   if (!authorizationHeader) 
     return {
       statusCode: 400,

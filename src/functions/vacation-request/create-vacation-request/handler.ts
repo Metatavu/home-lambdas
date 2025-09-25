@@ -25,7 +25,6 @@ export const createVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
 
   if (
     !userId ||
-    !draft ||
     !startDate ||
     !endDate ||
     !days ||

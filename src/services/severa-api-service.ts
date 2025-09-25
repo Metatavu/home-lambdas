@@ -1,4 +1,7 @@
 import fetch from "node-fetch";
+import type { KeywordModel } from "../generated/severaClient/models/KeywordModel";
+import type { UserOutputModel } from "../generated/severaClient/models/UserOutputModel";
+import type { UserKeywordModel } from "../generated/severaClient/models/UserKeywordModel";
 import type { Flextime } from "../types/severa/flexTime/flexTime";
 import { DateTime } from "luxon";
 import TimeUtilities from "src/meta-assistant/generic/time-utils";
@@ -27,6 +30,11 @@ export interface SeveraApiService {
   getPreviousWeekHours: (severaUserId: string) => Promise<SeveraResponsePreviousWorkHours[]>;
   getFilteredWorkHoursForUsers: (users: { guid: string }[], severaProjectId: string, startDate?: string, endDate?: string) => Promise<SeveraResponseWorkHours[]>;
   getWorkHoursForUser: (severaUserId: string, startDate?: string, endDate?: string) => Promise<SeveraResponseWorkHours[]>;
+  getResourceAllocationsByUserOrAll: (severaUserId: string | undefined, optInUsers: { guid: string }[]) => Promise<SeveraResponseResourceAllocation[]>;
+  checkKeywordExists: (keyword: string) => Promise<KeywordModel>;
+  fetchUserByEmail: (email: string) => Promise<UserOutputModel>;
+  getUserKeywords: (userGuid: string) => Promise<UserKeywordModel[]>;
+  updateSeveraOptInKeyword: (userGuid: string, isSeveraOptIn: string, isSeveraOptInKeywordGuid: string) => Promise<UserKeywordModel>;
 }
 
 /**
@@ -50,7 +58,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
         method: "GET",
         headers: {
           Authorization: `Bearer ${await getSeveraAccessToken()}`,
-          Client_Id: process.env.SEVERA_DEMO_CLIENT_ID,
+          Client_Id: getSeveraClientId(),
           "Content-Type": "application/json"
         }
       });
@@ -72,7 +80,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
         method: "GET",
         headers: {
           Authorization: `Bearer ${await getSeveraAccessToken()}`,
-          Client_Id: process.env.SEVERA_DEMO_CLIENT_ID,
+          Client_Id: getSeveraClientId(),
           "Content-Type": "application/json"
         }
       });
@@ -98,7 +106,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
         method: "GET",
         headers: {
           Authorization: `Bearer ${await getSeveraAccessToken()}`,
-          Client_Id: process.env.SEVERA_DEMO_CLIENT_ID,
+          Client_Id: getSeveraClientId(),
           "Content-Type": "application/json"
         }
       });
@@ -120,7 +128,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
         method: "GET",
         headers: {
           Authorization: `Bearer ${await getSeveraAccessToken()}`,
-          Client_Id: process.env.SEVERA_DEMO_CLIENT_ID,
+          Client_Id: getSeveraClientId(),
           "Content-Type": "application/json"
         }
       });
@@ -150,7 +158,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
         method: "GET",
         headers: {
           Authorization: `Bearer ${await getSeveraAccessToken()}`,
-          Client_Id: process.env.SEVERA_DEMO_CLIENT_ID,
+          Client_Id: getSeveraClientId(),
           "Content-Type": "application/json"
         }
       });
@@ -180,7 +188,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
         method: "GET",
         headers: {
           Authorization: `Bearer ${await getSeveraAccessToken()}`,
-          "Client_Id": process.env.SEVERA_DEMO_CLIENT_ID,
+          Client_Id: getSeveraClientId(),
           "Content-Type": "application/json",
         },
       });
@@ -202,7 +210,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
         method: "GET",
         headers: {
           Authorization: `Bearer ${await getSeveraAccessToken()}`,
-          Client_Id: process.env.SEVERA_DEMO_CLIENT_ID,
+          Client_Id: getSeveraClientId(),
           "Content-Type": "application/json"
         }
       });
@@ -226,7 +234,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
         method: "GET",
         headers: {
           Authorization: `Bearer ${await getSeveraAccessToken()}`,
-          Client_Id: process.env.SEVERA_DEMO_CLIENT_ID,
+          Client_Id: getSeveraClientId(),
           "Content-Type": "application/json"
         }
       });
@@ -251,7 +259,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
         method: "GET",
         headers: {
           Authorization: `Bearer ${await getSeveraAccessToken()}`,
-          "Client_Id": process.env.SEVERA_DEMO_CLIENT_ID,
+          Client_Id: getSeveraClientId(),
           "Content-Type": "application/json",
         },
       });
@@ -283,7 +291,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
         method: "GET",
         headers: {
           Authorization: `Bearer ${await getSeveraAccessToken()}`,
-          Client_Id: process.env.SEVERA_DEMO_CLIENT_ID,
+          Client_Id: getSeveraClientId(),
           "Content-Type": "application/json"
         }
       });
@@ -307,7 +315,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
         method: "GET",
         headers: {
           Authorization: `Bearer ${await getSeveraAccessToken()}`,
-          Client_Id: process.env.SEVERA_DEMO_CLIENT_ID,
+          Client_Id: getSeveraClientId(),
           "Content-Type": "application/json"
         }
       });
@@ -333,7 +341,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
         method: "GET",
         headers: {
           Authorization: `Bearer ${await getSeveraAccessToken()}`,
-          Client_Id: process.env.SEVERA_DEMO_CLIENT_ID,
+          Client_Id: getSeveraClientId(),
           "Content-Type": "application/json"
         }
       });
@@ -380,7 +388,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
               method: "GET",
               headers: {
                 Authorization: `Bearer ${await getSeveraAccessToken()}`,
-                Client_Id: process.env.SEVERA_DEMO_CLIENT_ID,
+                Client_Id: getSeveraClientId(),
                 "Content-Type": "application/json"
               }
             })).json();
@@ -412,7 +420,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
         method: "GET",
         headers: {
           Authorization: `Bearer ${await getSeveraAccessToken()}`,
-          Client_Id: process.env.SEVERA_DEMO_CLIENT_ID,
+          Client_Id: getSeveraClientId(),
           "Content-Type": "application/json"
         }
       });
@@ -421,7 +429,213 @@ export const CreateSeveraApiService = (): SeveraApiService => {
         throw new Error(`Failed to fetch work hours: ${response.status} - ${response.statusText}`);
       }
       return response.json();
-    }
+    },
+
+    /**
+     * Gets resource allocations for a specific user or for all opt-in users if no user is specified.
+     *
+     * @param severaUserId - The GUID of the Severa user (optional).
+     * @param optInUsers - Array of opted-in users ({ guid: string }[]).
+     * @returns {Promise<SeveraResponseResourceAllocation[]>} - Array of resource allocations.
+     */
+    getResourceAllocationsByUserOrAll: async (
+      severaUserId: string | undefined,
+      optInUsers: { guid: string }[]
+    ): Promise<SeveraResponseResourceAllocation[]> => {
+      const buildResourceAllocationUrl = (severaUserId?: string): URL | null => {
+        let endpointPath: string;
+        if (severaUserId) {
+          endpointPath = `users/${severaUserId}/resourceallocations/allocations`;
+          const customUrl = new URL(`${baseUrl}/v1/${endpointPath}`);
+          return customUrl;
+        } else {
+          return null;
+        }
+      };
+
+      const url = buildResourceAllocationUrl(severaUserId);
+      let allResourceAllocations: SeveraResponseResourceAllocation[] = [];
+
+      if (url) {
+        const response = await (await fetch(url.toString(), {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${await getSeveraAccessToken()}`,
+            Client_Id: getSeveraClientId(),
+            "Content-Type": "application/json"
+          }
+        })).json();
+        allResourceAllocations = response;
+      } else {
+        const resourceAllocationsResults = await Promise.all(
+          optInUsers.map(async (user: { guid: string }) => {
+            try {
+              const userUrl = new URL(`${baseUrl}/v1/users/${user.guid}/resourceallocations/allocations`);
+              const userResourceAllocations = await (await fetch(userUrl.toString(), {
+                method: "GET",
+                headers: {
+                  Authorization: `Bearer ${await getSeveraAccessToken()}`,
+                  Client_Id: getSeveraClientId(),
+                  "Content-Type": "application/json"
+                }
+              })).json();
+              return userResourceAllocations;
+            } catch (e) {
+              console.error(`Error fetching resource allocations for user ${user.guid}:`, e);
+              return [];
+            }
+          })
+        );
+        allResourceAllocations = resourceAllocationsResults.flat();
+      }
+
+      return allResourceAllocations;
+    },
+
+    /**
+     * Checks if a keyword exists in Severa. If not, creates it.
+     *
+     * @param keyword The keyword to check or create.
+     * @returns The existing or newly created keyword object.
+     */
+    checkKeywordExists: async (keyword: string) => {
+      const KeywordsUrl = `${baseUrl}/v1/keywords?keyword=${keyword}`;
+      const allKeywordsResponse = await fetch(KeywordsUrl, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${await getSeveraAccessToken()}`,
+          Client_Id: getSeveraClientId(),
+          "Content-Type": "application/json"
+        }
+      });
+
+      if (!allKeywordsResponse.ok) {
+        throw new Error(
+          `Failed to fetch keywords: ${allKeywordsResponse.status} - ${allKeywordsResponse.statusText}`
+        );
+      }
+
+      const allKeywords = await allKeywordsResponse.json();
+      const existingKeyword = allKeywords.find((kw: { keyword: string }) => kw.keyword === keyword);
+
+      if (existingKeyword) {
+        return existingKeyword;
+      }
+
+      const createKeywordUrl = `${baseUrl}/v1/keywords`;
+      const createKeywordResponse = await fetch(createKeywordUrl, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${await getSeveraAccessToken()}`,
+          Client_Id: getSeveraClientId(),
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          keyword: "isSeveraOptIn",
+          category: "User",
+          isActive: true
+        })
+      });
+
+      if (!createKeywordResponse.ok) {
+        throw new Error(
+          `Failed to create keyword '${keyword}': ${createKeywordResponse.status} - ${createKeywordResponse.statusText}`
+        );
+      }
+      const newKeyword = await createKeywordResponse.json();
+
+      return newKeyword;
+    },
+
+    /**
+     * Fetches a Severa user by their email address.
+     *
+     * @param email The email address of the user to retrieve.
+     * @returns The user object if found.
+     */
+    fetchUserByEmail: async (email: string) => {
+      const url = `${baseUrl}/v1/users?email=${encodeURIComponent(email)}`;
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${await getSeveraAccessToken()}`,
+          Client_Id: getSeveraClientId(),
+          "Content-Type": "application/json"
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch user by email: ${response.status} - ${response.statusText}`);
+      }
+
+      const users = await response.json();
+      if (!users?.length) {
+        throw new Error(`No user found with email: ${email}`);
+      }
+
+      return users[0];
+    },
+
+    /**
+     * Retrieves the keywords associated with a Severa user.
+     *
+     * @param userGuid The GUID of the user whose keywords are being fetched.
+     * @returns A list of keywords for the user.
+     */
+    getUserKeywords: async (userGuid: string) => {
+      const userKeywordsUrl = `${baseUrl}/v1/users/${userGuid}/keywords`;
+      const keywordsResponse = await fetch(userKeywordsUrl, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${await getSeveraAccessToken()}`,
+          Client_Id: getSeveraClientId(),
+          "Content-Type": "application/json"
+        }
+      });
+
+      if (!keywordsResponse.ok) {
+        throw new Error(
+          `Failed to fetch keywords for user: ${keywordsResponse.status} - ${keywordsResponse.statusText}`
+        );
+      }
+
+      return await keywordsResponse.json();
+    },
+
+    /**
+     * Updates the 'isSeveraOptIn' keyword for a Severa user.
+     *
+     * @param userGuid The GUID of the user whose keyword is being updated.
+     * @param isSeveraOptIn The new value for the 'isSeveraOptIn' keyword.
+     * @param isSeveraOptInKeywordGuid The GUID of the 'isSeveraOptIn' keyword.
+     * @returns The updated keyword response.
+     */
+    updateSeveraOptInKeyword: async (
+      userGuid: string,
+      isSeveraOptIn: string,
+      isSeveraOptInKeywordGuid: string
+    ) => {
+      const updateKeywordUrl = `${baseUrl}/v1/users/${userGuid}/keywords/${isSeveraOptInKeywordGuid}`;
+      const updateResponse = await fetch(updateKeywordUrl, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${await getSeveraAccessToken()}`,
+          Client_Id: getSeveraClientId(),
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          value: isSeveraOptIn
+        })
+      });
+
+      if (!updateResponse.ok) {
+        throw new Error(
+          `Failed to update Severa keyword for user: ${updateResponse.status} - ${updateResponse.statusText}`
+        );
+      }
+
+      return await updateResponse.json();
+    },
 
   };
 };
@@ -433,7 +647,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
  */
 const getSeveraAccessToken = async (): Promise<string> => {
   const url: string = `${process.env.SEVERA_DEMO_BASE_URL}/v1/token`;
-  const client_Id: string = process.env.SEVERA_DEMO_CLIENT_ID;
+  const client_Id: string = getSeveraClientId();
   const client_Secret: string = process.env.SEVERA_DEMO_CLIENT_SECRET;
 
   const requestBody = {
@@ -465,211 +679,11 @@ const getSeveraAccessToken = async (): Promise<string> => {
   }
 };
 
-/**
- * Checks if a keyword exists in Severa. If not, creates it.
- *
- * @param keyword The keyword to check or create.
- * @returns The existing or newly created keyword object.
- */
-export const checkKeywordExists = async (keyword: string) => {
-  const baseUrl: string = process.env.SEVERA_DEMO_BASE_URL;
-  const KeywordsUrl = `${baseUrl}/v1/keywords?keyword=${keyword}`;
-
-  const allKeywordsResponse = await fetch(KeywordsUrl, {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${await getSeveraAccessToken()}`,
-      Client_Id: process.env.SEVERA_DEMO_CLIENT_ID,
-      "Content-Type": "application/json"
-    }
-  });
-
-  if (!allKeywordsResponse.ok) {
-    throw new Error(
-      `Failed to fetch keywords: ${allKeywordsResponse.status} - ${allKeywordsResponse.statusText}`
-    );
-  }
-
-  const allKeywords = await allKeywordsResponse.json();
-  const existingKeyword = allKeywords.find((kw: { keyword: string }) => kw.keyword === keyword);
-
-  if (existingKeyword) {
-    return existingKeyword;
-  }
-
-  const createKeywordUrl = `${baseUrl}/v1/keywords`;
-  const createKeywordResponse = await fetch(createKeywordUrl, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${await getSeveraAccessToken()}`,
-      Client_Id: process.env.SEVERA_DEMO_CLIENT_ID,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      keyword: "isSeveraOptIn",
-      category: "User",
-      isActive: true
-    })
-  });
-
-  if (!createKeywordResponse.ok) {
-    throw new Error(
-      `Failed to create keyword '${keyword}': ${createKeywordResponse.status} - ${createKeywordResponse.statusText}`
-    );
-  }
-
-  const newKeyword = await createKeywordResponse.json();
-
-  return newKeyword;
-};
-
-/**
- * Fetches a Severa user by their email address.
- *
- * @param email The email address of the user to retrieve.
- * @returns The user object if found.
- */
-export const fetchUserByEmail = async (email: string) => {
-  const baseUrl: string = process.env.SEVERA_DEMO_BASE_URL;
-  const url = `${baseUrl}/v1/users?email=${encodeURIComponent(email)}`;
-  const response = await fetch(url, {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${await getSeveraAccessToken()}`,
-      Client_Id: process.env.SEVERA_DEMO_CLIENT_ID,
-      "Content-Type": "application/json"
-    }
-  });
-
-  if (!response.ok) {
-    throw new Error(`Failed to fetch user by email: ${response.status} - ${response.statusText}`);
-  }
-
-  const users = await response.json();
-  if (!users?.length) {
-    throw new Error(`No user found with email: ${email}`);
-  }
-
-  return users[0];
-};
-
-/**
- * Retrieves the keywords associated with a Severa user.
- *
- * @param userGuid The GUID of the user whose keywords are being fetched.
- * @returns A list of keywords for the user.
- */
-export const getUserKeywords = async (userGuid: string) => {
-  const baseUrl: string = process.env.SEVERA_DEMO_BASE_URL;
-  const userKeywordsUrl = `${baseUrl}/v1/users/${userGuid}/keywords`;
-  const keywordsResponse = await fetch(userKeywordsUrl, {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${await getSeveraAccessToken()}`,
-      Client_Id: process.env.SEVERA_DEMO_CLIENT_ID,
-      "Content-Type": "application/json"
-    }
-  });
-
-  if (!keywordsResponse.ok) {
-    throw new Error(
-      `Failed to fetch keywords for user: ${keywordsResponse.status} - ${keywordsResponse.statusText}`
-    );
-  }
-
-  return await keywordsResponse.json();
-};
-
-/**
- * Updates the 'isSeveraOptIn' keyword for a Severa user.
- *
- * @param userGuid The GUID of the user whose keyword is being updated.
- * @param isSeveraOptIn The new value for the 'isSeveraOptIn' keyword.
- * @param isSeveraOptInKeywordGuid The GUID of the 'isSeveraOptIn' keyword.
- * @returns The updated keyword response.
- */
-export const updateSeveraOptInKeyword = async (
-  userGuid: string,
-  isSeveraOptIn: string,
-  isSeveraOptInKeywordGuid: string
-) => {
-  const baseUrl: string = process.env.SEVERA_DEMO_BASE_URL;
-  const updateKeywordUrl = `${baseUrl}/v1/users/${userGuid}/keywords/${isSeveraOptInKeywordGuid}`;
-  const updateResponse = await fetch(updateKeywordUrl, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${await getSeveraAccessToken()}`,
-      Client_Id: process.env.SEVERA_DEMO_CLIENT_ID,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      value: isSeveraOptIn
-    })
-  });
-
-  if (!updateResponse.ok) {
-    throw new Error(
-      `Failed to update Severa keyword for user: ${updateResponse.status} - ${updateResponse.statusText}`
-    );
-  }
-
-  return await updateResponse.json();
-};
-
-/**
- * Gets resource allocations for a specific user or for all opt-in users if no user is specified.
- *
- * @param severaUserId - The GUID of the Severa user (optional).
- * @param optInUsers - Array of opted-in users ({ guid: string }[]).
- * @returns {Promise<SeveraResponseResourceAllocation[]>} - Array of resource allocations.
- */
-export async function getResourceAllocationsByUserOrAll(
-  severaUserId: string | undefined,
-  optInUsers: { guid: string }[]
-): Promise<SeveraResponseResourceAllocation[]> {
-  const api = CreateSeveraApiService();
-
-  /**
-   * Builds the resource allocation URL for a specific user or returns null if no user is specified.
-   *
-   * @param severaUserId - The GUID of the Severa user.
-   * @returns {URL | null} - The constructed URL for the user's resource allocations, or null if severaUserId is not provided.
-   */
-  const buildResourceAllocationUrl = (severaUserId?: string): URL | null => {
-    let endpointPath: string;
-
-    if (severaUserId) {
-      endpointPath = `users/${severaUserId}/resourceallocations/allocations`;
-      const customUrl = new URL(`${process.env.SEVERA_DEMO_BASE_URL}/v1/${endpointPath}`);
-      return customUrl;
-    } else {
-      // If severaUserId is not specified, we make requests for each opted-in user and merge the results
-      return null; // special marker that we need to iterate over all opted-in
-    }
-  };
-
-  const url = buildResourceAllocationUrl(severaUserId);
-  let allResourceAllocations: SeveraResponseResourceAllocation[] = [];
-
-  if (url) {
-    // Normal case: for a specific user
-    const response = await api.getResourceAllocation(url);
-    allResourceAllocations = response;
+// Utility function to get correct Severa client ID based on environment
+const getSeveraClientId = (): string => {
+  if (process.env.STAGE === "production") {
+    return process.env.SEVERA_CLIENT_ID;
   } else {
-    const resourceAllocationsResults = await Promise.all(
-      optInUsers.map(async (user: { guid: string }) => {
-        try {
-          const userUrl = new URL(`${process.env.SEVERA_DEMO_BASE_URL}/v1/users/${user.guid}/resourceallocations/allocations`);
-          const userResourceAllocations = await api.getResourceAllocation(userUrl);
-          return userResourceAllocations;
-        } catch (e) {
-          console.error(`Error fetching resource allocations for user ${user.guid}:`, e);
-          return [];
-        }
-      })
-    );
-    allResourceAllocations = resourceAllocationsResults.flat();
+    return process.env.SEVERA_DEMO_CLIENT_ID;
   }
-
-  return allResourceAllocations;
-}
+};

@@ -1,7 +1,6 @@
 
 import Config from "src/app/config";
-import {fetchUserByEmail, getUserKeywords, checkKeywordExists,updateSeveraOptInKeyword
-} from "src/services/severa-api-service";
+import {CreateSeveraApiService} from "src/services/severa-api-service";
 /**
  * Fetches a Severa user by their email address and checks/updates the 'isSeveraOptIn' status.
  *
@@ -15,28 +14,29 @@ export const optInSeveraUser = async (email: string, keyword: Record<string, str
   const userEmail = Config.get().testUser.email || email;
 
   try {
-    const user = await fetchUserByEmail(userEmail);
+    const api = CreateSeveraApiService();
+    const user = await api.fetchUserByEmail(userEmail);
     const isSeveraOptIn = keyword.isSeveraOptIn?.[0];
-    const isSeveraOptInKeyword = await checkKeywordExists("isSeveraOptIn");
+    const isSeveraOptInKeyword = await api.checkKeywordExists("isSeveraOptIn");
 
     if (!isSeveraOptInKeyword?.guid) {
       throw new Error("No 'isSeveraOptIn' keyword found.");
     }
 
-    const keywords = await getUserKeywords(user.guid);
+    const keywords = await api.getUserKeywords(user.guid);
     const existingKeywordForUser = keywords.find(
       (kw: { keyword: string }) => kw.keyword === "isSeveraOptIn"
     );
 
     if (!existingKeywordForUser) {
-      const updatedKeyword = await updateSeveraOptInKeyword(
+      const updatedKeyword = await api.updateSeveraOptInKeyword(
         user.guid,
         isSeveraOptIn,
         isSeveraOptInKeyword.guid
       );
       return {
         guid: user.guid,
-        isSeveraOptIn: updatedKeyword.value,
+        isSeveraOptIn: updatedKeyword.keyword,
         email: userEmail
       };
     }

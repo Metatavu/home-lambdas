@@ -4,7 +4,6 @@ import { v4 as uuidv4 } from "uuid";
 import type { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
 import type vacationRequestSchema from "src/schema/vacationRequest";
 //import { notifyAdminsVacationSubmittedAll } from "src/notifications/vacation-notifications";
-// import { CreateKeycloakApiService } from "src/database/services/keycloak-api-service";
 
 /**
  * Handler for creating a new vacation request entry in DynamoDB.

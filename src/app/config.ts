@@ -8,7 +8,8 @@ const env = cleanEnv(process.env, {
   SPLUNK_TEAM_ONCALL_URL: str(),
   SPLUNK_SCHEDULE_POLICY_NAME : str(),
   SEVERA_TEST_USER_EMAIL: str({ default: undefined }),
-  RESEND_API_KEY: str({ default: undefined }),
+  MAILGUN_USER: str(),
+  MAILGUN_PASSWORD: str(),
   ADMIN_EMAILS: str({ default: undefined }), 
   METATAVU_BOT_TOKEN: str(),       
   ADMIN_SLACK_USERS: str({ default: undefined }),  
@@ -36,7 +37,8 @@ export default class Config {
       email: env.SEVERA_TEST_USER_EMAIL,
     },
     email: {
-      resendApiKey: env.RESEND_API_KEY,
+      mailgunUser: env.MAILGUN_USER,
+      mailgunPassword: env.MAILGUN_PASSWORD,
       adminEmails: env.ADMIN_EMAILS ? env.ADMIN_EMAILS.split(",") : [],
     },
     slack: {

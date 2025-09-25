@@ -1,9 +1,19 @@
-import { Resend } from "resend";
+import nodemailer from "nodemailer";
 import Config from "src/app/config"; 
 import { VacationDetails } from "src/types";
 
-const resend = new Resend(Config.get().email.resendApiKey);
+
 const adminEmails = Config.get().email.adminEmails;
+
+// Create a reusable transporter using Mailgun SMTP
+const transporter = nodemailer.createTransport({
+  host: "smtp.mailgun.org",
+  port: 587,
+  auth: {
+    user: Config.get().email.mailgunUser,
+    pass: Config.get().email.mailgunPassword,
+  },
+});
 
 /**
  * Format a date string from yyyy-mm-dd to dd-mm-yyyy
@@ -22,23 +32,16 @@ function formatDate(date: string): string {
  * @param subject - Subject line of the email
  * @param html - HTML content of the email
  */
-async function sendEmail({
-  to,
-  subject,
-  html
-}: {
-  to: string;
-  subject: string;
-  html: string;
-}) {
-  const { error } = await resend.emails.send({
-    from: "Metatavu Home <onboarding@resend.dev>",
-    to,
-    subject,
-    html
-  });
-
-  if (error) {
+async function sendEmail({ to, subject, html }: { to: string; subject: string; html: string }) {
+  try {
+    const info = await transporter.sendMail({
+      from: "Metatavu Home <onboarding@resend.dev>", //Replace this with mailgun credentials later!!!!!
+      to,
+      subject,
+      html,
+    });
+    console.log("Email sent:", info.messageId);
+  } catch (error) {
     console.error("Failed to send email:", error);
     throw error;
   }
@@ -60,7 +63,7 @@ async function notifyAdminsVacationByEmail(
     throw new Error("ADMIN_EMAILS environment variable is empty or not set.");
   }
   const homeUrl = Config.get().homeBaseUrl;
-  const vacationLink = `${homeUrl}/admin/vacations`;
+  const vacationLink = `${homeUrl}/admin/vacations?selectedId=${vacationDetails.id}`;
 
   const html = `
     <p><strong>${header}</strong></p>

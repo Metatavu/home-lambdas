@@ -10,6 +10,7 @@ export type DateRange = {
  * Details of a vacation request.
  */
 export interface VacationDetails {
+    id: string;
     user: string;
     startDate: string;
     endDate: string;
@@ -33,7 +34,8 @@ export interface Configuration {
         email: string
     }
     email: {                             
-        resendApiKey: string;
+        mailgunUser: string;
+        mailgunPassword: string;
         adminEmails: string[];
     }
     slack: {

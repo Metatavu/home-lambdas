@@ -2,7 +2,7 @@ import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import SoftwareService from "src/database/services/software-service";
 import { middyfy } from "src/libs/lambda";
-import { getAuthDataFromToken } from "src/libs/auth-utils"
+import { getAuthDataFromToken, isAdminUser} from "src/libs/auth-utils"
 import { SoftwareModel } from "src/database/models/software";
 import { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
 
@@ -22,7 +22,15 @@ export const updateSoftwareHandler: ValidatedEventAPIGatewayProxyEvent<SoftwareM
   try {
     const { id } = event.pathParameters || {};
     console.log('Path parameter (id):', id);
-
+    if (!isAdminUser(event)) {
+    return {
+      statusCode: 403,
+      body: JSON.stringify({
+        code: 403,
+        message: "Access denied. Admin privileges required.",
+      }),
+    };
+  }
     if (!id) {
       return {
         statusCode: 400,
@@ -36,7 +44,7 @@ export const updateSoftwareHandler: ValidatedEventAPIGatewayProxyEvent<SoftwareM
         body: JSON.stringify({ error: 'Request body is required.' }),
       };
     }
-
+    
     let data: SoftwareModel;
     if (typeof event.body === 'string') {
       data = JSON.parse(event.body);

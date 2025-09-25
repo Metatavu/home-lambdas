@@ -3,7 +3,7 @@ import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import ArticlesApiService from "src/database/services/articles-api-service";
 import { middyfy } from "src/libs/lambda";
-import * as jwt from 'jsonwebtoken';
+import { isAdminUser } from "src/libs/auth-utils";
 
 const dynamoClient = new DynamoDBClient({});
 const docClient = DynamoDBDocumentClient.from(dynamoClient);
@@ -15,36 +15,15 @@ const articleService = new ArticlesApiService(docClient);
  * @param event - API Gateway event.
  */
 const deleteArticleHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
-  const authorizationHeader = event.headers?.authorization;
-  if (!authorizationHeader) 
-    return {
-      statusCode: 400,
-      body: JSON.stringify({
-        code: 400,
-        message: "Missing Authorization header.",
-      }),
-    }
-
-  const token = authorizationHeader.split(' ')[1];
-  if (!token) 
-    return {
-      statusCode: 400,
-      body: JSON.stringify({
-        code: 400,
-        message: "Missing Bearer token.",
-      }),
-    }
-
-  const decodedJWT = jwt.decode(token);
-  if (!decodedJWT.realm_access.roles.includes("admin")) 
+  if (!isAdminUser(event)) {
     return {
       statusCode: 403,
       body: JSON.stringify({
         code: 403,
         message: "Access denied. Admin privileges required.",
       }),
-    }
-
+    };
+  }
   const { id } = event.pathParameters || {};
   if (!id) {
     return {

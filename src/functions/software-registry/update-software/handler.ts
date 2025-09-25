@@ -2,7 +2,7 @@ import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import SoftwareService from "src/database/services/software-service";
 import { middyfy } from "src/libs/lambda";
-import { getAuthDataFromToken } from "src/libs/auth-utils"
+import { getAuthDataFromToken, isAdminUser} from "src/libs/auth-utils"
 import { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
 import { SoftwareRegistry } from "src/generated/homeLambdasModels/model/softwareRegistry";
 
@@ -21,6 +21,8 @@ export const updateSoftwareHandler: ValidatedEventAPIGatewayProxyEvent<SoftwareR
 
   try {
     const { id } = event.pathParameters || {};
+    console.log('Path parameter (id):', id);
+
     if (!id) {
       return {
         statusCode: 400,

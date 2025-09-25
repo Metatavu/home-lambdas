@@ -20,7 +20,7 @@ const updateVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
   typeof vacationRequestSchema
 > = async (event) => {
   const { pathParameters, body } = event;
-  const { createdAt, createdBy, days, draft, endDate, startDate, status, type, updatedAt, userId } = body;
+  const { userId, draft, startDate, endDate, days, type, status, message, createdBy, createdAt, updatedAt } = body;
   const id = pathParameters?.id;
 
   if (!id) {
@@ -37,6 +37,7 @@ const updateVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
     !days ||
     !type ||
     !status ||
+    !message ||
     !createdBy ||
     !createdAt ||
     !updatedAt
@@ -65,6 +66,7 @@ const updateVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
     days: days,
     type: type,
     status: status,
+    message: message,
     createdBy: existingVacationRequest.createdBy,
     createdAt: existingVacationRequest.createdAt,
     updatedAt: updatedAt

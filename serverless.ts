@@ -15,6 +15,7 @@ import sendWeeklyMessage from "@functions/meta-assistant/send-weekly-message";
 import onCallUpdatePaidHandler from "@/functions/on-call/update-paid";
 import onCallListDataHandler from "src/functions/on-call/list-on-call-data";
 import onCallWeeklyCheckHandler from "@/functions/on-call/weekly-check";
+import onCallImportFromJsonHandler from "src/functions/on-call/create-on-call-data-from-json";
 import getSlackUserAvatar from "src/functions/slack-user-avatar";
 import createSoftwareHandler from "@/functions/software-registry/create-software";
 import findSoftwareHandler from "@/functions/software-registry/find-software";
@@ -178,6 +179,7 @@ const serverlessConfiguration: AWS = {
     removeInterestFromLeadHandler,
     onCallListDataHandler,
     onCallWeeklyCheckHandler,
+    onCallImportFromJsonHandler,
     sendDailyMessage,
     sendWeeklyMessage,
     onCallUpdatePaidHandler,

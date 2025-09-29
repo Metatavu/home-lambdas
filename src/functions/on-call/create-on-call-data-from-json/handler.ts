@@ -2,7 +2,7 @@ import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, PutCommand } from "@aws-sdk/lib-dynamodb";
 import { middyfy } from "@libs/lambda";
 import type { OnCallImportEntry, OnCallImportError } from "src/database/models/oncall";
-import * as jwt from 'jsonwebtoken';
+import { isAdminUser } from "src/libs/auth-utils";
 
 /**
  * Lambda method for importing on-call data from JSON
@@ -11,16 +11,15 @@ import * as jwt from 'jsonwebtoken';
  * and a query parameter "year" (number)
  */
 export const onCallImportFromJsonHandler = async (event) => {
-  const token = event.headers?.Authorization?.split(' ')[1];
-  const decodedJWT = jwt.decode(token);
-  const isAdmin = decodedJWT?.realm_access?.roles?.includes("admin") || false;
-  if (!isAdmin) {
+  if (!isAdminUser(event)) {
     return {
       statusCode: 403,
-      body: "Forbidden: admin access required",
+      body: JSON.stringify({
+        code: 403,
+        message: "Access denied. Admin privileges required.",
+      }),
     };
   }
-
   const year = event.queryStringParameters?.year
     ? parseInt(event.queryStringParameters.year, 10)
     : undefined;

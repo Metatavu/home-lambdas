@@ -12,7 +12,7 @@
     "build-severa-client": "openapi-generator-cli generate -i severa-API-spec/swagger.yaml -o ./src/generated/severaClient -c generator-config.json -g typescript-node"
   },
   "engines": {
-    "node": ">=22.0.0"
+    "node": ">=20.0.0"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "3.882.0",
@@ -41,7 +41,7 @@
     "@babel/preset-env": "^7.16.11",
     "@babel/preset-typescript": "^7.16.7",
     "@openapitools/openapi-generator-cli": "^2.4.26",
-    "@serverless/typescript": "^3.30.1",
+    "@serverless/typescript": "4.18.2",
     "@types/aws-lambda": "8.10.152",
     "@types/jest": "^27.4.1",
     "@types/luxon": "^2.3.0",
@@ -57,7 +57,7 @@
     "jest": "^27.5.1",
     "json-schema-to-ts": "^1.5.0",
     "keycloak-mock": "^1.0.10",
-    "serverless": "^3.39.0",
+    "serverless": "3.40.0",
     "serverless-deployment-bucket": "^1.6.0",
     "serverless-esbuild": "^1.23.3",
     "serverless-offline": "^13.8.0",

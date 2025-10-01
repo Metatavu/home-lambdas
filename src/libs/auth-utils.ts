@@ -41,8 +41,6 @@ export const getAuthDataFromToken = (event: { headers: APIGatewayProxyEvent['hea
       return null;
     }
 
-    console.log('Decoded JWT Token:', JSON.stringify(decodedToken, null, 2));
-
     return {
       sub: decodedToken.sub,
       realm_access: decodedToken.realm_access

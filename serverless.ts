@@ -75,7 +75,7 @@ const serverlessConfiguration: AWS = {
   ],
   provider: {
     name: "aws",
-    runtime: "nodejs18.x",
+    runtime: "nodejs20.x",
     region: region,
     deploymentBucket: {
       name: isLocal
@@ -238,7 +238,7 @@ const serverlessConfiguration: AWS = {
       minify: false,
       sourcemap: true,
       exclude: ["aws-sdk"],
-      target: "node18",
+      target: "node20",
       define: { "require.resolve": undefined },
       platform: "node",
       concurrency: 10,

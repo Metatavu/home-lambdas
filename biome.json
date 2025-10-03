@@ -1,7 +1,8 @@
 {
   "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
-  "organizeImports": {
-    "enabled": true
+  "files": {
+    "includes": ["**", "!generated", "!**/generated"],
+    "ignoreUnknown": false
   },
   "linter": {
     "enabled": true,
@@ -20,12 +21,11 @@
         "noUnusedVariables": "error",
         "useExhaustiveDependencies": "off"
       }
-    },
-    "ignore": ["/generated"]
+    }
   },
   "javascript": {
     "formatter": {
-      "trailingComma": "none"
+      "trailingCommas": "none"
     }
   },
   "formatter": {
@@ -33,7 +33,11 @@
     "lineWidth": 100,
     "indentWidth": 2,
     "indentStyle": "space",
-    "formatWithErrors": false,
-    "ignore": ["/generated"]
+    "formatWithErrors": false
+  },
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
   }
 }

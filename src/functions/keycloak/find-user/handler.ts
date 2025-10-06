@@ -19,7 +19,6 @@ const findUserHandler: APIGatewayProxyHandler = async (
       throw new Error("Missing or invalid path parameter: id");
     }
     const userByIdRaw = await api.findUser(id);
-
     if (!userByIdRaw) {
       return {
         statusCode: 404,

@@ -42,7 +42,10 @@ export const onCallUpdatePaidHandler: ValidatedEventAPIGatewayProxyEvent<any> = 
 
   return {
     statusCode: 200,
-    body: "Paid status updated"
+    body: JSON.stringify({ message: "Paid status updated" }),
+    headers: {
+      "Content-Type": "application/json"
+    }
   };
 };
 

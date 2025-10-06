@@ -26,7 +26,10 @@ export const onCallImportFromJsonHandler = async (event) => {
   if (!year || year < 2020 || year > new Date().getFullYear()) {
     return {
       statusCode: 400,
-      body: "Invalid or missing year in query parameter",
+      body: JSON.stringify({ code: 0, message: "Invalid or missing year in query parameter" }),
+      headers: {
+        "Content-Type": "application/json"
+      }
     };
   }
   let data: OnCallImportEntry[];
@@ -35,14 +38,20 @@ export const onCallImportFromJsonHandler = async (event) => {
   } catch (err) {
     return {
       statusCode: 400,
-      body: "Invalid JSON in body",
+      body: JSON.stringify({ code: 0, message: "Invalid json in body" }),
+      headers: {
+        "Content-Type": "application/json"
+      },
       error: err.message,
     };
   }
   if (!Array.isArray(data)) {
     return {
       statusCode: 400,
-      body: "Body must be an array",
+      body: JSON.stringify({ code: 0, message: "Body must be an array" }),
+      headers: {
+        "Content-Type": "application/json"
+      }
     };
   }
 

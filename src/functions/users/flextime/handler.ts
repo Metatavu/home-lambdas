@@ -10,12 +10,18 @@ type UserWithFlextime = {
     id: string;
     firstName: string;
     lastName: string;
+    email: string;
+    attributes: {
+      severaUserId: string;
+      isActive: boolean;
+    };
   };
   flextime: {
     totalFlextimeBalance: number;
     monthFlextimeBalance: number;
   };
 };
+
 /**
  * Lambda handler for listing users with their flextime data.
  * Only returns users who have opted in to Severa integration.
@@ -36,13 +42,18 @@ export const listUsersFlextimeHandler: APIGatewayProxyHandler = async () => {
     const usersWithFlextime = await Promise.allSettled(
       optedInUsers.map(async (severaUser) => {
         try {
-          //TODO: This should be typed according to the spec response type from the severa general spec generated client
+          // This should be typed according to the spec response type from the severa general spec generated client
           const flextime = await api.getFlextimeBySeveraUserId(severaUser.guid);
           return {
             user: {
               id: severaUser.guid,
               firstName: severaUser.firstName || "",
               lastName: severaUser.lastName || "",
+              email: severaUser.email || "",
+              attributes: {
+                severaUserId: severaUser.guid,
+                isActive: true
+              }
             },
             flextime: {
               totalFlextimeBalance: flextime?.totalFlextimeBalance || 0,

@@ -7,7 +7,6 @@ import { VacationRequest } from "src/generated/homeLambdasModels/model/vacationR
 /**
  * Labmda for listing all vacation requests from DynamoDB.
  * Type mismatches between VacationRequestModel and VacationRequest:
- * - VacationRequestModel may be missing 'message' property required by VacationRequest.
  * - 'createdAt', 'updatedAt', 'startDate', 'endDate' are 'string' here, but VacationRequest expects 'Date'.
  */
 const listVacationRequestHandler: APIGatewayProxyHandler = async (event) => {

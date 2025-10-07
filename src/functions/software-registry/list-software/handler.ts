@@ -11,41 +11,33 @@ const softwareService = new SoftwareService(docClient);
 
 /**
  * Handler for listing all software entries from DynamoDB.
- * 
+ *
  * NOTE: Returned response matches the SoftwareRegistry OpenAPI spec model.
  * If there are differences in the status field type, it is cast to match the spec.
  * createdAt and lastUpdatedAt are converted to Date objects to match the spec.
- * 
+ *
  * @returns Response object with status code and body.
  */
-
 export const listSoftwareHandler: APIGatewayProxyHandler = async () => {
-  console.log('Received request to list software entries');
-
   try {
-    console.log('Fetching software list from DynamoDB');
     const softwareList = await softwareService.listSoftware();
-
-    // Map SoftwareModel[] to SoftwareRegistry[]
     const softwareRegistryList: SoftwareRegistry[] = softwareList.map((software) => ({
       ...software,
       // Cast status to match SoftwareRegistry type
       status: software.status as unknown as SoftwareRegistry["status"],
       // Convert dates if needed
       createdAt: software.createdAt ? new Date(software.createdAt) : undefined,
-      lastUpdatedAt: software.lastUpdatedAt ? new Date(software.lastUpdatedAt) : undefined,
+      lastUpdatedAt: software.lastUpdatedAt ? new Date(software.lastUpdatedAt) : undefined
     }));
-
-    console.log('Software list retrieved successfully:', softwareRegistryList);
     return {
       statusCode: 200,
-      body: JSON.stringify(softwareRegistryList),
+      body: JSON.stringify(softwareRegistryList)
     };
   } catch (error) {
     console.error("Error retrieving software list from DynamoDB:", error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: 'Failed to retrieve software list.', details: error.message }),
+      body: JSON.stringify({ error: "Failed to retrieve software list.", details: error.message })
     };
   }
 };

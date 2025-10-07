@@ -2,7 +2,7 @@
 
 import { handlerPath } from "@libs/handler-resolver";
 
-const isInactive = process.env.SKIP_INACTIVE_LAMBDAS === "true";
+const isInactive = true;
 
 export default isInactive
   ? {}

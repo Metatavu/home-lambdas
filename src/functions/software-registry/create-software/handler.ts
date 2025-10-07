@@ -17,7 +17,6 @@ const softwareService = new SoftwareService(docClient);
  * @returns Response object with status code and body.
  */
 export const createSoftwareHandler: ValidatedEventAPIGatewayProxyEvent<SoftwareRegistry> = async (event) => {
-  console.log('Received event:', JSON.stringify(event));
   
   try {
     if (!event.body) {

@@ -43,7 +43,6 @@ export const findSoftwareHandler: APIGatewayProxyHandler = async (event: APIGate
         createdAt: software.createdAt ? new Date(software.createdAt) : undefined,
         lastUpdatedAt: software.lastUpdatedAt ? new Date(software.lastUpdatedAt) : undefined
       };
-      console.log('Software found:', fixedSoftware);
       return {
         statusCode: 200,
         body: JSON.stringify(fixedSoftware),

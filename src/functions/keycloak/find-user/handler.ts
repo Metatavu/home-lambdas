@@ -25,7 +25,6 @@ const findUserHandler: APIGatewayProxyHandler = async (
         body: JSON.stringify({ error: "User not found" }),
       };
     }
-    // Map the CustomKeycloakProfile to User model
     const userById: User = {
       id: userByIdRaw.id,
       firstName: userByIdRaw.firstName,

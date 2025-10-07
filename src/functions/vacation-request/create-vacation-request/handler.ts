@@ -13,7 +13,6 @@ import { VacationRequest } from "src/generated/homeLambdasModels/model/vacationR
  * @returns Response object with status code
  * 
  * Type mismatches between VacationRequestModel and VacationRequest:
- * - VacationRequestModel may be missing 'message' property required by VacationRequest.
  * - 'createdAt', 'updatedAt', 'startDate', 'endDate' are 'string' here, but VacationRequest expects 'Date'.
  */
 export const createVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<

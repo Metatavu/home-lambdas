@@ -3,7 +3,6 @@ import { CreateKeycloakApiService } from "src/database/services/keycloak-api-ser
 import type { APIGatewayProxyHandlerV2 } from "aws-lambda";
 import { YearlyVacationDays } from "src/generated/homeLambdasModels/model/yearlyVacationDays";
 
-// vacationDays matches the OpenAPI spec
 const keycloakApiService = CreateKeycloakApiService();
 
 /**
@@ -12,7 +11,6 @@ const keycloakApiService = CreateKeycloakApiService();
  * @param event - API Gateway event containing userId and vacationDays in body
  * @returns Response message as JSON string
  */
-// NOTE: Returned vacationDays matches the OpenAPI spec: object with years as keys and YearlyVacationDays as values.
 const updateVacationHandler: APIGatewayProxyHandlerV2 = async (event) => {
   const userId = event.pathParameters?.userId;
 

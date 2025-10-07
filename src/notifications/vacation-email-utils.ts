@@ -1,8 +1,6 @@
-import nodemailer from "nodemailer";
 import Config from "src/app/config"; 
 import { VacationDetails } from "src/types";
-
-
+import nodemailer from "nodemailer";
 const adminEmails = Config.get().email.adminEmails;
 
 // Create a reusable transporter using Mailgun SMTP

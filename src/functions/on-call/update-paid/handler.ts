@@ -13,40 +13,68 @@ export const onCallUpdatePaidHandler: ValidatedEventAPIGatewayProxyEvent<any> = 
   const { year, week, paid } = event.body as UpdatePaidRequestBody;
 
   if (!year || year < 2020 || year > new Date().getFullYear()) {
-    throw new Error("Invalid year");
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ code: 0, message: "Invalid year" }),
+      headers: {
+        "Content-Type": "application/json"
+      }
+    };
   }
 
   if (!week || week < 1 || week > 53) {
-    throw new Error("Invalid week");
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ code: 0, message: "Invalid week" }),
+      headers: {
+        "Content-Type": "application/json"
+      }
+    };
   }
 
   if (paid === undefined) {
-    throw new Error("Invalid paid status");
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ code: 0, message: "Invalid paid status" }),
+      headers: {
+        "Content-Type": "application/json"
+      }
+    };
   }
 
   const dynamoClient = new DynamoDBClient({});
   const docClient = DynamoDBDocumentClient.from(dynamoClient);
 
-  const params = {
-    TableName: "OnCallSchedule",
-    Key: {
-      Year: year,
-      Week: week
-    },
-    UpdateExpression: "set Paid = :paid",
-    ExpressionAttributeValues: {
-      ":paid": paid
-    }
-  };
-  await docClient.send(new UpdateCommand(params));
+  try {
+    const params = {
+      TableName: "OnCallSchedule",
+      Key: {
+        Year: year,
+        Week: week
+      },
+      UpdateExpression: "set Paid = :paid",
+      ExpressionAttributeValues: {
+        ":paid": paid
+      }
+    };
+    await docClient.send(new UpdateCommand(params));
 
-  return {
-    statusCode: 200,
-    body: JSON.stringify({ message: "Paid status updated" }),
-    headers: {
-      "Content-Type": "application/json"
-    }
-  };
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ message: "Paid status updated" }),
+      headers: {
+        "Content-Type": "application/json"
+      }
+    };
+  } catch (error) {
+    return {
+      statusCode: 404,
+      body: JSON.stringify({ code: 0, message: error.message || "Error updating paid status" }),
+      headers: {
+        "Content-Type": "application/json"
+      }
+    };
+  }
 };
 
 export const main = middyfy(onCallUpdatePaidHandler);

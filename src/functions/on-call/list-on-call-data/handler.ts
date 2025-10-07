@@ -15,7 +15,10 @@ export const onCallListDataHandler: ValidatedEventAPIGatewayProxyEvent<any> = as
   if (!queryStringParameters || !queryStringParameters.year) {
     return {
       statusCode: 400,
-      body: "Missing parameters"
+      body: JSON.stringify({ code: 0, message: "Missing parameters" }),
+      headers: {
+        "Content-Type": "application/json"
+      }
     }
   }
 
@@ -23,7 +26,10 @@ export const onCallListDataHandler: ValidatedEventAPIGatewayProxyEvent<any> = as
   if (!year || year < 2020 || year > new Date().getFullYear()) {
     return {
       statusCode: 400,
-      body: "Invalid year"
+      body: JSON.stringify({ code: 0, message: "Year parameter is invalid" }),
+      headers: {
+        "Content-Type": "application/json"
+      }
     }
   }
 
@@ -47,7 +53,10 @@ export const onCallListDataHandler: ValidatedEventAPIGatewayProxyEvent<any> = as
   if (!data.length) {
     return {
       statusCode: 204,
-      body: "No content"
+      body: JSON.stringify({ message: "No content" }),
+      headers: {
+        "Content-Type": "application/json"
+      }
     }
   }
 

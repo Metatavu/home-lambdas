@@ -2,7 +2,6 @@ import { middyfy } from "src/libs/lambda";
 import { vacationRequestService } from "src/database/services";
 import { v4 as uuidv4 } from "uuid";
 import type { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
-import type vacationRequestSchema from "src/schema/vacationRequest";
 //import { notifyAdminsVacationSubmittedAll } from "src/notifications/vacation-notifications";
 import { VacationRequest } from "src/generated/homeLambdasModels/model/vacationRequest";
 
@@ -15,8 +14,7 @@ import { VacationRequest } from "src/generated/homeLambdasModels/model/vacationR
  * Type mismatches between VacationRequestModel and VacationRequest:
  * - 'createdAt', 'updatedAt', 'startDate', 'endDate' are 'string' here, but VacationRequest expects 'Date'.
  */
-export const createVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
-  typeof vacationRequestSchema
+export const createVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<VacationRequest
 > = async (event) => {
   const { body } = event;
   if (!body) {
@@ -78,7 +76,7 @@ export const createVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
     // NOTE: Forced type assertion to VacationRequest for OpenAPI compatibility, even if some fields don't match exactly.
     return {
       statusCode: 201,
-      body: JSON.stringify(createdVacationRequest as unknown as VacationRequest)
+      body: JSON.stringify(createdVacationRequest)
     };
   } catch (error) {
     return {

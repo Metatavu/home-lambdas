@@ -17,8 +17,6 @@ const articleService = new ArticlesApiService(docClient);
  * @param event - API Gateway event.
  * @returns Response object with status code
  * - ArticleModel uses 'string' for date fields ('createdAt', 'lastUpdatedAt', 'lastReadAt'), but Article expects 'Date'.
- * - ArticleModel requires 'id', but Article has 'id' as optional.
- * - ArticleModel does not have a 'content' field, but Article requires 'content'.
  * - ArticleModel may have required fields that are optional in Article (e.g. 'description', 'coverImage', 'tags', 'readBy').
  * - Property names and structures may differ for some fields.
  */
@@ -95,7 +93,7 @@ const updateArticleHandler: APIGatewayProxyHandler = async (event: APIGatewayPro
     await articleService.updateArticle(updatedArticle);
     return {
       statusCode: 200,
-      body: JSON.stringify(updatedArticle as unknown as Article)
+      body: JSON.stringify(updatedArticle as Article)
     };
   } catch (error) {
     return {

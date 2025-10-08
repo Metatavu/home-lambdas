@@ -2,7 +2,7 @@ import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import SoftwareService from "src/database/services/software-service";
 import { middyfy } from "src/libs/lambda";
-import { getAuthDataFromToken, isAdminUser} from "src/libs/auth-utils"
+import { getAuthDataFromToken, isAdminUser } from "src/libs/auth-utils";
 import { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
 import { SoftwareRegistry } from "src/generated/homeLambdasModels/model/softwareRegistry";
 
@@ -16,39 +16,50 @@ const softwareService = new SoftwareService(docClient);
  * @param event - API Gateway event containing the request body and path parameters
  * @returns Response object with status code and body
  */
-export const updateSoftwareHandler: ValidatedEventAPIGatewayProxyEvent<SoftwareRegistry> = async (event) => {
-  console.log('Received event:', JSON.stringify(event));
+export const updateSoftwareHandler: ValidatedEventAPIGatewayProxyEvent<SoftwareRegistry> = async (
+  event
+) => {
+  console.log("Received event:", JSON.stringify(event));
 
   try {
+    if (!isAdminUser(event)) {
+      return {
+        statusCode: 403,
+        body: JSON.stringify({
+          code: 403,
+          message: "Access denied. Admin privileges required."
+        })
+      };
+    }
     const { id } = event.pathParameters || {};
-    console.log('Path parameter (id):', id);
+    console.log("Path parameter (id):", id);
 
     if (!id) {
       return {
         statusCode: 400,
-        body: JSON.stringify({ error: 'Missing path parameter: id' }),
+        body: JSON.stringify({ error: "Missing path parameter: id" })
       };
     }
 
     if (!event.body) {
       return {
         statusCode: 400,
-        body: JSON.stringify({ error: 'Request body is required.' }),
+        body: JSON.stringify({ error: "Request body is required." })
       };
     }
 
     let data: SoftwareRegistry;
-    if (typeof event.body === 'string') {
+    if (typeof event.body === "string") {
       data = JSON.parse(event.body);
     } else {
       data = event.body as SoftwareRegistry;
     }
 
-    const authData  = getAuthDataFromToken(event);
+    const authData = getAuthDataFromToken(event);
     if (!authData || !authData.sub) {
       return {
         statusCode: 403,
-        body: JSON.stringify({ error: 'User is not authenticated.' }),
+        body: JSON.stringify({ error: "User is not authenticated." })
       };
     }
 
@@ -58,7 +69,7 @@ export const updateSoftwareHandler: ValidatedEventAPIGatewayProxyEvent<SoftwareR
     if (!existingSoftware) {
       return {
         statusCode: 404,
-        body: JSON.stringify({ error: 'Software not found' }),
+        body: JSON.stringify({ error: "Software not found" })
       };
     }
 
@@ -77,26 +88,23 @@ export const updateSoftwareHandler: ValidatedEventAPIGatewayProxyEvent<SoftwareR
     };
 
     // NOTE: Type assertion used to bypass type mismatch between SoftwareRegistry and SoftwareModel.
-    // review is optional in SoftwareRegistry but required in SoftwareModel.
-    // status types also differ
-    const updatedSoftware = await softwareService.updateSoftware(id, updatedSoftwareData as any);
-
+    const updatedSoftware = await softwareService.updateSoftware(id, updatedSoftwareData);
 
     if (!updatedSoftware) {
       return {
         statusCode: 404,
-        body: JSON.stringify({ error: 'Software not found or no attributes updated' }),
+        body: JSON.stringify({ error: "Software not found or no attributes updated" })
       };
     }
 
     return {
       statusCode: 200,
-      body: JSON.stringify(updatedSoftware),
+      body: JSON.stringify(updatedSoftware)
     };
   } catch (error) {
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: 'Failed to update software.', details: error.message }),
+      body: JSON.stringify({ error: "Failed to update software.", details: error.message })
     };
   }
 };

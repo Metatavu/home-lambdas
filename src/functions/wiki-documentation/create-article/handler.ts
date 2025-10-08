@@ -16,11 +16,10 @@ const articleService = new ArticlesApiService(docClient);
  *
  * @param event - API Gateway event containing the request body.
  * @returns Response object with status code
- * 
+ *
  * Type mismatches between ArticleModel and Article:
-  * @remarks
+ * @remarks
  * - ArticleModel uses 'string' for date fields ('createdAt', 'lastUpdatedAt', 'lastReadAt'), but Article expects 'Date'.
- * - ArticleModel does not have a 'content' field, but Article requires 'content'.
  * - ArticleModel may have required fields that are optional in Article (e.g. 'description', 'coverImage', 'tags', 'readBy').
  * - Property names and structures may differ for some fields.
  */
@@ -28,31 +27,22 @@ export const createArticleHandler: APIGatewayProxyHandler = async (event: APIGat
   if (!event.body) {
     return {
       statusCode: 400,
-      body: JSON.stringify({ 
-          code: 400,
-          message: 'Request body is required.'
-        }
-      ),
+      body: JSON.stringify({
+        code: 400,
+        message: "Request body is required."
+      })
     };
   }
 
-  const {
-    path,
-    title,
-    content,
-    createdBy,
-    description,
-    coverImage,
-    tags,
-    draft
-  } = (typeof event.body === "string" ? JSON.parse(event.body) : event.body);
+  const { path, title, content, createdBy, description, coverImage, tags, draft } =
+    typeof event.body === "string" ? JSON.parse(event.body) : event.body;
 
   if (!path || !title || !content || !createdBy) {
     return {
       statusCode: 400,
-      body: JSON.stringify({ 
+      body: JSON.stringify({
         code: 400,
-        message: "Some required data is missing." 
+        message: "Some required data is missing."
       })
     };
   }
@@ -66,7 +56,7 @@ export const createArticleHandler: APIGatewayProxyHandler = async (event: APIGat
           code: 500,
           message: `Article with the path ${path} already exists.`
         })
-      }
+      };
     }
 
     const createdAt = new Date().toISOString();
@@ -84,21 +74,21 @@ export const createArticleHandler: APIGatewayProxyHandler = async (event: APIGat
       lastReadAt: createdAt,
       readBy: [createdBy],
       tags: tags || [],
-      draft: draft,
+      draft: draft
     };
-    
+
     // NOTE: Just casting ArticleModel to Article for OpenAPI compatibility, even though some fields don't match perfectly.
     const articleCreated = await articleService.createArticle(newArticle);
     return {
       statusCode: 200,
-      body: JSON.stringify(articleCreated as unknown as Article),
+      body: JSON.stringify(articleCreated as Article)
     };
-  } catch (error) {
+  } catch {
     return {
       statusCode: 500,
-      body: JSON.stringify({ 
+      body: JSON.stringify({
         code: 500,
-        error: "Failed to create new article.", 
+        error: "Failed to create new article."
       })
     };
   }

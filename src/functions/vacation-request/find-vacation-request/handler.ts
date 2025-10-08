@@ -40,7 +40,7 @@ const findVacationRequestHandler: APIGatewayProxyHandler = async (event: APIGate
 
     // NOTE: Type mismatches in fields like 'message', 'type', 'createdAt', 'updatedAt' (string vs Date).
     // For now, just cast to VacationRequest as per spec.
-    const vacationRequest = vacationRequestById as unknown as VacationRequest;
+    const vacationRequest = vacationRequestById;
 
     return {
       statusCode: 200,

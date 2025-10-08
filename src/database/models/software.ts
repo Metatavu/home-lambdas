@@ -16,7 +16,7 @@ export interface SoftwareModel {
   id?: string;
   name: string;
   description: string;
-  review: string;
+  review?: string;
   url: string;
   image: string;
   status?: Status;

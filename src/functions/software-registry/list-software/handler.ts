@@ -24,7 +24,7 @@ export const listSoftwareHandler: APIGatewayProxyHandler = async () => {
     const softwareRegistryList: SoftwareRegistry[] = softwareList.map((software) => ({
       ...software,
       // Cast status to match SoftwareRegistry type
-      status: software.status as unknown as SoftwareRegistry["status"],
+      status: software.status,
       // Convert dates if needed
       createdAt: software.createdAt ? new Date(software.createdAt) : undefined,
       lastUpdatedAt: software.lastUpdatedAt ? new Date(software.lastUpdatedAt) : undefined

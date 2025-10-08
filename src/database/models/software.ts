@@ -9,7 +9,7 @@ export type Status = SoftwareStatus;
  * Interface for a software.
  */
 export interface SoftwareModel {
-  id?: string;
+  id: string;
   name: string;
   description: string;
   review?: string;

@@ -12,8 +12,6 @@ const softwareService = new SoftwareService(docClient);
 /**
  * Handler for listing all software entries from DynamoDB.
  *
- * NOTE: Returned response matches the SoftwareRegistry OpenAPI spec model.
- * If there are differences in the status field type, it is cast to match the spec.
  * createdAt and lastUpdatedAt are converted to Date objects to match the spec.
  *
  * @returns Response object with status code and body.
@@ -23,9 +21,7 @@ export const listSoftwareHandler: APIGatewayProxyHandler = async () => {
     const softwareList = await softwareService.listSoftware();
     const softwareRegistryList: SoftwareRegistry[] = softwareList.map((software) => ({
       ...software,
-      // Cast status to match SoftwareRegistry type
       status: software.status,
-      // Convert dates if needed
       createdAt: software.createdAt ? new Date(software.createdAt) : undefined,
       lastUpdatedAt: software.lastUpdatedAt ? new Date(software.lastUpdatedAt) : undefined
     }));

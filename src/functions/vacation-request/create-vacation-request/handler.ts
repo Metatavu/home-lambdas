@@ -10,11 +10,12 @@ import { VacationRequest } from "src/generated/homeLambdasModels/model/vacationR
  *
  * @param event - API Gateway event containing the request body.
  * @returns Response object with status code
- * 
+ *
  * Type mismatches between VacationRequestModel and VacationRequest:
  * - 'createdAt', 'updatedAt', 'startDate', 'endDate' are 'string' here, but VacationRequest expects 'Date'.
  */
-export const createVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<VacationRequest
+export const createVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
+  VacationRequest
 > = async (event) => {
   const { body } = event;
   if (!body) {
@@ -23,7 +24,19 @@ export const createVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<Va
       body: JSON.stringify({ error: "Request body is required." })
     };
   }
-  const { userId, draft, startDate, endDate, days, type, status, message, createdBy, createdAt, updatedAt} = body;
+  const {
+    userId,
+    draft,
+    startDate,
+    endDate,
+    days,
+    type,
+    status,
+    message,
+    createdBy,
+    createdAt,
+    updatedAt
+  } = body;
 
   if (
     !userId ||
@@ -63,7 +76,7 @@ export const createVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<Va
       createdAt: createdAt,
       updatedAt: updatedAt
     });
-    
+
     // TODO: Uncomment this once Node.js is upgraded (currently breaks due to resend dependency)
     // await notifyAdminsVacationSubmittedAll({
     //   user: userDetails.firstName,
@@ -72,8 +85,6 @@ export const createVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<Va
     //   type
     // });
 
-
-    // NOTE: Forced type assertion to VacationRequest for OpenAPI compatibility, even if some fields don't match exactly.
     return {
       statusCode: 201,
       body: JSON.stringify(createdVacationRequest)

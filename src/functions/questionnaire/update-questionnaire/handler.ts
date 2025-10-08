@@ -10,7 +10,7 @@ import { Questionnaire } from "src/generated/homeLambdasModels/model/questionnai
  *
  * @param event event
  */
-const updateQuestionnaireHandler: ValidatedEventAPIGatewayProxyEvent<typeof questionnaireSchema> = async event => {
+const updateQuestionnaireHandler: ValidatedEventAPIGatewayProxyEvent<Questionnaire> = async event => {
   const { pathParameters, body } = event;
   const id = pathParameters?.id;
   const {
@@ -48,10 +48,7 @@ const updateQuestionnaireHandler: ValidatedEventAPIGatewayProxyEvent<typeof ques
   };
 
   try {
-    // NOTE: Type mismatch in passedUsers field (number[] vs string[]). For now, just cast via unknown as per spec.
-    const updatedQuestionnaire = await questionnaireService.updateQuestionnaire(
-      questionnaireUpdates as unknown as QuestionnaireModel
-    ) as unknown as Questionnaire;
+    const updatedQuestionnaire = await questionnaireService.updateQuestionnaire(questionnaireUpdates)
 
     return {
       statusCode: 200,

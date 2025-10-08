@@ -87,7 +87,6 @@ export const updateSoftwareHandler: ValidatedEventAPIGatewayProxyEvent<SoftwareR
       createdBy: existingSoftware.createdBy
     };
 
-    // NOTE: Type assertion used to bypass type mismatch between SoftwareRegistry and SoftwareModel.
     const updatedSoftware = await softwareService.updateSoftware(id, updatedSoftwareData);
 
     if (!updatedSoftware) {

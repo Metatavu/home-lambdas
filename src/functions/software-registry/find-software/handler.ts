@@ -36,10 +36,7 @@ export const findSoftwareHandler: APIGatewayProxyHandler = async (event: APIGate
     if (software) {
       const fixedSoftware: SoftwareRegistry = {
         ...software,
-        // NOTE: TS types for status for status differ between SoftwareModel and SoftwareRegistry.
-        // This cast ensures compatibility with the OpenAPI spec model without modifying generated types.
         status: software.status,
-        // NOTE: createdAt and lastUpdatedAt are converted to Date objects to match the OpenAPI spec model.
         createdAt: software.createdAt ? new Date(software.createdAt) : undefined,
         lastUpdatedAt: software.lastUpdatedAt ? new Date(software.lastUpdatedAt) : undefined
       };

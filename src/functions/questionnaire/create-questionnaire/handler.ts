@@ -5,7 +5,7 @@ import type { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
 import questionnaireSchema from "src/schema/questionnaire";
 import { Questionnaire } from "src/generated/homeLambdasModels/model/questionnaire";
 
-export const createQuestionnaireHandler: ValidatedEventAPIGatewayProxyEvent<typeof questionnaireSchema> = async (event) => {
+export const createQuestionnaireHandler: ValidatedEventAPIGatewayProxyEvent<Questionnaire> = async (event) => {
   if (!event.body) {
     return {
       statusCode: 400,
@@ -57,7 +57,7 @@ export const createQuestionnaireHandler: ValidatedEventAPIGatewayProxyEvent<type
       passScore
     });
 
-    questionnaireResponse = createdQuestionnaire as unknown as Questionnaire;
+    questionnaireResponse = createdQuestionnaire;
 
     return {
       statusCode: 201,

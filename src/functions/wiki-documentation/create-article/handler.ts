@@ -17,11 +17,6 @@ const articleService = new ArticlesApiService(docClient);
  * @param event - API Gateway event containing the request body.
  * @returns Response object with status code
  *
- * Type mismatches between ArticleModel and Article:
- * @remarks
- * - ArticleModel uses 'string' for date fields ('createdAt', 'lastUpdatedAt', 'lastReadAt'), but Article expects 'Date'.
- * - ArticleModel may have required fields that are optional in Article (e.g. 'description', 'coverImage', 'tags', 'readBy').
- * - Property names and structures may differ for some fields.
  */
 export const createArticleHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
   if (!event.body) {
@@ -76,8 +71,7 @@ export const createArticleHandler: APIGatewayProxyHandler = async (event: APIGat
       tags: tags || [],
       draft: draft
     };
-
-    // NOTE: Just casting ArticleModel to Article for OpenAPI compatibility, even though some fields don't match perfectly.
+    
     const articleCreated = await articleService.createArticle(newArticle);
     return {
       statusCode: 200,

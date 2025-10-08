@@ -33,9 +33,11 @@ export interface Configuration {
     testUser: {
         email: string
     }
-    email: {                             
-        mailgunUser: string;
-        mailgunPassword: string;
+    email: {
+        mailgunPort: number;                          
+        mailgunSmtpHost: string;
+        mailgunSmtpUser: string;
+        mailgunSmtpPassword: string;
         adminEmails: string[];
     }
     slack: {

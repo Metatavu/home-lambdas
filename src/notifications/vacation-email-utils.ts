@@ -5,11 +5,11 @@ const adminEmails = Config.get().email.adminEmails;
 
 // Create a reusable transporter using Mailgun SMTP
 const transporter = nodemailer.createTransport({
-  host: "smtp.mailgun.org",
-  port: 587,
+  host: Config.get().email.mailgunSmtpHost,
+  port: Config.get().email.mailgunPort,
   auth: {
-    user: Config.get().email.mailgunUser,
-    pass: Config.get().email.mailgunPassword,
+    user: Config.get().email.mailgunSmtpUser,
+    pass: Config.get().email.mailgunSmtpPassword,
   },
 });
 

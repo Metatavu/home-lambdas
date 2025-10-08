@@ -3,8 +3,9 @@ import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import SoftwareService from "src/database/services/software-service";
 import { middyfy } from "src/libs/lambda";
 import { getAuthDataFromToken, isAdminUser } from "src/libs/auth-utils";
-import { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
-import { SoftwareRegistry } from "src/generated/homeLambdasModels/model/softwareRegistry";
+import type { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
+import type { SoftwareRegistry } from "src/generated/homeLambdasModels/model/softwareRegistry";
+import type { SoftwareModel } from "src/database/models/software";
 
 const dynamoClient = new DynamoDBClient({});
 const docClient = DynamoDBDocumentClient.from(dynamoClient);
@@ -31,49 +32,36 @@ export const updateSoftwareHandler: ValidatedEventAPIGatewayProxyEvent<SoftwareR
         })
       };
     }
-    const { id } = event.pathParameters || {};
-    console.log("Path parameter (id):", id);
 
+    const { id } = event.pathParameters || {};
     if (!id) {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ error: "Missing path parameter: id" })
-      };
+      return { statusCode: 400, body: JSON.stringify({ error: "Missing path parameter: id" }) };
     }
 
     if (!event.body) {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ error: "Request body is required." })
-      };
+      return { statusCode: 400, body: JSON.stringify({ error: "Request body is required." }) };
     }
 
-    let data: SoftwareRegistry;
-    if (typeof event.body === "string") {
-      data = JSON.parse(event.body);
-    } else {
-      data = event.body as SoftwareRegistry;
-    }
+    const data: SoftwareRegistry =
+      typeof event.body === "string" ? JSON.parse(event.body) : event.body;
 
     const authData = getAuthDataFromToken(event);
-    if (!authData || !authData.sub) {
-      return {
-        statusCode: 403,
-        body: JSON.stringify({ error: "User is not authenticated." })
-      };
+    if (!authData?.sub) {
+      return { statusCode: 403, body: JSON.stringify({ error: "User is not authenticated." }) };
     }
 
     const loggedUserId = authData.sub;
 
     const existingSoftware = await softwareService.findSoftware(id);
     if (!existingSoftware) {
-      return {
-        statusCode: 404,
-        body: JSON.stringify({ error: "Software not found" })
-      };
+      return { statusCode: 404, body: JSON.stringify({ error: "Software not found" }) };
     }
 
-    const updatedSoftwareData: SoftwareRegistry = {
+    /**
+     * Build the full update object directly as SoftwareModel
+     */
+    const updatedSoftware: SoftwareModel = {
+      id: existingSoftware.id,
       name: data.name,
       url: data.url,
       image: data.image,
@@ -83,24 +71,23 @@ export const updateSoftwareHandler: ValidatedEventAPIGatewayProxyEvent<SoftwareR
       status: data.status,
       tags: data.tags,
       users: data.users,
+      createdBy: existingSoftware.createdBy,
+      createdAt: existingSoftware.createdAt,
       lastUpdatedBy: loggedUserId,
-      createdBy: existingSoftware.createdBy
+      lastUpdatedAt: new Date().toISOString()
     };
 
-    const updatedSoftware = await softwareService.updateSoftware(id, updatedSoftwareData);
+    const result = await softwareService.updateSoftware(id, updatedSoftware);
 
-    if (!updatedSoftware) {
+    if (!result) {
       return {
         statusCode: 404,
         body: JSON.stringify({ error: "Software not found or no attributes updated" })
       };
     }
 
-    return {
-      statusCode: 200,
-      body: JSON.stringify(updatedSoftware)
-    };
-  } catch (error) {
+    return { statusCode: 200, body: JSON.stringify(result) };
+  } catch (error: any) {
     return {
       statusCode: 500,
       body: JSON.stringify({ error: "Failed to update software.", details: error.message })

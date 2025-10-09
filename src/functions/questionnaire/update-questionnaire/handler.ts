@@ -1,26 +1,28 @@
 import type { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway";
 import { middyfy } from "@libs/lambda";
-import { questionnaireService } from "src/database/services";
-import questionnaireSchema from "src/schema/questionnaire";
+// TODO: 'Unused import, is this is to be removed?
+// mport type QuestionnaireModel from "src/database/models/questionnaire";
+import type { FromSchema } from "json-schema-to-ts";
 import type QuestionnaireModel from "src/database/models/questionnaire";
-import { Questionnaire } from "src/generated/homeLambdasModels/model/questionnaire";
+import { questionnaireService } from "src/database/services";
+import type questionnaireSchema from "src/schema/questionnaire";
+
+/**
+ * Added alias for schema
+ */
+type QuestionnaireBody = FromSchema<typeof questionnaireSchema>;
 
 /**
  * Lambda function to update a questionnaire
- *
+ * QuestionnaireBody computed once, prevents possible infinite recurse
  * @param event event
  */
-const updateQuestionnaireHandler: ValidatedEventAPIGatewayProxyEvent<Questionnaire> = async event => {
+const updateQuestionnaireHandler: ValidatedEventAPIGatewayProxyEvent<QuestionnaireBody> = async (
+  event
+) => {
   const { pathParameters, body } = event;
   const id = pathParameters?.id;
-  const {
-    title,
-    description,
-    questions,
-    tags,
-    passedUsers,
-    passScore,
-  } = body;
+  const { title, description, questions, tags, passedUsers, passScore } = body;
 
   if (!id) {
     return {
@@ -37,18 +39,19 @@ const updateQuestionnaireHandler: ValidatedEventAPIGatewayProxyEvent<Questionnai
     };
   }
 
-  const questionnaireUpdates: Questionnaire = {
+  const questionnaireUpdates: QuestionnaireModel = {
     id: existingQuestionnaire.id,
     title,
     description,
     questions,
     tags,
     passedUsers,
-    passScore,
+    passScore
   };
 
   try {
-    const updatedQuestionnaire = await questionnaireService.updateQuestionnaire(questionnaireUpdates)
+    const updatedQuestionnaire =
+      await questionnaireService.updateQuestionnaire(questionnaireUpdates);
 
     return {
       statusCode: 200,

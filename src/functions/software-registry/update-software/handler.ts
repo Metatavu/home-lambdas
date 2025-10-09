@@ -1,11 +1,11 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
-import SoftwareService from "src/database/services/software-service";
-import { middyfy } from "src/libs/lambda";
-import { getAuthDataFromToken, isAdminUser } from "src/libs/auth-utils";
-import type { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
-import type { SoftwareRegistry } from "src/generated/homeLambdasModels/model/softwareRegistry";
 import type { SoftwareModel } from "src/database/models/software";
+import SoftwareService from "src/database/services/software-service";
+import type { SoftwareRegistry } from "src/generated/homeLambdasModels/model/softwareRegistry";
+import type { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
+import { getAuthDataFromToken, isAdminUser } from "src/libs/auth-utils";
+import { middyfy } from "src/libs/lambda";
 
 const dynamoClient = new DynamoDBClient({});
 const docClient = DynamoDBDocumentClient.from(dynamoClient);

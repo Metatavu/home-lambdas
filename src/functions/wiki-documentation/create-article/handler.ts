@@ -1,11 +1,11 @@
-import { APIGatewayProxyEvent, APIGatewayProxyHandler } from "aws-lambda";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
-import { ArticleModel } from "src/database/models/article";
+import type { APIGatewayProxyEvent, APIGatewayProxyHandler } from "aws-lambda";
+import type { ArticleModel } from "src/database/models/article";
+import ArticlesApiService from "src/database/services/articles-api-service";
+import type { Article } from "src/generated/homeLambdasModels/model/article";
 import { middyfy } from "src/libs/lambda";
 import { v4 as uuidv4 } from "uuid";
-import ArticlesApiService from "src/database/services/articles-api-service";
-import { Article } from "src/generated/homeLambdasModels/model/article";
 
 const dynamoClient = new DynamoDBClient({});
 const docClient = DynamoDBDocumentClient.from(dynamoClient);

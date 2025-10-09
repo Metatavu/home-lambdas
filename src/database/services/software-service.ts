@@ -1,17 +1,15 @@
-import type {
-  DeleteCommandInput,
-  GetCommandInput,
-  PutCommandInput,
-  ScanCommandInput,
-  UpdateCommandInput
-} from "@aws-sdk/lib-dynamodb";
 import {
   DeleteCommand,
+  type DeleteCommandInput,
   type DynamoDBDocumentClient,
   GetCommand,
+  type GetCommandInput,
   PutCommand,
+  type PutCommandInput,
   ScanCommand,
-  UpdateCommand
+  type ScanCommandInput,
+  UpdateCommand,
+  type UpdateCommandInput
 } from "@aws-sdk/lib-dynamodb";
 import { SoftwareStatus } from "src/generated/homeLambdasModels/model/softwareStatus";
 import { v4 as uuidv4 } from "uuid";

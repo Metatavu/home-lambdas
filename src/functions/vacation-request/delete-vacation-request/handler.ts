@@ -27,11 +27,10 @@ const deleteVacationRequestHandler: APIGatewayProxyHandler = async (event: APIGa
       return {
         statusCode: 404,
         body: JSON.stringify({
-          error: "Vacation request with id: ${id} not found.",
+          error: `Vacation request with id: ${id} not found.`,
         }),
       };
     }
-    ;
 
     await vacationRequestService.deleteVacationRequest(id);
 

@@ -1,7 +1,7 @@
 import { middyfy } from "src/libs/lambda";
 import { CreateKeycloakApiService } from "src/database/services/keycloak-api-service";
 import type { APIGatewayProxyHandlerV2 } from "aws-lambda";
-import { YearlyVacationDays } from "src/generated/homeLambdasModels/model/yearlyVacationDays";
+import type { YearlyVacationDays } from "src/generated/homeLambdasModels/model/yearlyVacationDays";
 
 const keycloakApiService = CreateKeycloakApiService();
 

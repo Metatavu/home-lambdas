@@ -4,7 +4,7 @@ import { vacationRequestService } from "src/database/services";
 import type vacationRequestSchema from "src/schema/vacationRequest";
 //import { notifyUserVacationStatusUpdatedAll } from "src/notifications/vacation-notifications";
 import { CreateKeycloakApiService } from "src/database/services/keycloak-api-service";
-import { VacationRequest } from "src/generated/homeLambdasModels/model/vacationRequest";
+import type { VacationRequest } from "src/generated/homeLambdasModels/model/vacationRequest";
 
 /**
  * Lambda function to update a vacation request

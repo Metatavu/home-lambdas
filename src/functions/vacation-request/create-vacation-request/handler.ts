@@ -3,7 +3,7 @@ import { vacationRequestService } from "src/database/services";
 import { v4 as uuidv4 } from "uuid";
 import type { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
 //import { notifyAdminsVacationSubmittedAll } from "src/notifications/vacation-notifications";
-import { VacationRequest } from "src/generated/homeLambdasModels/model/vacationRequest";
+import type { VacationRequest } from "src/generated/homeLambdasModels/model/vacationRequest";
 
 /**
  * Handler for creating a new vacation request entry in DynamoDB.

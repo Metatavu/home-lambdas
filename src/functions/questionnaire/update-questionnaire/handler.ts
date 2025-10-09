@@ -1,7 +1,5 @@
 import type { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway";
 import { middyfy } from "@libs/lambda";
-// TODO: 'Unused import, is this is to be removed?
-// mport type QuestionnaireModel from "src/database/models/questionnaire";
 import type { FromSchema } from "json-schema-to-ts";
 import type QuestionnaireModel from "src/database/models/questionnaire";
 import { questionnaireService } from "src/database/services";

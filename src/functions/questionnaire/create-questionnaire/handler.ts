@@ -1,11 +1,13 @@
-import { middyfy } from "src/libs/lambda";
 import { questionnaireService } from "src/database/services";
-import { v4 as uuidv4 } from "uuid";
+import type { Questionnaire } from "src/generated/homeLambdasModels/model/questionnaire";
 import type { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
+import { middyfy } from "src/libs/lambda";
 import questionnaireSchema from "src/schema/questionnaire";
-import { Questionnaire } from "src/generated/homeLambdasModels/model/questionnaire";
+import { v4 as uuidv4 } from "uuid";
 
-export const createQuestionnaireHandler: ValidatedEventAPIGatewayProxyEvent<Questionnaire> = async (event) => {
+export const createQuestionnaireHandler: ValidatedEventAPIGatewayProxyEvent<Questionnaire> = async (
+  event
+) => {
   if (!event.body) {
     return {
       statusCode: 400,
@@ -38,7 +40,7 @@ export const createQuestionnaireHandler: ValidatedEventAPIGatewayProxyEvent<Ques
   }
 
   const newQuestionnaireId: string = uuidv4();
-  let questionnaireResponse: Questionnaire | undefined = undefined;
+  let questionnaireResponse: Questionnaire | undefined;
 
   try {
     /**
@@ -67,7 +69,7 @@ export const createQuestionnaireHandler: ValidatedEventAPIGatewayProxyEvent<Ques
     return {
       statusCode: 500,
       body: `Failed to create questionnaire entry ${error}`
-    }
+    };
   }
 };
 

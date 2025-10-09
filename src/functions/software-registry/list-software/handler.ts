@@ -1,9 +1,9 @@
-import { APIGatewayProxyHandler } from "aws-lambda";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
+import type { APIGatewayProxyHandler } from "aws-lambda";
 import SoftwareService from "src/database/services/software-service";
+import type { SoftwareRegistry } from "src/generated/homeLambdasModels/model/softwareRegistry";
 import { middyfy } from "src/libs/lambda";
-import { SoftwareRegistry } from "src/generated/homeLambdasModels/model/softwareRegistry";
 
 const dynamoClient = new DynamoDBClient({});
 const docClient = DynamoDBDocumentClient.from(dynamoClient);

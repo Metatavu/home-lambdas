@@ -71,11 +71,17 @@ export const createArticleHandler: APIGatewayProxyHandler = async (event: APIGat
       tags: tags || [],
       draft: draft
     };
-    
+
     const articleCreated = await articleService.createArticle(newArticle);
+    const response: Article = {
+      ...articleCreated,
+      createdAt: new Date(articleCreated.createdAt),
+      lastUpdatedAt: new Date(articleCreated.lastUpdatedAt),
+      lastReadAt: new Date(articleCreated.lastReadAt)
+    };
     return {
       statusCode: 200,
-      body: JSON.stringify(articleCreated as Article)
+      body: JSON.stringify(response)
     };
   } catch {
     return {

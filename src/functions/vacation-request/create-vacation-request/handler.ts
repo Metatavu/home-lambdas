@@ -1,9 +1,9 @@
-import { middyfy } from "src/libs/lambda";
 import { vacationRequestService } from "src/database/services";
-import { v4 as uuidv4 } from "uuid";
-import type { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
 //import { notifyAdminsVacationSubmittedAll } from "src/notifications/vacation-notifications";
 import type { VacationRequest } from "src/generated/homeLambdasModels/model/vacationRequest";
+import type { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
+import { middyfy } from "src/libs/lambda";
+import { v4 as uuidv4 } from "uuid";
 
 /**
  * Handler for creating a new vacation request entry in DynamoDB.

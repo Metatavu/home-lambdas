@@ -1,6 +1,6 @@
-import { middyfy } from "src/libs/lambda";
 import type { APIGatewayProxyEvent, APIGatewayProxyHandler } from "aws-lambda";
 import { vacationRequestService } from "src/database/services";
+import { middyfy } from "src/libs/lambda";
 
 /**
  * Lambda for finding a vacation request entry from DynamoDB.
@@ -17,9 +17,9 @@ const findVacationRequestHandler: APIGatewayProxyHandler = async (event: APIGate
     return {
       statusCode: 400,
       body: JSON.stringify({
-        error: "Missing or invalid path parameter: id",
+        error: "Missing or invalid path parameter: id"
       })
-    }
+    };
   }
 
   try {
@@ -29,9 +29,9 @@ const findVacationRequestHandler: APIGatewayProxyHandler = async (event: APIGate
       return {
         statusCode: 404,
         body: JSON.stringify({
-          error: "Vacation Request not found",
+          error: "Vacation Request not found"
         })
-      }
+      };
     }
 
     const vacationRequest = vacationRequestById;
@@ -39,7 +39,7 @@ const findVacationRequestHandler: APIGatewayProxyHandler = async (event: APIGate
     return {
       statusCode: 200,
       body: JSON.stringify(vacationRequest)
-    }
+    };
   } catch (error) {
     return {
       statusCode: 500,
@@ -47,8 +47,8 @@ const findVacationRequestHandler: APIGatewayProxyHandler = async (event: APIGate
         error: "Failed to retrieve vacation request",
         details: error.message
       })
-    }
+    };
   }
-}
+};
 
 export const main = middyfy(findVacationRequestHandler);

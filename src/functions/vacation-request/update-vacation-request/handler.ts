@@ -1,11 +1,16 @@
 import type { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway";
 import { middyfy } from "@libs/lambda";
+import type { Static } from "@sinclair/typebox";
 import { vacationRequestService } from "src/database/services";
-import type vacationRequestSchema from "src/schema/vacationRequest";
 //import { notifyUserVacationStatusUpdatedAll } from "src/notifications/vacation-notifications";
-import { CreateKeycloakApiService } from "src/database/services/keycloak-api-service";
+//import { CreateKeycloakApiService } from "src/database/services/keycloak-api-service";
 import type { VacationRequest } from "src/generated/homeLambdasModels/model/vacationRequest";
+import type vacationRequestSchema from "src/schema/vacationRequest";
 
+/**
+ * Created Alias to prevent "Type instantiation is excessively deep and possibly infinite" warning on body
+ */
+type VacationRequestBody = Static<typeof vacationRequestSchema>;
 /**
  * Lambda function to update a vacation request
  *
@@ -17,10 +22,22 @@ import type { VacationRequest } from "src/generated/homeLambdasModels/model/vaca
 
 // NOTE: Type mismatches between VacationRequestModel and VacationRequest (e.g. missing 'message', type differences).
 const updateVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
-  typeof vacationRequestSchema
+  VacationRequestBody
 > = async (event) => {
   const { pathParameters, body } = event;
-  const { userId, draft, startDate, endDate, days, type, status, message, createdBy, createdAt, updatedAt } = body;
+  const {
+    userId,
+    draft,
+    startDate,
+    endDate,
+    days,
+    type,
+    status,
+    message,
+    createdBy,
+    createdAt,
+    updatedAt
+  } = body;
   const id = pathParameters?.id;
 
   if (!id) {
@@ -55,7 +72,7 @@ const updateVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
       body: `Vacation request ${id} not found`
     };
   }
-  const statusChanged = existingVacationRequest.status !== status;
+  //const statusChanged = existingVacationRequest.status !== status;
 
   const vacationRequestUpdates = {
     id: existingVacationRequest.id,

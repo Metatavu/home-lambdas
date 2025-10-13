@@ -3,6 +3,7 @@ import { DateTime } from "luxon";
 import Config from "src/app/config";
 import { SplunkSchedule } from "src/types/on-call";
 import { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
+import { OnCall } from "src/generated/homeLambdasModels/api";
 import { OnCallEntry } from "src/database/models/oncall";
 import { onCallScheduleService } from "src/database/services";
 
@@ -35,7 +36,7 @@ const getNextWeekFromSchedule = (schedule: SplunkSchedule, nextThursday: DateTim
  *
  * @param event event
  */
-export const onCallWeeklyCheckHandler : ValidatedEventAPIGatewayProxyEvent<any> = async () => {
+export const onCallWeeklyCheckHandler : ValidatedEventAPIGatewayProxyEvent<OnCall> = async () => {
   const { apiId, apiKey, schedulePolicyName, teamOnCallUrl } = Config.get().splunkApi
 
   const splunkTeamOnCallUrl = teamOnCallUrl

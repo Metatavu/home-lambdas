@@ -8,8 +8,9 @@
     "test:coveralls": "jest --coverage && coveralls < coverage/lcov.info",
     "lint": "eslint ./src --ext .ts",
     "sync-secrets": "vault kv get -format json -mount=$(cat .vault-mount) \"home-lambdas\"|jq -r '.data.data | to_entries[] | \"\\(.key)=\\(.value)\"' > .env",
-    "postinstall": "npm run build-severa-client",
-    "build-severa-client": "openapi-generator-cli generate -i severa-API-spec/swagger.yaml -o ./src/generated/severaClient -c generator-config.json -g typescript-node"
+    "postinstall": "npm run build-severa-client && npm run build-home-lambdas-models",
+    "build-severa-client": "openapi-generator-cli generate -i severa-API-spec/swagger.yaml -o ./src/generated/severaClient -c generator-config.json -g typescript-node",
+    "build-home-lambdas-models": "openapi-generator-cli generate -i home-lambdas-API-spec/swagger.yaml -o ./src/generated/homeLambdasModels -g typescript-node --global-property models,modelDocs=false"
   },
   "engines": {
     "node": ">=20.0.0"

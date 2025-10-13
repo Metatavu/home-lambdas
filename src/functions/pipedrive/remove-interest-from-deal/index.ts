@@ -1,7 +1,13 @@
+// NOTE: This lambda is deprecated and should not be in use
+
 import { handlerPath } from "@libs/handler-resolver";
 
-export default {
-  handler: `${handlerPath(__dirname)}/handler.main`,
+const isInactive = true;
+
+export default isInactive
+  ? {}
+  : {
+      handler: `${handlerPath(__dirname)}/handler.main`,
   events: [
     {
       httpApi: {

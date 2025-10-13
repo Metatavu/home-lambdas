@@ -1,10 +1,15 @@
 import { handlerPath } from "@libs/handler-resolver";
 
-export default {
-  handler: `${handlerPath(__dirname)}/handler.main`,
-  events: [
-    {
-      httpApi: {
+// NOTE: This lambda is marked as inactive in the OpenAPI spec (x-status: inactive).
+const isInactive = true;
+
+export default isInactive
+  ? {}
+  : {
+      handler: `${handlerPath(__dirname)}/handler.main`,
+      events: [
+        {
+          httpApi: {
         method: "get",
         path: "/google-drive/memos",
         authorizer: {

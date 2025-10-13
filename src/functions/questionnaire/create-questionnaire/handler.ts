@@ -1,9 +1,9 @@
-import { middyfy } from "src/libs/lambda";
 import { questionnaireService } from "src/database/services";
-import { v4 as uuidv4 } from "uuid";
-import type QuestionnaireModel from "src/database/models/questionnaire";
+import type { Questionnaire } from "src/generated/homeLambdasModels/model/questionnaire";
 import type { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
-import type questionnaireSchema from "src/schema/questionnaire";
+import { middyfy } from "src/libs/lambda";
+import questionnaireSchema from "src/schema/questionnaire";
+import { v4 as uuidv4 } from "uuid";
 
 /**
  * Handler for creating a new questionnaire entry in DynamoDB.
@@ -11,16 +11,31 @@ import type questionnaireSchema from "src/schema/questionnaire";
  * @param event - API Gateway event containing the request body.
  * @returns Response object with status code
  */
-export const createQuestionnaireHandler: ValidatedEventAPIGatewayProxyEvent<typeof questionnaireSchema> = async (event) => {
+export const createQuestionnaireHandler: ValidatedEventAPIGatewayProxyEvent<Questionnaire> = async (
+  event
+) => {
   if (!event.body) {
     return {
       statusCode: 400,
       body: JSON.stringify({ error: "Request body is required." })
     };
   }
-  
-  const { title, description, questions, tags, passedUsers, passScore } = event.body;
-  
+
+  let body: unknown = event.body;
+  if (typeof event.body === "string") {
+    body = JSON.parse(event.body);
+  }
+
+  const parsed = questionnaireSchema.safeParse(body);
+  if (!parsed.success) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ error: "Invalid questionnaire data", details: parsed.error })
+    };
+  }
+
+  const { title, description, questions, tags, passedUsers, passScore } = parsed.data;
+
   if (!title || !description || !questions || !passScore) {
     return {
       statusCode: 400,
@@ -29,17 +44,17 @@ export const createQuestionnaireHandler: ValidatedEventAPIGatewayProxyEvent<type
   }
 
   const newQuestionnaireId: string = uuidv4();
-  let questionnaireResponse: QuestionnaireModel | undefined = undefined;
+  let questionnaireResponse: Questionnaire | undefined;
 
   try {
     const createdQuestionnaire = await questionnaireService.createQuestionnaire({
       id: newQuestionnaireId,
-      title: title,
-      description: description,
-      questions: questions,
-      tags: tags,
-      passedUsers: passedUsers,
-      passScore: passScore
+      title,
+      description,
+      questions,
+      tags,
+      passedUsers,
+      passScore
     });
 
     questionnaireResponse = createdQuestionnaire;
@@ -52,7 +67,7 @@ export const createQuestionnaireHandler: ValidatedEventAPIGatewayProxyEvent<type
     return {
       statusCode: 500,
       body: `Failed to create questionnaire entry ${error}`
-    }
+    };
   }
 };
 

@@ -1,6 +1,7 @@
 import { middyfy } from "@libs/lambda";
 import type { APIGatewayProxyHandler } from "aws-lambda";
 import { CreateKeycloakApiService } from "src/database/services/keycloak-api-service";
+import { User } from "src/generated/homeLambdasModels/model/user";
 
 /**
  * Lambda for listing users
@@ -8,8 +9,15 @@ import { CreateKeycloakApiService } from "src/database/services/keycloak-api-ser
 const listUsersHandler: APIGatewayProxyHandler = async () => {
   try {
     const api = CreateKeycloakApiService();
+    const usersRaw = await api.getUsers();
 
-    const users = await api.getUsers();
+    const users: User [] = usersRaw.map((u: any) => ({
+      id: u.id,
+      firstName: u.firstName,
+      lastName: u.lastName,
+      email: u.email,
+      attributes: u.attributes,
+    }));
 
     return {
       statusCode: 200,

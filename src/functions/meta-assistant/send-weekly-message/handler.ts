@@ -9,6 +9,8 @@ import type { WeeklyCombinedData } from "src/types/meta-assistant/index";
  * Handler for sendWeeklyMessage
  *
  * @returns Promise of WeeklyHandlerResponse
+ * NOTE: Returned response does not match the OpenApi spec
+ * It uses a custom WeeklyHandlerResponse type.
  */
 export const sendWeeklyMessageHandler = async (): Promise<WeeklyHandlerResponse> => {
   try {

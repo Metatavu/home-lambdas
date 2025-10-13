@@ -1,8 +1,9 @@
 import { middyfy } from "@libs/lambda";
-import { APIGatewayProxyEvent, APIGatewayProxyHandler } from "aws-lambda";
-import { ArticleModel } from "src/database/models/article";
+import type { APIGatewayProxyEvent, APIGatewayProxyHandler } from "aws-lambda";
+import type { ArticleModel } from "src/database/models/article";
 import * as jwt from 'jsonwebtoken';
 import { articlesApiService } from "src/database/services";
+import type { Article } from "src/generated/homeLambdasModels/model/article";
 
 /**
  * Handler for updating an article entry in DynamoDB.
@@ -11,27 +12,19 @@ import { articlesApiService } from "src/database/services";
  * @returns Response object with status code
  */
 const updateArticleHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
-  const token = event.headers?.Authorization?.split(' ')[1];
+  const token = event.headers?.Authorization?.split(" ")[1];
   const decodedJWT = jwt.decode(token);
   const isAdmin = decodedJWT?.realm_access.roles?.includes("admin") || false;
 
   const { pathParameters, body } = event;
-  const {
-    path,
-    title,
-    content,
-    description,
-    coverImage,
-    tags,
-    lastUpdatedBy,
-    draft
-  } = (typeof body === "string" ? JSON.parse(body) : body);
+  const { path, title, content, description, coverImage, tags, lastUpdatedBy, draft } =
+    typeof body === "string" ? JSON.parse(body) : body;
   const id = pathParameters?.id;
 
   if (!id) {
     return {
       statusCode: 400,
-      body: JSON.stringify({ 
+      body: JSON.stringify({
         code: 400,
         messge: "Missing or invalid 'id' path parameter."
       })
@@ -42,7 +35,7 @@ const updateArticleHandler: APIGatewayProxyHandler = async (event: APIGatewayPro
   if (!existingArticle) {
     return {
       statusCode: 404,
-      body: JSON.stringify({ 
+      body: JSON.stringify({
         code: 404,
         message: `Article ${id} not found.`
       })
@@ -57,7 +50,7 @@ const updateArticleHandler: APIGatewayProxyHandler = async (event: APIGatewayPro
         code: 409,
         message: `Article with the path ${path} already exists.`
       })
-    }
+    };
   }
 
   const updatedArticle: ArticleModel = {
@@ -88,7 +81,7 @@ const updateArticleHandler: APIGatewayProxyHandler = async (event: APIGatewayPro
       statusCode: 500,
       body: JSON.stringify({
         code: 500,
-        message: `Error updating article with id ${id}: ${error.message}`,
+        message: `Error updating article with id ${id}: ${error.message}`
       })
     };
   }

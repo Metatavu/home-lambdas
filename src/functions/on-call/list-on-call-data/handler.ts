@@ -1,5 +1,6 @@
 import { middyfy } from "@libs/lambda";
 import { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
+import { OnCall } from "src/generated/homeLambdasModels/model/onCall";
 import { onCallScheduleService } from "src/database/services";
 
 /**
@@ -7,7 +8,7 @@ import { onCallScheduleService } from "src/database/services";
  *
  * @param event event
  */
-export const onCallListDataHandler: ValidatedEventAPIGatewayProxyEvent<any> = async (event: { queryStringParameters: { [key: string]: string } }) => {
+export const onCallListDataHandler: ValidatedEventAPIGatewayProxyEvent<OnCall> = async (event: { queryStringParameters: { [key: string]: string } }) => {
   const { queryStringParameters } = event;
 
   if (!queryStringParameters || !queryStringParameters.year) {

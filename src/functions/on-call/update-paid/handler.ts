@@ -1,6 +1,7 @@
 import { UpdatePaidRequestBody } from "../../../types/on-call"
 import { middyfy } from "@libs/lambda";
 import { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
+import { OnCallPaid} from "src/generated/homeLambdasModels/model/onCallPaid";
 import { onCallScheduleService } from "src/database/services";
 
 /**
@@ -8,7 +9,7 @@ import { onCallScheduleService } from "src/database/services";
  * 
  * @param event event
  */
-export const onCallUpdatePaidHandler: ValidatedEventAPIGatewayProxyEvent<any> = async (event) => {
+export const onCallUpdatePaidHandler: ValidatedEventAPIGatewayProxyEvent<OnCallPaid> = async (event) => {
   const { year, week, paid } = event.body as UpdatePaidRequestBody;
 
   if (!year || year < 2020 || year > new Date().getFullYear()) {

@@ -1,14 +1,8 @@
 import { middyfy } from "@libs/lambda";
 import { APIGatewayProxyEvent, APIGatewayProxyHandler } from "aws-lambda";
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import { ArticleModel } from "src/database/models/article";
-import ArticlesApiService from "src/database/services/articles-api-service";
 import * as jwt from 'jsonwebtoken';
-
-const dynamoClient = new DynamoDBClient({});
-const docClient = DynamoDBDocumentClient.from(dynamoClient);
-const articleService = new ArticlesApiService(docClient);
+import { articlesApiService } from "src/database/services";
 
 /**
  * Handler for updating an article entry in DynamoDB.
@@ -44,7 +38,7 @@ const updateArticleHandler: APIGatewayProxyHandler = async (event: APIGatewayPro
     };
   }
 
-  const existingArticle = await articleService.findArticleById(id);
+  const existingArticle = await articlesApiService.findArticleById(id);
   if (!existingArticle) {
     return {
       statusCode: 404,
@@ -55,7 +49,7 @@ const updateArticleHandler: APIGatewayProxyHandler = async (event: APIGatewayPro
     };
   }
 
-  const articleExistsWithPath = await articleService.findArticleByPath(path);
+  const articleExistsWithPath = await articlesApiService.findArticleByPath(path);
   if (articleExistsWithPath && articleExistsWithPath.id !== id) {
     return {
       statusCode: 409,
@@ -84,7 +78,7 @@ const updateArticleHandler: APIGatewayProxyHandler = async (event: APIGatewayPro
   };
 
   try {
-    await articleService.updateArticle(updatedArticle);
+    await articlesApiService.updateArticle(updatedArticle);
     return {
       statusCode: 200,
       body: JSON.stringify(updatedArticle)

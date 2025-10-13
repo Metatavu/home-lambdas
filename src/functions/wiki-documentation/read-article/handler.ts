@@ -1,12 +1,6 @@
 import { APIGatewayProxyEvent, APIGatewayProxyHandler } from "aws-lambda";
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import { middyfy } from "src/libs/lambda";
-import ArticlesApiService from "src/database/services/articles-api-service";
-
-const dynamoClient = new DynamoDBClient({});
-const docClient = DynamoDBDocumentClient.from(dynamoClient);
-const articleService = new ArticlesApiService(docClient);
+import { articlesApiService } from "src/database/services";
 
 /**
  * Handler for updating read list of article entry in DynamoDB.
@@ -39,7 +33,7 @@ export const readArticleHandler: APIGatewayProxyHandler = async (event: APIGatew
     }
 
   try {
-    const existedArticle = await articleService.findArticleById(id);
+    const existedArticle = await articlesApiService.findArticleById(id);
     if (!existedArticle) {
       return {
         statusCode: 404,
@@ -53,12 +47,12 @@ export const readArticleHandler: APIGatewayProxyHandler = async (event: APIGatew
     
     if (!currentReadBy.includes(user)) {
       const updatedUsers = Array.from(new Set([...currentReadBy, user]));
-      await articleService.updateArticleReadBy(id, updatedUsers);
+      await articlesApiService.updateArticleReadBy(id, updatedUsers);
     }
     return {
       statusCode: 200,
       body: "Successfully updated readBy for an article."
-    }
+    };
   } catch (error) {
     return {
       statusCode: 500,

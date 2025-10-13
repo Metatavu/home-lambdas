@@ -1,11 +1,10 @@
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient, PutCommand } from "@aws-sdk/lib-dynamodb";
 import fetch from "node-fetch";
 import { DateTime } from "luxon";
 import Config from "src/app/config";
 import { SplunkSchedule } from "src/types/on-call";
 import { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
 import { OnCallEntry } from "src/database/models/oncall";
+import { onCallScheduleService } from "src/database/services";
 
 /**
  * Resolve next week from schedule
@@ -55,8 +54,6 @@ export const onCallWeeklyCheckHandler : ValidatedEventAPIGatewayProxyEvent<any> 
     throw new Error("Next week not found");
   }
 
-  const dynamoClient = new DynamoDBClient({});
-  const docClient = DynamoDBDocumentClient.from(dynamoClient);
   const year = nextThursday.year;
   const week = nextWeek.week;
   const user = nextWeek.user;
@@ -68,12 +65,7 @@ export const onCallWeeklyCheckHandler : ValidatedEventAPIGatewayProxyEvent<any> 
     Paid: false
   };
 
-  // Update or create a new record in DynamoDB
-  const params = {
-    TableName: "OnCallSchedule",
-    Item: entry
-  };
-  await docClient.send(new PutCommand(params));
+  await onCallScheduleService.upsertOnCallSchedule(entry);
 
   return {
     statusCode: 200,

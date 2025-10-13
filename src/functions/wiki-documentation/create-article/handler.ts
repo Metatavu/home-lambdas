@@ -1,14 +1,8 @@
 import { APIGatewayProxyEvent, APIGatewayProxyHandler } from "aws-lambda";
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import { ArticleModel } from "src/database/models/article";
 import { middyfy } from "src/libs/lambda";
 import { v4 as uuidv4 } from "uuid";
-import ArticlesApiService from "src/database/services/articles-api-service";
-
-const dynamoClient = new DynamoDBClient({});
-const docClient = DynamoDBDocumentClient.from(dynamoClient);
-const articleService = new ArticlesApiService(docClient);
+import { articlesApiService } from "src/database/services";
 
 /**
  * Handler for creating a new article entry in DynamoDB.
@@ -50,7 +44,7 @@ export const createArticleHandler: APIGatewayProxyHandler = async (event: APIGat
   }
 
   try {
-    const articleExistsWithPath = await articleService.findArticleByPath(path);
+    const articleExistsWithPath = await articlesApiService.findArticleByPath(path);
     if (articleExistsWithPath) {
       return {
         statusCode: 409,
@@ -79,7 +73,7 @@ export const createArticleHandler: APIGatewayProxyHandler = async (event: APIGat
       draft: draft,
     };
 
-    const articleCreated = await articleService.createArticle(newArticle);
+    const articleCreated = await articlesApiService.createArticle(newArticle);
     return {
       statusCode: 200,
       body: JSON.stringify(articleCreated),

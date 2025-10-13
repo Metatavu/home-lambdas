@@ -1,13 +1,7 @@
 import { APIGatewayProxyEvent, APIGatewayProxyHandler } from "aws-lambda";
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
-import SoftwareService from "src/database/services/software-service";
 import { middyfy } from "src/libs/lambda";
 import { isAdminUser } from "src/libs/auth-utils";
-
-const dynamoClient = new DynamoDBClient({});
-const docClient = DynamoDBDocumentClient.from(dynamoClient);
-const softwareService = new SoftwareService(docClient);
+import {softwareService} from "src/database/services";
 
 /**
  * Handler for deleting a software entry in DynamoDB.

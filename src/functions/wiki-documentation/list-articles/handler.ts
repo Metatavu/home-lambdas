@@ -1,12 +1,6 @@
 import { APIGatewayProxyEvent, APIGatewayProxyHandler } from "aws-lambda";
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import { middyfy } from "src/libs/lambda";
-import ArticlesApiService from "src/database/services/articles-api-service";
-
-const dynamoClient = new DynamoDBClient({});
-const docClient = DynamoDBDocumentClient.from(dynamoClient);
-const articleService = new ArticlesApiService(docClient);
+import { articlesApiService } from "src/database/services";
 
 /**
  * Handler for listing article entries from DynamoDB.
@@ -17,7 +11,7 @@ const articleService = new ArticlesApiService(docClient);
 export const listArticlesHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
   try {
     const { queryStringParameters } = event;
-    const articleList = await articleService.listArticles(queryStringParameters?.draft, queryStringParameters?.pathPrefix);
+    const articleList = await articlesApiService.listArticles(queryStringParameters?.draft, queryStringParameters?.pathPrefix);
     const sortedArticles = articleList.sort((article1, article2) => 
       new Date(article2.lastUpdatedAt).getTime() - new Date(article1.lastUpdatedAt).getTime()
     )

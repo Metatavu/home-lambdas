@@ -1,8 +1,6 @@
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient, QueryCommand } from "@aws-sdk/lib-dynamodb";
 import { middyfy } from "@libs/lambda";
 import { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
-import { OnCallEntry } from "src/database/models/oncall";
+import { onCallScheduleService } from "src/database/services";
 
 /**
  * Lambda method for loading on-call data
@@ -33,23 +31,8 @@ export const onCallListDataHandler: ValidatedEventAPIGatewayProxyEvent<any> = as
     }
   }
 
-  const dynamoClient = new DynamoDBClient({});
-  const docClient = DynamoDBDocumentClient.from(dynamoClient);
-
-  // Get data for the specified year
-  const params = {
-    TableName: "OnCallSchedule",
-    KeyConditionExpression: "#yr = :year",
-    ExpressionAttributeNames: {
-      "#yr": "Year"
-    },
-    ExpressionAttributeValues: {
-      ":year": year
-    }
-  };
-  const dataResult = await docClient.send(new QueryCommand(params));
-  const data = (dataResult.Items as OnCallEntry[]) || [];
-
+  const data = await onCallScheduleService.listOnCallSchedulesByYear(year);
+  
   if (!data.length) {
     return {
       statusCode: 204,

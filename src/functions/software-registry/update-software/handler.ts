@@ -1,14 +1,8 @@
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
-import SoftwareService from "src/database/services/software-service";
 import { middyfy } from "src/libs/lambda";
 import { getAuthDataFromToken, isAdminUser} from "src/libs/auth-utils"
 import { SoftwareModel } from "src/database/models/software";
 import { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
-
-const dynamoClient = new DynamoDBClient({});
-const docClient = DynamoDBDocumentClient.from(dynamoClient);
-const softwareService = new SoftwareService(docClient);
+import {softwareService} from "src/database/services";
 
 /**
  * Handler to update a software item in the DynamoDB table.

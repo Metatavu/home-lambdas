@@ -1,8 +1,7 @@
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient, PutCommand } from "@aws-sdk/lib-dynamodb";
 import { middyfy } from "@libs/lambda";
 import type { OnCallImportEntry, OnCallImportError } from "src/database/models/oncall";
 import { isAdminUser } from "src/libs/auth-utils";
+import { onCallScheduleService } from "src/database/services";
 
 /**
  * Lambda method for importing on-call data from JSON
@@ -55,9 +54,6 @@ export const onCallImportFromJsonHandler = async (event) => {
     };
   }
 
-  const dynamoClient = new DynamoDBClient({});
-  const docClient = DynamoDBDocumentClient.from(dynamoClient);
-
   let imported = 0;
   const errors: OnCallImportError[] = [];
   for (const entry of data) {
@@ -71,17 +67,12 @@ export const onCallImportFromJsonHandler = async (event) => {
       continue;
     }
     try {
-      await docClient.send(
-        new PutCommand({
-          TableName: "OnCallSchedule",
-          Item: {
-            Year: year,
-            Week: entry.Week,
-            Username: entry.Person,
-            Paid: false,
-          },
-        }),
-      );
+      await onCallScheduleService.createOnCallFromJSON({
+        Year: year,
+        Week: entry.Week,
+        Username: entry.Person,
+        Paid: false,
+      });
       imported++;
     } catch (err) {
       errors.push({ entry, error: err });

@@ -1,8 +1,7 @@
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 import { UpdatePaidRequestBody } from "../../../types/on-call"
 import { middyfy } from "@libs/lambda";
 import { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
+import { onCallScheduleService } from "src/database/services";
 
 /**
  * Lambda method for updating paid data
@@ -42,22 +41,8 @@ export const onCallUpdatePaidHandler: ValidatedEventAPIGatewayProxyEvent<any> = 
     };
   }
 
-  const dynamoClient = new DynamoDBClient({});
-  const docClient = DynamoDBDocumentClient.from(dynamoClient);
-
   try {
-    const params = {
-      TableName: "OnCallSchedule",
-      Key: {
-        Year: year,
-        Week: week
-      },
-      UpdateExpression: "set Paid = :paid",
-      ExpressionAttributeValues: {
-        ":paid": paid
-      }
-    };
-    await docClient.send(new UpdateCommand(params));
+    await onCallScheduleService.updatePaidStatus(year, week, paid);
 
     return {
       statusCode: 200,

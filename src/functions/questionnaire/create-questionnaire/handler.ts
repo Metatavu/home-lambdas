@@ -11,9 +11,9 @@ import { v4 as uuidv4 } from "uuid";
  * @param event - API Gateway event containing the request body.
  * @returns Response object with status code
  */
-export const createQuestionnaireHandler: ValidatedEventAPIGatewayProxyEvent<Questionnaire> = async (
-  event
-) => {
+export const createQuestionnaireHandler: ValidatedEventAPIGatewayProxyEvent<
+  typeof questionnaireSchema
+> = async (event) => {
   if (!event.body) {
     return {
       statusCode: 400,

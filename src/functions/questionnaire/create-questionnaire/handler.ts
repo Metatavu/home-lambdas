@@ -5,6 +5,12 @@ import { middyfy } from "src/libs/lambda";
 import questionnaireSchema from "src/schema/questionnaire";
 import { v4 as uuidv4 } from "uuid";
 
+/**
+ * Handler for creating a new questionnaire entry in DynamoDB.
+ *
+ * @param event - API Gateway event containing the request body.
+ * @returns Response object with status code
+ */
 export const createQuestionnaireHandler: ValidatedEventAPIGatewayProxyEvent<Questionnaire> = async (
   event
 ) => {
@@ -15,13 +21,11 @@ export const createQuestionnaireHandler: ValidatedEventAPIGatewayProxyEvent<Ques
     };
   }
 
-  // Parse body if needed
   let body: unknown = event.body;
   if (typeof event.body === "string") {
     body = JSON.parse(event.body);
   }
 
-  // Validate with questionnaireSchema
   const parsed = questionnaireSchema.safeParse(body);
   if (!parsed.success) {
     return {

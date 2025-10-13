@@ -16,10 +16,8 @@ const softwareService = new SoftwareService(docClient);
  * @returns Response object with status code and body.
  */
 export const findSoftwareHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
-  console.log("Received event:", JSON.stringify(event));
 
   const { id } = event.pathParameters || {};
-  console.log("Path parameter (id):", id);
 
   if (!id) {
     console.log("Missing or invalid path parameter: id");
@@ -30,7 +28,6 @@ export const findSoftwareHandler: APIGatewayProxyHandler = async (event: APIGate
   }
 
   try {
-    console.log("Finding software with id:", id);
     const software = await softwareService.findSoftware(id);
 
     if (software) {

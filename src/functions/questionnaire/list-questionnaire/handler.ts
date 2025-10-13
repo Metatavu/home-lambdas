@@ -10,9 +10,8 @@ const listQuestionnaireHandler: APIGatewayProxyHandler = async () => {
   try {
     const allQuestionnaires = await questionnaireService.listQuestionnaires();
 
-    // Cast each item to Questionnaire to match the OpenAPI spec
     const questionnaireList: Questionnaire[] = allQuestionnaires.map(
-      (questionnaire) => questionnaire as unknown as Questionnaire
+      (questionnaire) => questionnaire as Questionnaire
     );
 
     return {

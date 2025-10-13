@@ -43,12 +43,6 @@ export const createQuestionnaireHandler: ValidatedEventAPIGatewayProxyEvent<Ques
   let questionnaireResponse: Questionnaire | undefined;
 
   try {
-    /**
-     * NOTE:
-     * There may be a type mismatch: OpenAPI model defines passedUsers as string[],
-     * but the service expects number[]. This may cause issues if user IDs are not numbers.
-     * Consider refactoring the service or updating the spec for consistency.
-     */
     const createdQuestionnaire = await questionnaireService.createQuestionnaire({
       id: newQuestionnaireId,
       title,

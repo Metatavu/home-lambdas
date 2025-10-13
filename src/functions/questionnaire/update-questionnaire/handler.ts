@@ -12,7 +12,6 @@ type QuestionnaireBody = FromSchema<typeof questionnaireSchema>;
 
 /**
  * Lambda function to update a questionnaire
- * QuestionnaireBody computed once, prevents possible infinite recurse
  * @param event event
  */
 const updateQuestionnaireHandler: ValidatedEventAPIGatewayProxyEvent<QuestionnaireBody> = async (

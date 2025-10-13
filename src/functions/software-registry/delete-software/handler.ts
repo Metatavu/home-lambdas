@@ -17,7 +17,6 @@ const softwareService = new SoftwareService(docClient);
 export const deleteSoftwareHandler: APIGatewayProxyHandler = async (
   event: APIGatewayProxyEvent
 ) => {
-  console.log("Received event:", JSON.stringify(event));
   if (!isAdminUser(event)) {
     return {
       statusCode: 403,
@@ -28,10 +27,8 @@ export const deleteSoftwareHandler: APIGatewayProxyHandler = async (
     };
   }
   const { id } = event.pathParameters || {};
-  console.log("Path parameter (id):", id);
 
   if (!id) {
-    console.log("Missing ID in path parameters.");
     return {
       statusCode: 400,
       body: JSON.stringify({ error: "Id is required." })
@@ -39,11 +36,9 @@ export const deleteSoftwareHandler: APIGatewayProxyHandler = async (
   }
 
   try {
-    console.log("Looking up existing software with id:", id);
     const existingSoftware = await softwareService.findSoftware(id);
 
     if (!existingSoftware) {
-      console.log("Software not found.");
       return {
         statusCode: 404,
         body: JSON.stringify({ error: "Software not found." })

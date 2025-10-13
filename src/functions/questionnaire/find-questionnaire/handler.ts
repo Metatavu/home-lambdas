@@ -22,9 +22,8 @@ const findQuestionnaireHandler: APIGatewayProxyHandler = async (event: APIGatewa
         })
       };
     }
-    // NOTE: Type mismatch in passedUsers field (number[] vs string[]).
-    // For now, we just cast the result to Questionnaire as per spec.
-    const quizById = (await questionnaireService.findQuestionnaire(id)) as unknown as Questionnaire;
+ 
+    const quizById = (await questionnaireService.findQuestionnaire(id)) as Questionnaire;
     if (!quizById) {
       return {
         statusCode: 404,

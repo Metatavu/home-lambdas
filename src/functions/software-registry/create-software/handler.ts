@@ -46,7 +46,6 @@ export const createSoftwareHandler: ValidatedEventAPIGatewayProxyEvent<SoftwareR
 
     const authData = getAuthDataFromToken(event);
     if (!authData || !authData.sub) {
-      console.log("User is not authenticated");
       return {
         statusCode: 403,
         body: JSON.stringify({ error: "User is not authenticated." })
@@ -54,7 +53,6 @@ export const createSoftwareHandler: ValidatedEventAPIGatewayProxyEvent<SoftwareR
     }
 
     const loggedUserId = authData.sub;
-    console.log("Logged User ID (sub claim):", loggedUserId);
 
     const newSoftware = {
       name: data.name,
@@ -68,11 +66,9 @@ export const createSoftwareHandler: ValidatedEventAPIGatewayProxyEvent<SoftwareR
       createdBy: loggedUserId,
       lastUpdatedBy: loggedUserId
     };
-    console.log("Creating new software with data:", newSoftware);
 
     // Create new software entry in the database
     const createdSoftware = await softwareService.createSoftware(newSoftware);
-    console.log("Software created successfully:", createdSoftware);
 
     return {
       statusCode: 201,

@@ -20,7 +20,6 @@ const softwareService = new SoftwareService(docClient);
 export const updateSoftwareHandler: ValidatedEventAPIGatewayProxyEvent<SoftwareRegistry> = async (
   event
 ) => {
-  console.log("Received event:", JSON.stringify(event));
 
   try {
     if (!isAdminUser(event)) {

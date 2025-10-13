@@ -1,18 +1,21 @@
-import Config from "src/app/config"; 
 import { VacationDetails } from "src/types";
-import nodemailer from "nodemailer";
+import * as nodemailer from "nodemailer";
+import Config from "src/app/config";
+import { VacationRequestStatus } from "src/generated/homeLambdasModels/model/vacationRequestStatus";
 const adminEmails = Config.get().email.adminEmails;
-
+const Host = Config.get().email.mailgunSmtpHost;
+const Port = Config.get().email.mailgunPort;
+const User = Config.get().email.mailgunSmtpUser;
+const Password = Config.get().email.mailgunSmtpPassword;
 // Create a reusable transporter using Mailgun SMTP
 const transporter = nodemailer.createTransport({
-  host: Config.get().email.mailgunSmtpHost,
-  port: Config.get().email.mailgunPort,
+  host: Host,
+  port: Port,
   auth: {
-    user: Config.get().email.mailgunSmtpUser,
-    pass: Config.get().email.mailgunSmtpPassword,
+    user: User,
+    pass: Password,
   },
 });
-
 /**
  * Format a date string from yyyy-mm-dd to dd-mm-yyyy
  *
@@ -33,7 +36,7 @@ function formatDate(date: string): string {
 async function sendEmail({ to, subject, html }: { to: string; subject: string; html: string }) {
   try {
     const info = await transporter.sendMail({
-      from: "Metatavu Home <onboarding@resend.dev>", //Replace this with mailgun credentials later!!!!!
+      from: "Metatavu Home <onboarding@mailgun.dev>", 
       to,
       subject,
       html,
@@ -69,7 +72,7 @@ async function notifyAdminsVacationByEmail(
     <p>Start Date: ${formatDate(vacationDetails.startDate)}</p>
     <p>End Date: ${formatDate(vacationDetails.endDate)}</p>
     <p>Type: ${vacationDetails.type || "Not provided"}</p>
-    <p>Update status: <a href="${vacationLink}">Update status here</a></p>
+    <p>Update status: <a href=${vacationLink}>Update status here</a></p>
   `;
 
   for (const to of adminEmails) {
@@ -118,7 +121,7 @@ export async function notifyUserVacationStatusUpdatedByEmail({
   updatedStatus
 }: {
   to: string;
-  updatedStatus: string;
+  updatedStatus: VacationRequestStatus;
 }) {
   const subject = "Your Vacation Request Status Was Updated";
   const html = `

@@ -10,7 +10,7 @@ const env = cleanEnv(process.env, {
   SEVERA_TEST_USER_EMAIL: str({ default: undefined }),
   MAILGUN_PORT: port(),
   MAILGUN_SMTP_HOST: str(),
-  MAILGUN_SMTP_USER: str(),
+  MAILGUN_SMTP_HOST_USER: str(),
   MAILGUN_SMTP_PASSWORD: str(),
   ADMIN_EMAILS: str({ default: undefined }), 
   METATAVU_BOT_TOKEN: str(),       
@@ -41,7 +41,7 @@ export default class Config {
     email: {
       mailgunPort: env.MAILGUN_PORT,
       mailgunSmtpHost: env.MAILGUN_SMTP_HOST,
-      mailgunSmtpUser: env.MAILGUN_SMTP_USER,
+      mailgunSmtpUser: env.MAILGUN_SMTP_HOST_USER,
       mailgunSmtpPassword: env.MAILGUN_SMTP_PASSWORD,
       adminEmails: env.ADMIN_EMAILS ? env.ADMIN_EMAILS.split(",") : [],
     },

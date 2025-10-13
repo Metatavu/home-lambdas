@@ -71,9 +71,13 @@ const updateVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
     const updatedVacationRequest =
       await vacationRequestService.updateVacationRequest(vacationRequestUpdates);
     if (statusChanged) {
+      const lastStatus =
+      Array.isArray(status) && status.length > 0
+        ? status[status.length - 1].status
+        : "UNKNOWN";
       await notifyUserVacationStatusUpdatedAll({
         email: userDetails.email,
-        updatedStatus: status,
+        updatedStatus: lastStatus,
       });
     }
     return {

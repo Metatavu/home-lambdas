@@ -130,7 +130,11 @@ const serverlessConfiguration: AWS = {
       HOME_BUCKET_REGION: region,
       ADMIN_SLACK_USERS: env.ADMIN_SLACK_USERS || undefined,
       RESEND_API_KEY: env.RESEND_API_KEY || undefined,
-      ADMIN_EMAILS: env.ADMIN_EMAILS || undefined
+      ADMIN_EMAILS: env.ADMIN_EMAILS || undefined,
+      MAILGUN_PORT: env.MAILGUN_PORT || undefined,
+      MAILGUN_SMTP_HOST: env.MAILGUN_SMTP_HOST || undefined,
+      MAILGUN_SMTP_HOST_USER: env.MAILGUN_SMTP_HOST_USER || undefined,
+      MAILGUN_SMTP_PASSWORD: env.MAILGUN_SMTP_PASSWORD || undefined,
     },
     iam: {
       role: {

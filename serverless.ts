@@ -15,6 +15,7 @@ import sendWeeklyMessage from "@functions/meta-assistant/send-weekly-message";
 import onCallUpdatePaidHandler from "@/functions/on-call/update-paid";
 import onCallListDataHandler from "src/functions/on-call/list-on-call-data";
 import onCallWeeklyCheckHandler from "@/functions/on-call/weekly-check";
+import onCallImportFromJsonHandler from "src/functions/on-call/create-on-call-data-from-json";
 import getSlackUserAvatar from "src/functions/slack-user-avatar";
 import createSoftwareHandler from "@/functions/software-registry/create-software";
 import findSoftwareHandler from "@/functions/software-registry/find-software";
@@ -74,7 +75,7 @@ const serverlessConfiguration: AWS = {
   ],
   provider: {
     name: "aws",
-    runtime: "nodejs18.x",
+    runtime: "nodejs20.x",
     region: region,
     deploymentBucket: {
       name: isLocal
@@ -181,6 +182,7 @@ const serverlessConfiguration: AWS = {
     removeInterestFromLeadHandler,
     onCallListDataHandler,
     onCallWeeklyCheckHandler,
+    onCallImportFromJsonHandler,
     sendDailyMessage,
     sendWeeklyMessage,
     onCallUpdatePaidHandler,
@@ -239,7 +241,7 @@ const serverlessConfiguration: AWS = {
       minify: false,
       sourcemap: true,
       exclude: ["aws-sdk"],
-      target: "node18",
+      target: "node20",
       define: { "require.resolve": undefined },
       platform: "node",
       concurrency: 10,

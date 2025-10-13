@@ -3,6 +3,9 @@ import * as jwt from 'jsonwebtoken';
 
 interface DecodedToken {
   sub: string;
+  realm_access?: {
+    roles: string[];
+  };
 }
 
 /**
@@ -38,13 +41,29 @@ export const getAuthDataFromToken = (event: { headers: APIGatewayProxyEvent['hea
       return null;
     }
 
-    console.log('Decoded JWT Token:', JSON.stringify(decodedToken, null, 2));
-
     return {
-      sub: decodedToken.sub
+      sub: decodedToken.sub,
+      realm_access: decodedToken.realm_access
     };
   } catch (error) {
     console.error('Error decoding JWT token:', error);
     return null;
   }
 };
+/**
+ * Helper function to check if the user has the "admin" role.
+ * 
+ * @param event - The API Gateway event containing the headers.
+ * @returns True if the user has the "admin" role, false otherwise.
+ */
+export const isAdminUser = (
+  event: { headers: APIGatewayProxyEvent['headers'] }
+): boolean => {
+  const decoded = getAuthDataFromToken(event);
+  if (!decoded) {
+    return false;
+  }
+  const roles = decoded.realm_access?.roles || [];
+  return roles.includes("admin");
+};
+

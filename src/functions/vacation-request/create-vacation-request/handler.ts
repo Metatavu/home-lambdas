@@ -22,7 +22,7 @@ export const createVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
       body: JSON.stringify({ error: "Request body is required." })
     };
   }
-  const { createdAt, createdBy, days, draft, endDate, startDate, status, type, updatedAt, userId } = body;
+  const { userId, draft, startDate, endDate, days, type, status, message, createdBy, createdAt, updatedAt} = body;
 
   if (
     !userId ||
@@ -31,6 +31,7 @@ export const createVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
     !days ||
     !type ||
     !status ||
+    !message ||
     !createdBy ||
     !createdAt ||
     !updatedAt
@@ -55,6 +56,7 @@ export const createVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
       days: days,
       type: type,
       status: status,
+      message: message,
       createdBy: createdBy,
       createdAt: createdAt,
       updatedAt: updatedAt

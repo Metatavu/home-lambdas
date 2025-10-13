@@ -1,10 +1,11 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
+import type { SoftwareModel } from "src/database/models/software";
 import SoftwareService from "src/database/services/software-service";
+import type { SoftwareRegistry } from "src/generated/homeLambdasModels/model/softwareRegistry";
+import type { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
+import { getAuthDataFromToken, isAdminUser } from "src/libs/auth-utils";
 import { middyfy } from "src/libs/lambda";
-import { getAuthDataFromToken, isAdminUser} from "src/libs/auth-utils"
-import { SoftwareModel } from "src/database/models/software";
-import { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
 
 const dynamoClient = new DynamoDBClient({});
 const docClient = DynamoDBDocumentClient.from(dynamoClient);
@@ -16,98 +17,79 @@ const softwareService = new SoftwareService(docClient);
  * @param event - API Gateway event containing the request body and path parameters
  * @returns Response object with status code and body
  */
-export const updateSoftwareHandler: ValidatedEventAPIGatewayProxyEvent<SoftwareModel> = async (event) => {
-  console.log('Received event:', JSON.stringify(event));
+export const updateSoftwareHandler: ValidatedEventAPIGatewayProxyEvent<SoftwareRegistry> = async (
+  event
+) => {
 
   try {
-    const { id } = event.pathParameters || {};
-    console.log('Path parameter (id):', id);
     if (!isAdminUser(event)) {
-    return {
-      statusCode: 403,
-      body: JSON.stringify({
-        code: 403,
-        message: "Access denied. Admin privileges required.",
-      }),
-    };
-  }
-    if (!id) {
       return {
-        statusCode: 400,
-        body: JSON.stringify({ error: 'Missing path parameter: id' }),
+        statusCode: 403,
+        body: JSON.stringify({
+          code: 403,
+          message: "Access denied. Admin privileges required."
+        })
       };
+    }
+
+    const { id } = event.pathParameters || {};
+    if (!id) {
+      return { statusCode: 400, body: JSON.stringify({ error: "Missing path parameter: id" }) };
     }
 
     if (!event.body) {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ error: 'Request body is required.' }),
-      };
+      return { statusCode: 400, body: JSON.stringify({ error: "Request body is required." }) };
     }
-    
-    let data: SoftwareModel;
-    if (typeof event.body === 'string') {
-      data = JSON.parse(event.body);
-    } else {
-      data = event.body as SoftwareModel;
-    }
-    console.log('Parsed request body:', data);
 
-    const authData  = getAuthDataFromToken(event);
-    if (!authData || !authData.sub) {
-      return {
-        statusCode: 403,
-        body: JSON.stringify({ error: 'User is not authenticated.' }),
-      };
+    const data: SoftwareRegistry =
+      typeof event.body === "string" ? JSON.parse(event.body) : event.body;
+
+    const authData = getAuthDataFromToken(event);
+    if (!authData?.sub) {
+      return { statusCode: 403, body: JSON.stringify({ error: "User is not authenticated." }) };
     }
 
     const loggedUserId = authData.sub;
 
-    console.log('Looking up existing software by id:', id);
     const existingSoftware = await softwareService.findSoftware(id);
     if (!existingSoftware) {
-      return {
-        statusCode: 404,
-        body: JSON.stringify({ error: 'Software not found' }),
-      };
+      return { statusCode: 404, body: JSON.stringify({ error: "Software not found" }) };
     }
-    console.log('Existing software found:', existingSoftware);
 
-    const updatedSoftwareData: SoftwareModel = {
+    /**
+     * Build the full update object directly as SoftwareModel
+     */
+    const updatedSoftware: SoftwareModel = {
+      id: existingSoftware.id,
       name: data.name,
       url: data.url,
       image: data.image,
       description: data.description,
-      review: data.review,
+      review: data.review ?? "",
       recommend: data.recommend,
       status: data.status,
       tags: data.tags,
       users: data.users,
+      createdBy: existingSoftware.createdBy,
+      createdAt: existingSoftware.createdAt,
       lastUpdatedBy: loggedUserId,
-      createdBy: existingSoftware.createdBy
+      lastUpdatedAt: new Date().toISOString()
     };
-    console.log('Updating software with data:', updatedSoftwareData);
 
-    const updatedSoftware = await softwareService.updateSoftware(id, updatedSoftwareData);
+    const result = await softwareService.updateSoftware(id, updatedSoftware);
 
-    if (!updatedSoftware) {
-      console.error("Failed to update software for id:", id);
+    if (!result) {
       return {
         statusCode: 404,
-        body: JSON.stringify({ error: 'Software not found or no attributes updated' }),
+        body: JSON.stringify({ error: "Software not found or no attributes updated" })
       };
     }
 
-    console.log('Software updated successfully:', updatedSoftware);
-    return {
-      statusCode: 200,
-      body: JSON.stringify(updatedSoftware),
-    };
-  } catch (error) {
-    console.error('DynamoDB update error:', error);
+    return { statusCode: 200, body: JSON.stringify(result) };
+  } catch (error: any) {
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: 'Failed to update software.', details: error.message }),
+      body: JSON.stringify({ error: "Failed to update software.", details: error.message })
     };
   }
 };

@@ -1,25 +1,25 @@
 import type { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway";
 import { middyfy } from "@libs/lambda";
-import { questionnaireService } from "src/database/services";
+import type { FromSchema } from "json-schema-to-ts";
 import type QuestionnaireModel from "src/database/models/questionnaire";
+import { questionnaireService } from "src/database/services";
 import type questionnaireSchema from "src/schema/questionnaire";
 
 /**
+ * Added alias for schema
+ */
+type QuestionnaireBody = FromSchema<typeof questionnaireSchema>;
+
+/**
  * Lambda function to update a questionnaire
- *
  * @param event event
  */
-const updateQuestionnaireHandler: ValidatedEventAPIGatewayProxyEvent<typeof questionnaireSchema> = async event => {
+const updateQuestionnaireHandler: ValidatedEventAPIGatewayProxyEvent<QuestionnaireBody> = async (
+  event
+) => {
   const { pathParameters, body } = event;
   const id = pathParameters?.id;
-  const {
-    title,
-    description,
-    questions,
-    tags,
-    passedUsers,
-    passScore,
-  } = body;
+  const { title, description, questions, tags, passedUsers, passScore } = body;
 
   if (!id) {
     return {
@@ -38,16 +38,18 @@ const updateQuestionnaireHandler: ValidatedEventAPIGatewayProxyEvent<typeof ques
 
   const questionnaireUpdates: QuestionnaireModel = {
     id: existingQuestionnaire.id,
-    title: title,
-    description: description,
-    questions: questions,
-    tags: tags,
-    passedUsers: passedUsers,
-    passScore: passScore,
+    title,
+    description,
+    questions,
+    tags,
+    passedUsers,
+    passScore
   };
 
   try {
-    const updatedQuestionnaire = await questionnaireService.updateQuestionnaire(questionnaireUpdates);
+    const updatedQuestionnaire =
+      await questionnaireService.updateQuestionnaire(questionnaireUpdates);
+
     return {
       statusCode: 200,
       body: JSON.stringify(updatedQuestionnaire)

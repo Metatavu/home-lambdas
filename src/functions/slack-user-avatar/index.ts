@@ -1,10 +1,14 @@
 import { handlerPath } from "@libs/handler-resolver";
 
-export default {
-  handler: `${handlerPath(__dirname)}/handler.main`,
-  events: [
-    {
-      httpApi: {
+// NOTE: This lambda is marked as inactive in the OpenAPI spec (x-status: active)
+const isInactive = true;
+export default isInactive
+  ? {}
+  : {
+      handler: `${handlerPath(__dirname)}/handler.main`,
+      events: [
+        {
+          httpApi: {
         method: 'get',
         path: '/slack-avatar',
         authorizer: {

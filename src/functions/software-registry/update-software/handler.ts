@@ -18,7 +18,6 @@ const softwareService = new SoftwareService(docClient);
 export const updateSoftwareHandler: ValidatedEventAPIGatewayProxyEvent<SoftwareRegistry> = async (
   event
 ) => {
-  console.log("Received event:", JSON.stringify(event));
   try {
     if (!isAdminUser(event)) {
       return {
@@ -30,7 +29,6 @@ export const updateSoftwareHandler: ValidatedEventAPIGatewayProxyEvent<SoftwareR
       };
     }
     const { id } = event.pathParameters || {};
-    console.log("Path parameter (id):", id);
 
     if (!id) {
       return {
@@ -46,12 +44,8 @@ export const updateSoftwareHandler: ValidatedEventAPIGatewayProxyEvent<SoftwareR
       };
     }
 
-    let data: SoftwareRegistry;
-    if (typeof event.body === "string") {
-      data = JSON.parse(event.body);
-    } else {
-      data = event.body as SoftwareRegistry;
-    }
+    const data: SoftwareRegistry =
+      typeof event.body === "string" ? JSON.parse(event.body) : (event.body as SoftwareRegistry);
 
     const authData = getAuthDataFromToken(event);
     if (!authData || !authData.sub) {

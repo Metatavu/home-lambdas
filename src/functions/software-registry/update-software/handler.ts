@@ -14,7 +14,6 @@ import type { SoftwareRegistry } from "src/generated/homeLambdasModels/model/sof
 export const updateSoftwareHandler: ValidatedEventAPIGatewayProxyEvent<SoftwareRegistry> = async (
   event
 ) => {
-
   try {
     if (!isAdminUser(event)) {
       return {
@@ -25,36 +24,44 @@ export const updateSoftwareHandler: ValidatedEventAPIGatewayProxyEvent<SoftwareR
         })
       };
     }
-
     const { id } = event.pathParameters || {};
+
     if (!id) {
-      return { statusCode: 400, body: JSON.stringify({ error: "Missing path parameter: id" }) };
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ error: "Missing path parameter: id" })
+      };
     }
 
     if (!event.body) {
-      return { statusCode: 400, body: JSON.stringify({ error: "Request body is required." }) };
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ error: "Request body is required." })
+      };
     }
 
     const data: SoftwareRegistry =
-      typeof event.body === "string" ? JSON.parse(event.body) : event.body;
+      typeof event.body === "string" ? JSON.parse(event.body) : (event.body as SoftwareRegistry);
 
     const authData = getAuthDataFromToken(event);
-    if (!authData?.sub) {
-      return { statusCode: 403, body: JSON.stringify({ error: "User is not authenticated." }) };
+    if (!authData || !authData.sub) {
+      return {
+        statusCode: 403,
+        body: JSON.stringify({ error: "User is not authenticated." })
+      };
     }
 
     const loggedUserId = authData.sub;
 
     const existingSoftware = await softwareService.findSoftware(id);
     if (!existingSoftware) {
-      return { statusCode: 404, body: JSON.stringify({ error: "Software not found" }) };
+      return {
+        statusCode: 404,
+        body: JSON.stringify({ error: "Software not found" })
+      };
     }
 
-    /**
-     * Build the full update object directly as SoftwareModel
-     */
-    const updatedSoftware: SoftwareModel = {
-      id: existingSoftware.id,
+    const updatedSoftwareData: SoftwareRegistry = {
       name: data.name,
       url: data.url,
       image: data.image,
@@ -64,28 +71,28 @@ export const updateSoftwareHandler: ValidatedEventAPIGatewayProxyEvent<SoftwareR
       status: data.status,
       tags: data.tags,
       users: data.users,
-      createdBy: existingSoftware.createdBy,
-      createdAt: existingSoftware.createdAt,
       lastUpdatedBy: loggedUserId,
-      lastUpdatedAt: new Date().toISOString()
+      createdBy: existingSoftware.createdBy
     };
 
-    const result = await softwareService.updateSoftware(id, updatedSoftware);
+    const updatedSoftware = await softwareService.updateSoftware(id, updatedSoftwareData);
 
-    if (!result) {
+    if (!updatedSoftware) {
       return {
         statusCode: 404,
         body: JSON.stringify({ error: "Software not found or no attributes updated" })
       };
     }
 
-    return { statusCode: 200, body: JSON.stringify(result) };
-  } catch (error: any) {
+    return {
+      statusCode: 200,
+      body: JSON.stringify(updatedSoftware)
+    };
+  } catch (error) {
     return {
       statusCode: 500,
       body: JSON.stringify({ error: "Failed to update software.", details: error.message })
     };
   }
 };
-
 export const main = middyfy(updateSoftwareHandler);

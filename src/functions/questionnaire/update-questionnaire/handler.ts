@@ -1,22 +1,16 @@
 import type { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway";
 import { middyfy } from "@libs/lambda";
-import type { FromSchema } from "json-schema-to-ts";
 import type QuestionnaireModel from "src/database/models/questionnaire";
 import { questionnaireService } from "src/database/services";
 import type questionnaireSchema from "src/schema/questionnaire";
 
 /**
- * Added alias for schema
- */
-type QuestionnaireBody = FromSchema<typeof questionnaireSchema>;
-
-/**
  * Lambda function to update a questionnaire
  * @param event event
  */
-const updateQuestionnaireHandler: ValidatedEventAPIGatewayProxyEvent<QuestionnaireBody> = async (
-  event
-) => {
+const updateQuestionnaireHandler: ValidatedEventAPIGatewayProxyEvent<
+  typeof questionnaireSchema
+> = async (event) => {
   const { pathParameters, body } = event;
   const id = pathParameters?.id;
   const { title, description, questions, tags, passedUsers, passScore } = body;

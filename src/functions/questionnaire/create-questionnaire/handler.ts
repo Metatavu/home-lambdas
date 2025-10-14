@@ -2,7 +2,7 @@ import { questionnaireService } from "src/database/services";
 import type { Questionnaire } from "src/generated/homeLambdasModels/model/questionnaire";
 import type { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
 import { middyfy } from "src/libs/lambda";
-import questionnaireSchema from "src/schema/questionnaire";
+import type questionnaireSchema from "src/schema/questionnaire";
 import { v4 as uuidv4 } from "uuid";
 
 /**
@@ -21,20 +21,7 @@ export const createQuestionnaireHandler: ValidatedEventAPIGatewayProxyEvent<
     };
   }
 
-  let body: unknown = event.body;
-  if (typeof event.body === "string") {
-    body = JSON.parse(event.body);
-  }
-
-  const parsed = questionnaireSchema.safeParse(body);
-  if (!parsed.success) {
-    return {
-      statusCode: 400,
-      body: JSON.stringify({ error: "Invalid questionnaire data", details: parsed.error })
-    };
-  }
-
-  const { title, description, questions, tags, passedUsers, passScore } = parsed.data;
+  const { title, description, questions, tags, passedUsers, passScore } = event.body;
 
   if (!title || !description || !questions || !passScore) {
     return {
@@ -49,12 +36,12 @@ export const createQuestionnaireHandler: ValidatedEventAPIGatewayProxyEvent<
   try {
     const createdQuestionnaire = await questionnaireService.createQuestionnaire({
       id: newQuestionnaireId,
-      title,
-      description,
-      questions,
-      tags,
-      passedUsers,
-      passScore
+      title: title,
+      description: description,
+      questions: questions,
+      tags: tags,
+      passedUsers: passedUsers,
+      passScore: passScore
     });
 
     questionnaireResponse = createdQuestionnaire;

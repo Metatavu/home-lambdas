@@ -17,9 +17,9 @@ export interface SoftwareModel {
   image: string;
   status?: Status;
   createdBy: string;
-  createdAt?: string;
+  createdAt?: Date;
   lastUpdatedBy?: string;
-  lastUpdatedAt?: string;
+  lastUpdatedAt?: Date;
   recommend?: string[];
   tags?: string[];
   users?: string[];

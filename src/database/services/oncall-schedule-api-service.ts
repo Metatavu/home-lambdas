@@ -75,7 +75,7 @@ class OnCallScheduleService {
    * @param entry OnCallEntry
    * @returns upserted entry
    */
-  public upsertOnCallSchedule = async (entry: OnCallEntry): Promise<OnCallEntry> => {
+  public upsertSplunkOnCallSchedule = async (entry: OnCallEntry): Promise<OnCallEntry> => {
     const params: PutCommandInput = {
       TableName: TABLE_NAME,
       Item: entry

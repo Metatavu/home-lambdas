@@ -66,7 +66,7 @@ export const onCallWeeklyCheckHandler : ValidatedEventAPIGatewayProxyEvent<OnCal
     Paid: false
   };
 
-  await onCallScheduleService.upsertOnCallSchedule(entry);
+  await onCallScheduleService.upsertSplunkOnCallSchedule(entry);
 
   return {
     statusCode: 200,

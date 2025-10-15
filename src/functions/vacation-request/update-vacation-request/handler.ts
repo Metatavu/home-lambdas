@@ -1,6 +1,5 @@
 import type { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway";
 import { middyfy } from "@libs/lambda";
-import type { Static } from "@sinclair/typebox";
 import { vacationRequestService } from "src/database/services";
 import { CreateKeycloakApiService } from "src/database/services/keycloak-api-service";
 import type { VacationRequest } from "src/generated/homeLambdasModels/model/vacationRequest";
@@ -8,21 +7,13 @@ import { notifyUserVacationStatusUpdatedAll } from "src/notifications/vacation-n
 import type vacationRequestSchema from "src/schema/vacationRequest";
 
 /**
- * Created Alias to prevent "Type instantiation is excessively deep and possibly infinite" warning on body
- */
-type VacationRequestBody = Static<typeof vacationRequestSchema>;
-/**
  * Lambda function to update a vacation request
  *
- * @param event event
- * Type mismatches between VacationRequestModel and VacationRequest:
- * - VacationRequestModel may be missing 'message' property required by VacationRequest.
- * - 'createdAt', 'updatedAt', 'startDate', 'endDate' are 'string' here, but VacationRequest expects 'Date'.
+ * @param event event containing path parameters and a JSON body that matches 'vacationRequestSchema'
+ * @return A response object with statuscode
  */
-
-// NOTE: Type mismatches between VacationRequestModel and VacationRequest (e.g. missing 'message', type differences).
 const updateVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
-  VacationRequestBody
+  typeof vacationRequestSchema
 > = async (event) => {
   const { pathParameters, body } = event;
   const {
@@ -96,11 +87,10 @@ const updateVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
     const updatedVacationRequest =
       await vacationRequestService.updateVacationRequest(vacationRequestUpdates);
     if (statusChanged) {
-      const lastStatus =
-        Array.isArray(status) && status.length > 0 ? status[status.length - 1].status : "UNKNOWN";
+      const currentStatus = Array.isArray(status) ? status.at(-1)?.status : "UNKNOWN";
       await notifyUserVacationStatusUpdatedAll({
         email: userDetails.email,
-        updatedStatus: lastStatus
+        updatedStatus: currentStatus
       });
     }
     return {

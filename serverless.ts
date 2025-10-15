@@ -115,7 +115,7 @@ const serverlessConfiguration: AWS = {
       MAILGUN_PORT: env.MAILGUN_PORT || undefined,
       MAILGUN_SMTP_HOST: env.MAILGUN_SMTP_HOST || undefined,
       MAILGUN_SMTP_HOST_USER: env.MAILGUN_SMTP_HOST_USER || undefined,
-      MAILGUN_SMTP_PASSWORD: env.MAILGUN_SMTP_PASSWORD || undefined,
+      MAILGUN_SMTP_PASSWORD: env.MAILGUN_SMTP_PASSWORD || undefined
     },
     iam: {
       role: {
@@ -206,7 +206,8 @@ const serverlessConfiguration: AWS = {
       target: "node20",
       define: { "require.resolve": undefined },
       platform: "node",
-      concurrency: 10
+      concurrency: 10,
+      external: ["nodemailer"]
     }
   },
   resources: {

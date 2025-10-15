@@ -1,13 +1,7 @@
 import type { APIGatewayProxyEvent, APIGatewayProxyHandler } from "aws-lambda";
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
-import ArticlesApiService from "src/database/services/articles-api-service";
 import { middyfy } from "src/libs/lambda";
 import { isAdminUser } from "src/libs/auth-utils";
-
-const dynamoClient = new DynamoDBClient({});
-const docClient = DynamoDBDocumentClient.from(dynamoClient);
-const articleService = new ArticlesApiService(docClient);
+import { articlesApiService } from "src/database/services";
 
 /**
  * Handler for deleting an article entry in DynamoDB.
@@ -36,7 +30,7 @@ const deleteArticleHandler: APIGatewayProxyHandler = async (event: APIGatewayPro
   }
 
   try {
-    const articleFoundById = await articleService.findArticleById(id);
+    const articleFoundById = await articlesApiService.findArticleById(id);
     if (!articleFoundById) {
       return {
         statusCode: 404,
@@ -47,7 +41,7 @@ const deleteArticleHandler: APIGatewayProxyHandler = async (event: APIGatewayPro
       };
     };
 
-    await articleService.deleteArticle(id);
+    await articlesApiService.deleteArticle(id);
     return { 
       statusCode: 200,
       body: "Successfully deleted article."

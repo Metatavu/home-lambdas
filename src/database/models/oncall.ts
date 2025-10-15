@@ -1,4 +1,4 @@
-export interface OnCallEntry {
+interface OnCallEntry {
   Year: number;
   Week: number;
   Username: string;
@@ -14,3 +14,5 @@ export type OnCallImportError = {
   entry: OnCallImportEntry;
   error: string | unknown;
 };
+
+export default OnCallEntry;

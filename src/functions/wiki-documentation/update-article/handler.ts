@@ -1,15 +1,9 @@
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import { middyfy } from "@libs/lambda";
 import type { APIGatewayProxyEvent, APIGatewayProxyHandler } from "aws-lambda";
-import * as jwt from "jsonwebtoken";
 import type { ArticleModel } from "src/database/models/article";
-import ArticlesApiService from "src/database/services/articles-api-service";
+import * as jwt from 'jsonwebtoken';
+import { articlesApiService } from "src/database/services";
 import type { Article } from "src/generated/homeLambdasModels/model/article";
-
-const dynamoClient = new DynamoDBClient({});
-const docClient = DynamoDBDocumentClient.from(dynamoClient);
-const articleService = new ArticlesApiService(docClient);
 
 /**
  * Handler for updating an article entry in DynamoDB.
@@ -37,7 +31,7 @@ const updateArticleHandler: APIGatewayProxyHandler = async (event: APIGatewayPro
     };
   }
 
-  const existingArticle = await articleService.findArticleById(id);
+  const existingArticle = await articlesApiService.findArticleById(id);
   if (!existingArticle) {
     return {
       statusCode: 404,
@@ -48,7 +42,7 @@ const updateArticleHandler: APIGatewayProxyHandler = async (event: APIGatewayPro
     };
   }
 
-  const articleExistsWithPath = await articleService.findArticleByPath(path);
+  const articleExistsWithPath = await articlesApiService.findArticleByPath(path);
   if (articleExistsWithPath && articleExistsWithPath.id !== id) {
     return {
       statusCode: 409,
@@ -77,16 +71,10 @@ const updateArticleHandler: APIGatewayProxyHandler = async (event: APIGatewayPro
   };
 
   try {
-    await articleService.updateArticle(updatedArticle);
-    const response: Article = {
-      ...updatedArticle,
-      createdAt: new Date(updatedArticle.createdAt),
-      lastUpdatedAt: new Date(updatedArticle.lastUpdatedAt),
-      lastReadAt: new Date(updatedArticle.lastReadAt)
-    };
+    await articlesApiService.updateArticle(updatedArticle);
     return {
       statusCode: 200,
-      body: JSON.stringify(response)
+      body: JSON.stringify(updatedArticle)
     };
   } catch (error) {
     return {

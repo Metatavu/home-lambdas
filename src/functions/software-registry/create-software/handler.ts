@@ -1,14 +1,8 @@
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
-import SoftwareService from "src/database/services/software-service";
 import type { SoftwareRegistry } from "src/generated/homeLambdasModels/model/softwareRegistry";
 import type { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
 import { getAuthDataFromToken } from "src/libs/auth-utils";
 import { middyfy } from "src/libs/lambda";
-
-const dynamoClient = new DynamoDBClient({});
-const docClient = DynamoDBDocumentClient.from(dynamoClient);
-const softwareService = new SoftwareService(docClient);
+import { softwareService } from "src/database/services";
 
 /**
  * Handler for creating a new software entry in DynamoDB.
@@ -67,7 +61,6 @@ export const createSoftwareHandler: ValidatedEventAPIGatewayProxyEvent<SoftwareR
       lastUpdatedBy: loggedUserId
     };
 
-    // Create new software entry in the database
     const createdSoftware = await softwareService.createSoftware(newSoftware);
 
     return {

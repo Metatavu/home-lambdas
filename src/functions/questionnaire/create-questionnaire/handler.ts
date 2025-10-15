@@ -1,5 +1,5 @@
-import type QuestionnaireModel from "src/database/models/questionnaire";
 import { questionnaireService } from "src/database/services";
+import type { Questionnaire } from "src/generated/homeLambdasModels/model/questionnaire";
 import type { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
 import { middyfy } from "src/libs/lambda";
 import type questionnaireSchema from "src/schema/questionnaire";
@@ -31,7 +31,7 @@ export const createQuestionnaireHandler: ValidatedEventAPIGatewayProxyEvent<
   }
 
   const newQuestionnaireId: string = uuidv4();
-  let questionnaireResponse: QuestionnaireModel | undefined;
+  let questionnaireResponse: Questionnaire | undefined;
 
   try {
     const createdQuestionnaire = await questionnaireService.createQuestionnaire({

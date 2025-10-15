@@ -1,7 +1,8 @@
-import { APIGatewayProxyHandler } from "aws-lambda";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
+import type { APIGatewayProxyHandler } from "aws-lambda";
 import SoftwareService from "src/database/services/software-service";
+import type { SoftwareRegistry } from "src/generated/homeLambdasModels/model/softwareRegistry";
 import { middyfy } from "src/libs/lambda";
 
 const dynamoClient = new DynamoDBClient({});
@@ -10,26 +11,29 @@ const softwareService = new SoftwareService(docClient);
 
 /**
  * Handler for listing all software entries from DynamoDB.
- * 
+ *
+ * createdAt and lastUpdatedAt are converted to Date objects to match the spec.
+ *
  * @returns Response object with status code and body.
  */
 export const listSoftwareHandler: APIGatewayProxyHandler = async () => {
-  console.log('Received request to list software entries');
-
   try {
-    console.log('Fetching software list from DynamoDB');
     const softwareList = await softwareService.listSoftware();
-
-    console.log('Software list retrieved successfully:', softwareList);
+    const softwareRegistryList: SoftwareRegistry[] = softwareList.map((software) => ({
+      ...software,
+      status: software.status,
+      createdAt: software.createdAt ? new Date(software.createdAt) : undefined,
+      lastUpdatedAt: software.lastUpdatedAt ? new Date(software.lastUpdatedAt) : undefined
+    }));
     return {
       statusCode: 200,
-      body: JSON.stringify(softwareList),
+      body: JSON.stringify(softwareRegistryList)
     };
   } catch (error) {
     console.error("Error retrieving software list from DynamoDB:", error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: 'Failed to retrieve software list.', details: error.message }),
+      body: JSON.stringify({ error: "Failed to retrieve software list.", details: error.message })
     };
   }
 };

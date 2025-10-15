@@ -7,7 +7,7 @@ interface QuestionnaireModel {
   description: string;
   questions: Question[];
   tags?: string[];
-  passedUsers?: number[];
+  passedUsers?: string[];
   passScore: number;
 }
 

@@ -8,12 +8,12 @@ export interface ArticleMetadataModel {
   description?: string;
   coverImage?: string;
   createdBy: string;
-  createdAt: string;
-  lastUpdatedBy: string;
-  lastUpdatedAt: string;
-  lastReadAt: string;
-  readBy: string[];
-  tags: string[];
+  createdAt?: string;
+  lastUpdatedBy?: string;
+  lastUpdatedAt?: string;
+  lastReadAt?: string;
+  readBy?: string[];
+  tags?: string[];
   draft: boolean;
 }
 

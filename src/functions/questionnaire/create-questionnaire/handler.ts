@@ -1,9 +1,9 @@
-import { middyfy } from "src/libs/lambda";
-import { questionnaireService } from "src/database/services";
-import { v4 as uuidv4 } from "uuid";
 import type QuestionnaireModel from "src/database/models/questionnaire";
+import { questionnaireService } from "src/database/services";
 import type { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
+import { middyfy } from "src/libs/lambda";
 import type questionnaireSchema from "src/schema/questionnaire";
+import { v4 as uuidv4 } from "uuid";
 
 /**
  * Handler for creating a new questionnaire entry in DynamoDB.
@@ -11,16 +11,18 @@ import type questionnaireSchema from "src/schema/questionnaire";
  * @param event - API Gateway event containing the request body.
  * @returns Response object with status code
  */
-export const createQuestionnaireHandler: ValidatedEventAPIGatewayProxyEvent<typeof questionnaireSchema> = async (event) => {
+export const createQuestionnaireHandler: ValidatedEventAPIGatewayProxyEvent<
+  typeof questionnaireSchema
+> = async (event) => {
   if (!event.body) {
     return {
       statusCode: 400,
       body: JSON.stringify({ error: "Request body is required." })
     };
   }
-  
+
   const { title, description, questions, tags, passedUsers, passScore } = event.body;
-  
+
   if (!title || !description || !questions || !passScore) {
     return {
       statusCode: 400,
@@ -29,7 +31,7 @@ export const createQuestionnaireHandler: ValidatedEventAPIGatewayProxyEvent<type
   }
 
   const newQuestionnaireId: string = uuidv4();
-  let questionnaireResponse: QuestionnaireModel | undefined = undefined;
+  let questionnaireResponse: QuestionnaireModel | undefined;
 
   try {
     const createdQuestionnaire = await questionnaireService.createQuestionnaire({
@@ -52,7 +54,7 @@ export const createQuestionnaireHandler: ValidatedEventAPIGatewayProxyEvent<type
     return {
       statusCode: 500,
       body: `Failed to create questionnaire entry ${error}`
-    }
+    };
   }
 };
 

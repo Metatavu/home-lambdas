@@ -1,13 +1,9 @@
+import type { SoftwareStatus } from "src/generated/homeLambdasModels/model/softwareStatus";
 /**
- * Enum for possible statuses of a software.
+ * Build from SoftwareStatus instead of using enum to avoid mismatch.
  */
-export enum Status {
-  PENDING = "PENDING",
-  UNDER_REVIEW = "UNDER_REVIEW",
-  ACCEPTED = "ACCEPTED",
-  DEPRECATED = "DEPRECATED",
-  DECLINED = "DECLINED"
-}
+
+export type Status = SoftwareStatus;
 
 /**
  * Interface for a software.
@@ -16,14 +12,14 @@ export interface SoftwareModel {
   id?: string;
   name: string;
   description: string;
-  review: string;
+  review?: string;
   url: string;
   image: string;
   status?: Status;
   createdBy: string;
-  createdAt?: string;
+  createdAt?: Date;
   lastUpdatedBy?: string;
-  lastUpdatedAt?: string;
+  lastUpdatedAt?: Date;
   recommend?: string[];
   tags?: string[];
   users?: string[];

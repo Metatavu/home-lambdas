@@ -1,20 +1,43 @@
 import type { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway";
 import { middyfy } from "@libs/lambda";
+import type { Static } from "@sinclair/typebox";
 import { vacationRequestService } from "src/database/services";
-import type vacationRequestSchema from "src/schema/vacationRequest";
-import { notifyUserVacationStatusUpdatedAll } from "src/notifications/vacation-notifications";
 import { CreateKeycloakApiService } from "src/database/services/keycloak-api-service";
+import type { VacationRequest } from "src/generated/homeLambdasModels/model/vacationRequest";
+import { notifyUserVacationStatusUpdatedAll } from "src/notifications/vacation-notifications";
+import type vacationRequestSchema from "src/schema/vacationRequest";
 
+/**
+ * Created Alias to prevent "Type instantiation is excessively deep and possibly infinite" warning on body
+ */
+type VacationRequestBody = Static<typeof vacationRequestSchema>;
 /**
  * Lambda function to update a vacation request
  *
  * @param event event
+ * Type mismatches between VacationRequestModel and VacationRequest:
+ * - VacationRequestModel may be missing 'message' property required by VacationRequest.
+ * - 'createdAt', 'updatedAt', 'startDate', 'endDate' are 'string' here, but VacationRequest expects 'Date'.
  */
+
+// NOTE: Type mismatches between VacationRequestModel and VacationRequest (e.g. missing 'message', type differences).
 const updateVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
-  typeof vacationRequestSchema
+  VacationRequestBody
 > = async (event) => {
   const { pathParameters, body } = event;
-  const { userId, draft, startDate, endDate, days, type, status, message, createdBy, createdAt, updatedAt } = body;
+  const {
+    userId,
+    draft,
+    startDate,
+    endDate,
+    days,
+    type,
+    status,
+    message,
+    createdBy,
+    createdAt,
+    updatedAt
+  } = body;
   const id = pathParameters?.id;
 
   if (!id) {
@@ -74,17 +97,15 @@ const updateVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
       await vacationRequestService.updateVacationRequest(vacationRequestUpdates);
     if (statusChanged) {
       const lastStatus =
-      Array.isArray(status) && status.length > 0
-        ? status[status.length - 1].status
-        : "UNKNOWN";
+        Array.isArray(status) && status.length > 0 ? status[status.length - 1].status : "UNKNOWN";
       await notifyUserVacationStatusUpdatedAll({
         email: userDetails.email,
-        updatedStatus: lastStatus,
+        updatedStatus: lastStatus
       });
     }
     return {
       statusCode: 200,
-      body: JSON.stringify(updatedVacationRequest)
+      body: JSON.stringify(updatedVacationRequest as unknown as VacationRequest)
     };
   } catch (error) {
     return {

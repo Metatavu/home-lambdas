@@ -11,6 +11,8 @@ import type SeveraResponseUser from "src/types/severa/user/severaResponseUser";
  * Handler for sendDailyMessage
  *
  * @returns Promise of DailyHandlerResponse
+ * NOTE: Returned response does not match the OpenApi spec
+ * It uses a custom DailyHandlerResponse type.
  */
 export const sendDailyMessageHandler = async (): Promise<DailyHandlerResponse> => {
   try {

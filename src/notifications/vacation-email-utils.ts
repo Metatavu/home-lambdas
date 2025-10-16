@@ -36,7 +36,7 @@ function formatDate(date: string): string {
  */
 async function sendEmail({ to, subject, html }: { to: string; subject: string; html: string }) {
   try {
-    const info = await transporter.sendMail({
+    await transporter.sendMail({
       from: "Metatavu Home <onboarding@mailgun.dev>",
       to,
       subject,

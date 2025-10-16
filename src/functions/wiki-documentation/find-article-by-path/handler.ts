@@ -1,12 +1,6 @@
 import { APIGatewayProxyEvent, APIGatewayProxyHandler } from "aws-lambda";
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
-import ArticlesApiService from "src/database/services/articles-api-service";
 import { middyfy } from "src/libs/lambda";
-
-const dynamoClient = new DynamoDBClient({});
-const docClient = DynamoDBDocumentClient.from(dynamoClient);
-const articleService = new ArticlesApiService(docClient);
+import { articlesApiService } from "src/database/services";
 
 /**
  * Handler for finding article entry by path second index in DynamoDB.
@@ -28,7 +22,7 @@ export const findArticleByPathHandler: APIGatewayProxyHandler = async (event: AP
   }
 
   try {
-    const foundArticle = await articleService.findArticleByPath(path);
+    const foundArticle = await articlesApiService.findArticleByPath(path);
 
     if (!foundArticle) {
       return {

@@ -15,7 +15,7 @@ import { SoftwareStatus } from "src/generated/homeLambdasModels/model/softwareSt
 import { v4 as uuidv4 } from "uuid";
 import type { SoftwareModel } from "../models/software";
 
-const tableName = "SoftwareRegistry";
+const TABLENAME = "SoftwareRegistry";
 
 /**
  * Database service for software entries
@@ -43,7 +43,7 @@ class SoftwareService {
     };
     try {
       const params: PutCommandInput = {
-        TableName: tableName,
+        TableName: TABLENAME,
         Item: newSoftware
       };
       await this.docClient.send(new PutCommand(params));
@@ -62,7 +62,7 @@ class SoftwareService {
    */
   public async findSoftware(id: string): Promise<SoftwareModel | null> {
     const params: GetCommandInput = {
-      TableName: tableName,
+      TableName: TABLENAME,
       Key: { id }
     };
     const result = await this.docClient.send(new GetCommand(params));
@@ -75,7 +75,7 @@ class SoftwareService {
    * @returns list of software entries
    */
   public async listSoftware(): Promise<SoftwareModel[]> {
-    const params: ScanCommandInput = { TableName: tableName };
+    const params: ScanCommandInput = { TableName: TABLENAME };
     const result = await this.docClient.send(new ScanCommand(params));
     return result.Items as SoftwareModel[];
   }
@@ -106,7 +106,7 @@ class SoftwareService {
     expressionAttributeValues[":lastUpdatedAt"] = new Date().toISOString();
 
     const params: UpdateCommandInput = {
-      TableName: tableName,
+      TableName: TABLENAME,
       Key: { id },
       UpdateExpression: `set ${updateExpression.join(", ")}, #lastUpdatedAt = :lastUpdatedAt`,
       ExpressionAttributeNames: expressionAttributeNames,
@@ -125,7 +125,7 @@ class SoftwareService {
    */
   public async deleteSoftware(id: string): Promise<void> {
     const params: DeleteCommandInput = {
-      TableName: tableName,
+      TableName: TABLENAME,
       Key: { id }
     };
     await this.docClient.send(new DeleteCommand(params));

@@ -1,7 +1,8 @@
-import { VacationDetails } from "src/types";
 import * as nodemailer from "nodemailer";
 import Config from "src/app/config";
-import { VacationRequestStatus } from "src/generated/homeLambdasModels/model/vacationRequestStatus";
+import type { VacationRequestStatus } from "src/generated/homeLambdasModels/model/vacationRequestStatus";
+import type { VacationDetails } from "src/types";
+
 const adminEmails = Config.get().email.adminEmails;
 const Host = Config.get().email.mailgunSmtpHost;
 const Port = Config.get().email.mailgunPort;
@@ -13,8 +14,8 @@ const transporter = nodemailer.createTransport({
   port: Port,
   auth: {
     user: User,
-    pass: Password,
-  },
+    pass: Password
+  }
 });
 /**
  * Format a date string from yyyy-mm-dd to dd-mm-yyyy
@@ -23,7 +24,7 @@ const transporter = nodemailer.createTransport({
  * @returns Date string in dd-mm-yyyy format
  */
 function formatDate(date: string): string {
-    return date.split("-").reverse().join("-");
+  return date.split("-").reverse().join("-");
 }
 
 /**
@@ -36,12 +37,11 @@ function formatDate(date: string): string {
 async function sendEmail({ to, subject, html }: { to: string; subject: string; html: string }) {
   try {
     const info = await transporter.sendMail({
-      from: "Metatavu Home <onboarding@mailgun.dev>", 
+      from: "Metatavu Home <onboarding@mailgun.dev>",
       to,
       subject,
-      html,
+      html
     });
-    console.log("Email sent:", info.messageId);
   } catch (error) {
     console.error("Failed to send email:", error);
     throw error;
@@ -85,9 +85,7 @@ async function notifyAdminsVacationByEmail(
  *
  * @param vacationDetails - Details of the submitted vacation
  */
-export async function notifyAdminsVacationSubmittedByEmail(
-  vacationDetails: VacationDetails
-) {
+export async function notifyAdminsVacationSubmittedByEmail(vacationDetails: VacationDetails) {
   await notifyAdminsVacationByEmail(
     vacationDetails,
     "New Vacation Request Submitted",
@@ -100,9 +98,7 @@ export async function notifyAdminsVacationSubmittedByEmail(
  *
  * @param vacationDetails - Details of the deleted vacation
  */
-export async function notifyAdminsVacationDeletedByEmail(
-  vacationDetails: VacationDetails
-) {
+export async function notifyAdminsVacationDeletedByEmail(vacationDetails: VacationDetails) {
   await notifyAdminsVacationByEmail(
     vacationDetails,
     "Vacation Request Deleted",

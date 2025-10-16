@@ -52,8 +52,8 @@ export const updateRemainingVacationDays = async (
   daysToSubtract: number,
   year: string
 ) => {
-  const api = CreateKeycloakApiService();
-  const userDetails = await api.getUserAttributes(userId);
+  const keycloakApiService = CreateKeycloakApiService();
+  const userDetails = await keycloakApiService.getUserAttributes(userId);
   const unspentArr = userDetails.unspentVacationDaysByYear || [];
   const index = unspentArr.findIndex((s) => s.startsWith(`${year}:`));
   const currentValueStr = index >= 0 ? unspentArr[index].split(":")[1] : "0";
@@ -65,7 +65,7 @@ export const updateRemainingVacationDays = async (
     `${year}:${remainingDays.toString().padStart(3, "0")}`
   ];
 
-  await api.updateUserAttributes(userId, {
+  await keycloakApiService.updateUserAttributes(userId, {
     ...userDetails,
     unspentVacationDaysByYear: updatedUnspent
   });

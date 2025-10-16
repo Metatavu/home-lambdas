@@ -303,7 +303,7 @@ const serverlessConfiguration: AWS = {
           ],
           ProvisionedThroughput: {
             ReadCapacityUnits: 1,
-            WriteCapacityUnits: 1
+            WriteCapacityUnits: 53
           }
         }
       }

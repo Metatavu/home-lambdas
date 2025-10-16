@@ -1,8 +1,9 @@
 import { vacationRequestService } from "src/database/services";
-//import { notifyAdminsVacationSubmittedAll } from "src/notifications/vacation-notifications";
+import { CreateKeycloakApiService } from "src/database/services/keycloak-api-service";
 import type { VacationRequest } from "src/generated/homeLambdasModels/model/vacationRequest";
 import type { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
 import { middyfy } from "src/libs/lambda";
+import { notifyAdminsVacationSubmittedAll } from "src/notifications/vacation-notifications";
 import { v4 as uuidv4 } from "uuid";
 
 /**
@@ -57,9 +58,8 @@ export const createVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
   }
 
   const newVacationRequestId = uuidv4();
-  // TODO: Uncomment once Node.js is upgraded (required for notifications)
-  // const api = CreateKeycloakApiService();
-  // const userDetails = await api.findUser(userId);
+  const api = CreateKeycloakApiService();
+  const userDetails = await api.findUser(userId);
 
   try {
     const createdVacationRequest = await vacationRequestService.createVacationRequest({
@@ -84,6 +84,14 @@ export const createVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
     //   endDate,
     //   type
     // });
+
+    await notifyAdminsVacationSubmittedAll({
+      id: newVacationRequestId,
+      user: userDetails.firstName,
+      startDate,
+      endDate,
+      type
+    });
 
     return {
       statusCode: 201,

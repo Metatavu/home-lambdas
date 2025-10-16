@@ -1,4 +1,4 @@
-import { cleanEnv, str } from "envalid";
+import { cleanEnv, str, port } from "envalid";
 import { Configuration } from "src/types";
 
 const env = cleanEnv(process.env, {
@@ -8,7 +8,10 @@ const env = cleanEnv(process.env, {
   SPLUNK_TEAM_ONCALL_URL: str(),
   SPLUNK_SCHEDULE_POLICY_NAME : str(),
   SEVERA_TEST_USER_EMAIL: str({ default: undefined }),
-  RESEND_API_KEY: str({ default: undefined }),
+  MAILGUN_PORT: port(),
+  MAILGUN_SMTP_HOST: str(),
+  MAILGUN_SMTP_HOST_USER: str(),
+  MAILGUN_SMTP_PASSWORD: str(),
   ADMIN_EMAILS: str({ default: undefined }), 
   METATAVU_BOT_TOKEN: str(),       
   ADMIN_SLACK_USERS: str({ default: undefined }),  
@@ -36,7 +39,10 @@ export default class Config {
       email: env.SEVERA_TEST_USER_EMAIL,
     },
     email: {
-      resendApiKey: env.RESEND_API_KEY,
+      mailgunPort: env.MAILGUN_PORT,
+      mailgunSmtpHost: env.MAILGUN_SMTP_HOST,
+      mailgunSmtpUser: env.MAILGUN_SMTP_HOST_USER,
+      mailgunSmtpPassword: env.MAILGUN_SMTP_PASSWORD,
       adminEmails: env.ADMIN_EMAILS ? env.ADMIN_EMAILS.split(",") : [],
     },
     slack: {

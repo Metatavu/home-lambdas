@@ -1,10 +1,22 @@
-import { Resend } from "resend";
-import Config from "src/app/config"; 
-import { VacationDetails } from "src/types";
+import * as nodemailer from "nodemailer";
+import Config from "src/app/config";
+import type { VacationRequestStatus } from "src/generated/homeLambdasModels/model/vacationRequestStatus";
+import type { VacationDetails } from "src/types";
 
-const resend = new Resend(Config.get().email.resendApiKey);
 const adminEmails = Config.get().email.adminEmails;
-
+const Host = Config.get().email.mailgunSmtpHost;
+const Port = Config.get().email.mailgunPort;
+const User = Config.get().email.mailgunSmtpUser;
+const Password = Config.get().email.mailgunSmtpPassword;
+// Create a reusable transporter using Mailgun SMTP
+const transporter = nodemailer.createTransport({
+  host: Host,
+  port: Port,
+  auth: {
+    user: User,
+    pass: Password
+  }
+});
 /**
  * Format a date string from yyyy-mm-dd to dd-mm-yyyy
  *
@@ -12,7 +24,7 @@ const adminEmails = Config.get().email.adminEmails;
  * @returns Date string in dd-mm-yyyy format
  */
 function formatDate(date: string): string {
-    return date.split("-").reverse().join("-");
+  return date.split("-").reverse().join("-");
 }
 
 /**
@@ -22,23 +34,15 @@ function formatDate(date: string): string {
  * @param subject - Subject line of the email
  * @param html - HTML content of the email
  */
-async function sendEmail({
-  to,
-  subject,
-  html
-}: {
-  to: string;
-  subject: string;
-  html: string;
-}) {
-  const { error } = await resend.emails.send({
-    from: "Metatavu Home <onboarding@resend.dev>",
-    to,
-    subject,
-    html
-  });
-
-  if (error) {
+async function sendEmail({ to, subject, html }: { to: string; subject: string; html: string }) {
+  try {
+    await transporter.sendMail({
+      from: "Metatavu Home <onboarding@mailgun.dev>",
+      to,
+      subject,
+      html
+    });
+  } catch (error) {
     console.error("Failed to send email:", error);
     throw error;
   }
@@ -60,7 +64,7 @@ async function notifyAdminsVacationByEmail(
     throw new Error("ADMIN_EMAILS environment variable is empty or not set.");
   }
   const homeUrl = Config.get().homeBaseUrl;
-  const vacationLink = `${homeUrl}/admin/vacations`;
+  const vacationLink = `${homeUrl}/admin/vacations?selectedId=${vacationDetails.id}`;
 
   const html = `
     <p><strong>${header}</strong></p>
@@ -68,7 +72,7 @@ async function notifyAdminsVacationByEmail(
     <p>Start Date: ${formatDate(vacationDetails.startDate)}</p>
     <p>End Date: ${formatDate(vacationDetails.endDate)}</p>
     <p>Type: ${vacationDetails.type || "Not provided"}</p>
-    <p>Update status: <a href="${vacationLink}">Update status here</a></p>
+    <p>Update status: <a href=${vacationLink}>Update status here</a></p>
   `;
 
   for (const to of adminEmails) {
@@ -81,9 +85,7 @@ async function notifyAdminsVacationByEmail(
  *
  * @param vacationDetails - Details of the submitted vacation
  */
-export async function notifyAdminsVacationSubmittedByEmail(
-  vacationDetails: VacationDetails
-) {
+export async function notifyAdminsVacationSubmittedByEmail(vacationDetails: VacationDetails) {
   await notifyAdminsVacationByEmail(
     vacationDetails,
     "New Vacation Request Submitted",
@@ -96,9 +98,7 @@ export async function notifyAdminsVacationSubmittedByEmail(
  *
  * @param vacationDetails - Details of the deleted vacation
  */
-export async function notifyAdminsVacationDeletedByEmail(
-  vacationDetails: VacationDetails
-) {
+export async function notifyAdminsVacationDeletedByEmail(vacationDetails: VacationDetails) {
   await notifyAdminsVacationByEmail(
     vacationDetails,
     "Vacation Request Deleted",
@@ -117,7 +117,7 @@ export async function notifyUserVacationStatusUpdatedByEmail({
   updatedStatus
 }: {
   to: string;
-  updatedStatus: string;
+  updatedStatus: VacationRequestStatus;
 }) {
   const subject = "Your Vacation Request Status Was Updated";
   const html = `

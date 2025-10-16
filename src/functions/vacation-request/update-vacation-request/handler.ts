@@ -1,28 +1,19 @@
 import type { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway";
 import { middyfy } from "@libs/lambda";
-import type { Static } from "@sinclair/typebox";
 import { vacationRequestService } from "src/database/services";
-//import { notifyUserVacationStatusUpdatedAll } from "src/notifications/vacation-notifications";
-//import { CreateKeycloakApiService } from "src/database/services/keycloak-api-service";
+import { CreateKeycloakApiService } from "src/database/services/keycloak-api-service";
 import type { VacationRequest } from "src/generated/homeLambdasModels/model/vacationRequest";
+import { notifyUserVacationStatusUpdatedAll } from "src/notifications/vacation-notifications";
 import type vacationRequestSchema from "src/schema/vacationRequest";
 
 /**
- * Created Alias to prevent "Type instantiation is excessively deep and possibly infinite" warning on body
- */
-type VacationRequestBody = Static<typeof vacationRequestSchema>;
-/**
  * Lambda function to update a vacation request
  *
- * @param event event
- * Type mismatches between VacationRequestModel and VacationRequest:
- * - VacationRequestModel may be missing 'message' property required by VacationRequest.
- * - 'createdAt', 'updatedAt', 'startDate', 'endDate' are 'string' here, but VacationRequest expects 'Date'.
+ * @param event event containing path parameters and a JSON body that matches 'vacationRequestSchema'
+ * @return A response object with statuscode
  */
-
-// NOTE: Type mismatches between VacationRequestModel and VacationRequest (e.g. missing 'message', type differences).
 const updateVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
-  VacationRequestBody
+  typeof vacationRequestSchema
 > = async (event) => {
   const { pathParameters, body } = event;
   const {
@@ -72,7 +63,7 @@ const updateVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
       body: `Vacation request ${id} not found`
     };
   }
-  //const statusChanged = existingVacationRequest.status !== status;
+  const statusChanged = existingVacationRequest.status !== status;
 
   const vacationRequestUpdates = {
     id: existingVacationRequest.id,
@@ -89,23 +80,19 @@ const updateVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
     updatedAt: updatedAt
   };
 
-  // TODO: Uncomment once Node.js is upgraded (required for notifications)
-  // const api = CreateKeycloakApiService();
-  // const userDetails = await api.findUser(userId);
+  const api = CreateKeycloakApiService();
+  const userDetails = await api.findUser(userId);
 
   try {
     const updatedVacationRequest =
       await vacationRequestService.updateVacationRequest(vacationRequestUpdates);
-
-    // TODO: Uncomment this once Node.js is upgraded (currently breaks due to resend dependency)
-    // if (statusChanged) {
-    //   await notifyUserVacationStatusUpdatedAll({
-    //     email: userDetails.email,
-    //     updatedStatus: status,
-    //   });
-    // }
-
-    // NOTE: Cast the updated request to VacationRequest so it matches the OpenAPI spec.
+    if (statusChanged) {
+      const currentStatus = Array.isArray(status) ? status.at(-1)?.status : "UNKNOWN";
+      await notifyUserVacationStatusUpdatedAll({
+        email: userDetails.email,
+        updatedStatus: currentStatus
+      });
+    }
     return {
       statusCode: 200,
       body: JSON.stringify(updatedVacationRequest as unknown as VacationRequest)

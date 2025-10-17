@@ -10,13 +10,9 @@ import type vacationRequestSchema from "src/schema/vacationRequest";
 /**
  * Lambda function to update a vacation request
  *
- * @param event event
- * Type mismatches between VacationRequestModel and VacationRequest:
- * - VacationRequestModel may be missing 'message' property required by VacationRequest.
- * - 'createdAt', 'updatedAt', 'startDate', 'endDate' are 'string' here, but VacationRequest expects 'Date'.
+ * @param event event containing path parameters and a JSON body that matches 'vacationRequestSchema'
+ * @return A response object with statuscode
  */
-
-// NOTE: Type mismatches between VacationRequestModel and VacationRequest (e.g. missing 'message', type differences).
 const updateVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
   typeof vacationRequestSchema
 > = async (event) => {

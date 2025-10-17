@@ -74,7 +74,7 @@ async function notifyAdminsVacation(
 ) {
     const adminUserIds = slackConfig.adminUsers;
     const homeUrl = Config.get().homeBaseUrl;
-    const vacationLink = `${homeUrl}/admin/vacations`;
+    const vacationLink = `${homeUrl}/admin/vacations?selectedId=${vacationDetails.id}`;;
 
     const message = `
         ${messageHeader}

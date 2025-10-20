@@ -50,23 +50,38 @@ export const splitVacationDaysByYear = (
 export const updateRemainingVacationDays = async (
   userId: string,
   daysToSubtract: number,
+  status: string,
   year: string
-) => {
+): Promise<boolean> => {
   const keycloakApiService = CreateKeycloakApiService();
-  const userDetails = await keycloakApiService.getUserAttributes(userId);
-  const unspentArr = userDetails.unspentVacationDaysByYear || [];
-  const index = unspentArr.findIndex((s) => s.startsWith(`${year}:`));
-  const currentValueStr = index >= 0 ? unspentArr[index].split(":")[1] : "0";
-  const currentValue = Number(currentValueStr);
+  const user = await keycloakApiService.getUserAttributes(userId);
+
+  user.attributes = user.attributes || [];
+
+  const unspentVacationDaysByYear = user.unspentVacationDaysByYear || [];
+
+  const currentEntry = unspentVacationDaysByYear.find((s) => s.startsWith(`${year}:`));
+  const currentValue = currentEntry ? Number(currentEntry.split(":")[1]) : 0;
+
+  if (currentValue < daysToSubtract) {
+    return false;
+  }
   const remainingDays = Math.max(currentValue - daysToSubtract, 0);
+  const formattedValue = `${year}:${String(remainingDays).padStart(3, "0")}`;
 
-  const updatedUnspent = [
-    ...unspentArr.filter((s) => !s.startsWith(`${year}:`)),
-    `${year}:${remainingDays.toString().padStart(3, "0")}`
-  ];
+  const updatedUnspent = [...unspentVacationDaysByYear];
+  const existingIndex = updatedUnspent.findIndex((s) => s.startsWith(`${year}:`));
 
-  await keycloakApiService.updateUserAttributes(userId, {
-    ...userDetails,
-    unspentVacationDaysByYear: updatedUnspent
-  });
+  if (existingIndex >= 0) {
+    updatedUnspent[existingIndex] = formattedValue;
+  } else {
+    updatedUnspent.push(formattedValue);
+  }
+
+  user.unspentVacationDaysByYear = [...new Set(updatedUnspent)];
+  user.attributes[`vacation_${year}_remaining`] = [String(remainingDays)];
+  if (status === "APPROVED") {
+    await keycloakApiService.updateUserAttributes(userId, user);
+  }
+  return true;
 };

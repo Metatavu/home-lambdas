@@ -83,22 +83,30 @@ const updateVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
 
   const api = CreateKeycloakApiService();
   const userDetails = await api.findUser(userId);
+  const currentStatus = Array.isArray(status) ? status.at(-1)?.status : "UNKNOWN";
 
   try {
     const updatedVacationRequest =
       await vacationRequestService.updateVacationRequest(vacationRequestUpdates);
+    if (currentStatus === "APPROVED") {
+      const daysByYear = splitVacationDaysByYear(startDate, endDate);
+      for (const [year, daysInYear] of Object.entries(daysByYear)) {
+        const success = await updateRemainingVacationDays(userId, daysInYear, currentStatus, year);
+        if (!success) {
+          return {
+            statusCode: 400,
+            body: JSON.stringify({
+              message: `Cannot approve request: user does not have enough remaining vacation days for ${year}.`
+            })
+          };
+        }
+      }
+    }
     if (statusChanged) {
-      const currentStatus = Array.isArray(status) ? status.at(-1)?.status : "UNKNOWN";
       await notifyUserVacationStatusUpdatedAll({
         email: userDetails.email,
         updatedStatus: currentStatus
       });
-    }
-    if (status === "APPROVED") {
-      const daysByYear = splitVacationDaysByYear(startDate, endDate);
-      for (const [year, daysInYear] of Object.entries(daysByYear)) {
-        await updateRemainingVacationDays(userId, daysInYear, year);
-      }
     }
     return {
       statusCode: 200,

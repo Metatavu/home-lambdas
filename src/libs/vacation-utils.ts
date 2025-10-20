@@ -79,7 +79,6 @@ export const updateRemainingVacationDays = async (
   }
 
   user.unspentVacationDaysByYear = [...new Set(updatedUnspent)];
-  user.attributes[`vacation_${year}_remaining`] = [String(remainingDays)];
   if (status === "APPROVED") {
     await keycloakApiService.updateUserAttributes(userId, user);
   }

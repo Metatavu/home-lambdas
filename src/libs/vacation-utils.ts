@@ -12,6 +12,8 @@ import { CreateKeycloakApiService } from "src/database/services/keycloak-api-ser
  *
  * @returns An object where the keys are years and the values are the number of vacation days in that year.
  */
+
+// TODO: This requires updating to handle part time workers.
 export const splitVacationDaysByYear = (
   startDate: string,
   endDate: string

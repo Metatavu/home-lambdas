@@ -56,8 +56,6 @@ export const updateRemainingVacationDays = async (
   const keycloakApiService = CreateKeycloakApiService();
   const user = await keycloakApiService.getUserAttributes(userId);
 
-  user.attributes = user.attributes || [];
-
   const unspentVacationDaysByYear = user.unspentVacationDaysByYear || [];
 
   const currentEntry = unspentVacationDaysByYear.find((s) => s.startsWith(`${year}:`));

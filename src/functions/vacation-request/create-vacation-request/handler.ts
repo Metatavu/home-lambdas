@@ -94,14 +94,15 @@ export const createVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
       }
     }
 
-    await notifyAdminsVacationSubmittedAll({
-      id: newVacationRequestId,
-      user: userDetails.firstName,
-      startDate,
-      endDate,
-      type
-    });
-
+    if (draft === false) {
+      await notifyAdminsVacationSubmittedAll({
+        id: newVacationRequestId,
+        user: userDetails.firstName,
+        startDate,
+        endDate,
+        type
+      });
+    }
     return {
       statusCode: 201,
       body: JSON.stringify(createdVacationRequest)

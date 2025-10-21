@@ -37,14 +37,15 @@ const deleteVacationRequestHandler: APIGatewayProxyHandler = async (
     await vacationRequestService.deleteVacationRequest(id);
     const api = CreateKeycloakApiService();
     const userDetails = await api.findUser(foundVacationRequestById.userId);
-    await notifyAdminsVacationDeletedAll({
-      id: foundVacationRequestById.id,
-      user: userDetails.firstName,
-      startDate: foundVacationRequestById.startDate,
-      endDate: foundVacationRequestById.endDate,
-      type: foundVacationRequestById.type
-    });
-
+    if (foundVacationRequestById.draft === false) {
+      await notifyAdminsVacationDeletedAll({
+        id: foundVacationRequestById.id,
+        user: userDetails.firstName,
+        startDate: foundVacationRequestById.startDate,
+        endDate: foundVacationRequestById.endDate,
+        type: foundVacationRequestById.type
+      });
+    }
     return {
       statusCode: 204,
       body: JSON.stringify("")

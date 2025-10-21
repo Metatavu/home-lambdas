@@ -4,7 +4,10 @@ import { vacationRequestService } from "src/database/services";
 import { CreateKeycloakApiService } from "src/database/services/keycloak-api-service";
 import type { VacationRequest } from "src/generated/homeLambdasModels/model/vacationRequest";
 import { splitVacationDaysByYear, updateRemainingVacationDays } from "src/libs/vacation-utils";
-import { notifyUserVacationStatusUpdatedAll } from "src/notifications/vacation-notifications";
+import {
+  notifyAdminsVacationSubmittedAll,
+  notifyUserVacationStatusUpdatedAll
+} from "src/notifications/vacation-notifications";
 import type vacationRequestSchema from "src/schema/vacationRequest";
 
 /**
@@ -65,6 +68,7 @@ const updateVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
     };
   }
   const statusChanged = existingVacationRequest.status !== status;
+  const draftStatusChanged = existingVacationRequest.draft !== draft;
 
   const vacationRequestUpdates = {
     id: existingVacationRequest.id,
@@ -106,6 +110,15 @@ const updateVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
       await notifyUserVacationStatusUpdatedAll({
         email: userDetails.email,
         updatedStatus: currentStatus
+      });
+    }
+    if (draftStatusChanged) {
+      await notifyAdminsVacationSubmittedAll({
+        id: id,
+        user: userDetails.firstName,
+        startDate,
+        endDate,
+        type
       });
     }
     return {

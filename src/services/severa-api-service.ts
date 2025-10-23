@@ -35,6 +35,7 @@ export interface SeveraApiService {
   fetchUserByEmail: (email: string) => Promise<UserOutputModel>;
   getUserKeywords: (userGuid: string) => Promise<UserKeywordModel[]>;
   updateSeveraOptInKeyword: (userGuid: string, isSeveraOptIn: string, isSeveraOptInKeywordGuid: string) => Promise<UserKeywordModel>;
+  removeKeyWordFromUser: (userGuid: string, keywordGuid: string) => Promise<void>;
 }
 
 /**
@@ -637,6 +638,30 @@ export const CreateSeveraApiService = (): SeveraApiService => {
       return await updateResponse.json();
     },
 
+    /**
+     * Removes a keyword from a Severa user.
+     *
+     * @param userGuid The GUID of the user from whom the keyword is being removed.
+     * @param keywordGuid The GUID of the keyword to remove.
+     */
+    removeKeyWordFromUser: async (userGuid: string, keywordGuid: string) => {
+      const removeKeywordUrl = `${baseUrl}/v1/users/${userGuid}/keywords/${keywordGuid}`;
+      const removeResponse = await fetch(removeKeywordUrl, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${await getSeveraAccessToken()}`,
+          Client_Id: getSeveraClientId(),
+          "Content-Type": "application/json"
+        }
+      });
+
+      if (!removeResponse.ok) {
+        throw new Error(
+          `Failed to remove keyword from user: ${removeResponse.status} - ${removeResponse.statusText}`
+        );
+      }
+    }
+
   };
 };
 
@@ -654,7 +679,7 @@ const getSeveraAccessToken = async (): Promise<string> => {
     client_id: client_Id,
     client_secret: client_Secret,
     scope:
-      "projects:read, resourceallocations:read, hours:read, users:read, users:write, settings:write, settings:read"
+      "projects:read, resourceallocations:read, hours:read, users:read, users:write, users:delete, settings:write, settings:read"
   };
 
   try {

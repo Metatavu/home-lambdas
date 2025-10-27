@@ -1,5 +1,13 @@
-import { DynamoDBDocumentClient, PutCommand, GetCommand, ScanCommand, DeleteCommand, UpdateCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
-import { PutCommandInput, GetCommandInput, ScanCommandInput, DeleteCommandInput, UpdateCommandInput, QueryCommandInput } from "@aws-sdk/lib-dynamodb";
+import {
+  BatchWriteCommand,
+  type DynamoDBDocumentClient,
+  PutCommand,
+  type PutCommandInput,
+  QueryCommand,
+  type QueryCommandInput,
+  UpdateCommand,
+  type UpdateCommandInput
+} from "@aws-sdk/lib-dynamodb";
 import type OnCallEntry from "../models/oncall";
 
 /**
@@ -15,19 +23,31 @@ class OnCallScheduleService {
   constructor(private readonly docClient: DynamoDBDocumentClient) {}
 
   /**
-   * Creates an OnCallSchedule entry
-   *
-   * @param entry OnCallSchedule entry
-   * @returns created entry
+   * Creates OnCallSchedule entiries in batches of 25
+   * @param entries OnCallSchedule entries
+   * @returns created entires
    */
-  public createOnCallFromJSON = async (entry: OnCallEntry): Promise<OnCallEntry> => {
-    const params: PutCommandInput = {
-      TableName: TABLE_NAME,
-      Item: entry
-    };
-    await this.docClient.send(new PutCommand(params));
-    return entry;
-  }
+
+  public createOnCallBatchFromJSON = async (entries: OnCallEntry[]): Promise<OnCallEntry[]> => {
+    const batches: OnCallEntry[][] = [];
+    const batchSize = 25;
+
+    for (let i = 0; i < entries.length; i += batchSize) {
+      batches.push(entries.slice(i, i + batchSize));
+    }
+
+    for (const batch of batches) {
+      const putRequests = batch.map((item) => ({ PutRequest: { Item: item } }));
+      const params = {
+        RequestItems: {
+          [TABLE_NAME]: putRequests
+        }
+      };
+      await this.docClient.send(new BatchWriteCommand(params));
+    }
+
+    return entries;
+  };
 
   /**
    * Lists all OnCallSchedule entries for a given year
@@ -47,8 +67,8 @@ class OnCallScheduleService {
       }
     };
     const result = await this.docClient.send(new QueryCommand(params));
-    return result.Items as OnCallEntry[] || [];
-  }
+    return (result.Items as OnCallEntry[]) || [];
+  };
 
   /**
    * Updates paid status for an OnCallSchedule entry
@@ -67,7 +87,7 @@ class OnCallScheduleService {
       }
     };
     await this.docClient.send(new UpdateCommand(params));
-  }
+  };
 
   /**
    * Upserts (creates or updates) an OnCallSchedule entry for a specific year and week
@@ -82,7 +102,7 @@ class OnCallScheduleService {
     };
     await this.docClient.send(new PutCommand(params));
     return entry;
-  }
+  };
 }
 
 export default OnCallScheduleService;

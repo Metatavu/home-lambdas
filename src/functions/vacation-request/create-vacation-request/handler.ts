@@ -1,9 +1,10 @@
 import { vacationRequestService } from "src/database/services";
 import { CreateKeycloakApiService } from "src/database/services/keycloak-api-service";
-import type { VacationRequest } from "src/generated/homeLambdasModels/model/vacationRequest";
 import type { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
 import { middyfy } from "src/libs/lambda";
+import { splitVacationDaysByYear, updateRemainingVacationDays } from "src/libs/vacation-utils";
 import { notifyAdminsVacationSubmittedAll } from "src/notifications/vacation-notifications";
+import type vacationRequestSchema from "src/schema/vacationRequest";
 import { v4 as uuidv4 } from "uuid";
 
 /**
@@ -16,7 +17,7 @@ import { v4 as uuidv4 } from "uuid";
  * - 'createdAt', 'updatedAt', 'startDate', 'endDate' are 'string' here, but VacationRequest expects 'Date'.
  */
 export const createVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
-  VacationRequest
+  typeof vacationRequestSchema
 > = async (event) => {
   const { body } = event;
   if (!body) {
@@ -77,6 +78,21 @@ export const createVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
       createdAt: createdAt,
       updatedAt: updatedAt
     });
+
+    const daysByYear = splitVacationDaysByYear(startDate, endDate);
+    const currentStatus = Array.isArray(status) ? status.at(-1)?.status : "UNKNOWN";
+
+    for (const [year, daysInYear] of Object.entries(daysByYear)) {
+      const success = await updateRemainingVacationDays(userId, daysInYear, currentStatus, year);
+      if (!success) {
+        return {
+          statusCode: 400,
+          body: JSON.stringify({
+            message: `Cannot create request: user does not have enough remaining vacation days for ${year}.`
+          })
+        };
+      }
+    }
 
     if (draft === false) {
       await notifyAdminsVacationSubmittedAll({

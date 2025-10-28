@@ -1,28 +1,42 @@
 import type { APIGatewayProxyHandler } from "aws-lambda";
 import { DateTime } from "luxon";
+import Config from "src/app/config";
 import { middyfy } from "src/libs/lambda";
 import { CreateSeveraApiService } from "src/services/severa-api-service";
 import type SeveraResponseWorkDays from "src/types/severa/workDays/severaResponseWorkDays";
 
 /**
- * Lambda handler to calculate the contracted work week of a user from Severa.
- * Get logged-in user's email from the authorizer, then fetch Severa GUID for user.
+ * Lambda handler to calculate the contracted work week of a user from Severa. Check user has SeveraId which should come from opting in.
+ * Tests email matches requested user data so url cannot be manipulated.
  * Lastly find a holiday free week for the user to find a normal expecetd work week.
  */
 export const getContractedWorkWeekHandler: APIGatewayProxyHandler = async (event) => {
-  try {
-    const api = CreateSeveraApiService();
+  const severaUserId = event.pathParameters?.userId;
 
-    const userEmail = event.requestContext.authorizer.claims.email;
-    if (!userEmail) {
+  try {
+    if (!severaUserId) {
       return {
         statusCode: 400,
-        body: JSON.stringify({ message: "User email not found" })
+        body: JSON.stringify({
+          message: "You need to opt in with the Severa service, Severa User ID required"
+        })
       };
     }
 
-    const user = await api.fetchUserByEmail(userEmail);
-    const userGuid = user.guid;
+    const api = CreateSeveraApiService();
+
+    const severaUser = await api.getUser(severaUserId);
+
+    const testUserEmail = Config.get().testUser.email;
+    const keycloakEmail = testUserEmail || event.requestContext.authorizer.claims.email;
+
+    if (severaUser.email !== keycloakEmail) {
+      return {
+        statusCode: 403,
+        body: JSON.stringify({ message: "You can only view your own information" })
+      };
+    }
+
     const today = DateTime.now();
     let contractedWeek: number[] = [];
     let foundWeek = false;
@@ -32,7 +46,7 @@ export const getContractedWorkWeekHandler: APIGatewayProxyHandler = async (event
       const weekEnd = weekStart.plus({ days: 6 });
 
       const workWeekData: SeveraResponseWorkDays[] = await api.getWorkWeek(
-        userGuid,
+        severaUserId,
         weekStart.toISODate(),
         weekEnd.toISODate()
       );
@@ -48,13 +62,6 @@ export const getContractedWorkWeekHandler: APIGatewayProxyHandler = async (event
         contractedWeek = workdays.map((day) => DateTime.fromISO(day.date).weekday % 7);
         foundWeek = true;
       }
-    }
-
-    if (!foundWeek) {
-      return {
-        statusCode: 404,
-        body: JSON.stringify({ message: "No holiday-free week found in recent weeks" })
-      };
     }
 
     return {

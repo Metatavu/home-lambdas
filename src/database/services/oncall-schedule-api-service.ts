@@ -24,7 +24,7 @@ class OnCallScheduleService {
 
   /**
    * Creates OnCallSchedule entiries in batches of 25
-   * @param entries OnCallSchedule entries
+   * @param entries Array of OnCallSchedule entries
    * @returns created entires
    */
   public createOnCallBatchFromJSON = async (entries: OnCallEntry[]): Promise<OnCallEntry[]> => {

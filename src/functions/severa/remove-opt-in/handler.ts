@@ -58,9 +58,28 @@ export const removeSeveraOptInHandler: APIGatewayProxyHandler = async (event) =>
     }
 
     try {
+      await keycloakApi.removeUserAttribute(keycloakUserId, "severaUserId");
+    } catch (error) {
+      console.warn(`Failed to remove severaUserId attribute for user ${keycloakUserId}: ${error instanceof Error ? error.message : String(error)}`);
+    }
+
+    /**
+     * If direct removal fails, fallback by clearing the 'severaUserId' attribute
+     * using updateUserAttributes method to ensure the user is opted out.
+     */
+
+    try {
       await keycloakApi.removeUserAttribute(keycloakUserId, "isSeveraOptIn");
     } catch (error) {
       console.warn(`Failed to remove isSeveraOptIn attribute for user ${keycloakUserId}: ${error instanceof Error ? error.message : String(error)}`);
+      try {
+        await keycloakApi.updateUserAttributes(keycloakUserId, { severaUserId: [] });
+      } catch (updateError) {
+        return {
+          statusCode: 502,
+          body: JSON.stringify({ error: `Failed to remove/clear isSeveraOptIn attribute: ${updateError instanceof Error ? updateError.message : String(updateError)}` }),
+        };
+      }
     }
 
     return { statusCode: 200, body: JSON.stringify({ message: "Opt-out completed" }) };

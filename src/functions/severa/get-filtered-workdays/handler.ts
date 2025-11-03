@@ -54,12 +54,12 @@ export const getContractedWorkWeekHandler: APIGatewayProxyHandler = async (event
       /**
        * Filter out zero hour days and holidays
        *
-       * @return a numeric array of normal work days in a week for the user where 0=Sunday...6=Saturday, and number of active workdays in a week.
+       * @return a numeric array of normal work days in a week for the user where Monday = 1...Sunday = 7, and number of active workdays in a week.
        */
       const workdays = workWeekData.filter((day) => day.expectedHours > 0 && !day.isHoliday);
 
       if (workdays.length > 0 && workdays.length <= 7) {
-        contractedWeek = workdays.map((day) => DateTime.fromISO(day.date).weekday % 7);
+        contractedWeek = workdays.map((day) => DateTime.fromISO(day.date).weekday);
         foundWeek = true;
       }
     }

@@ -77,12 +77,12 @@ export const onCallImportFromJsonHandler = async (event) => {
       Username: entry.Person,
       Paid: false
     });
+  }
 
-    try {
-      await onCallScheduleService.createOnCallBatchFromJSON(validEntries);
-    } catch (err) {
-      errors.push({ entry, error: err });
-    }
+  try {
+    await onCallScheduleService.createOnCallBatchFromJSON(validEntries);
+  } catch (err) {
+    errors.push({ error: err });
   }
 
   return {

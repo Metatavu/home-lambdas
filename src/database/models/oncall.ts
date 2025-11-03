@@ -11,7 +11,7 @@ export interface OnCallImportEntry {
 }
 
 export type OnCallImportError = {
-  entry: OnCallImportEntry;
+  entry?: OnCallImportEntry;
   error: string | unknown;
 };
 

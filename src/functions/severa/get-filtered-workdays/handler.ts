@@ -16,7 +16,7 @@ export const getContractedWorkWeekHandler: APIGatewayProxyHandler = async (event
   try {
     if (!severaUserId) {
       return {
-        statusCode: 400,
+        statusCode: 401,
         body: JSON.stringify({
           message: "You need to opt in with the Severa service, Severa User ID required"
         })

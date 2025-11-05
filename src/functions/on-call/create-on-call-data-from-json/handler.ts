@@ -1,7 +1,7 @@
 import { middyfy } from "@libs/lambda";
 import type { OnCallImportEntry, OnCallImportError } from "src/database/models/oncall";
-import { isAdminUser } from "src/libs/auth-utils";
 import { onCallScheduleService } from "src/database/services";
+import { isAdminUser } from "src/libs/auth-utils";
 
 /**
  * Lambda method for importing on-call data from JSON
@@ -15,13 +15,15 @@ export const onCallImportFromJsonHandler = async (event) => {
       statusCode: 403,
       body: JSON.stringify({
         code: 403,
-        message: "Access denied. Admin privileges required.",
-      }),
+        message: "Access denied. Admin privileges required."
+      })
     };
   }
+
   const year = event.queryStringParameters?.year
     ? parseInt(event.queryStringParameters.year, 10)
     : undefined;
+
   if (!year || year < 2020 || year > new Date().getFullYear()) {
     return {
       statusCode: 400,
@@ -31,6 +33,7 @@ export const onCallImportFromJsonHandler = async (event) => {
       }
     };
   }
+
   let data: OnCallImportEntry[];
   try {
     data = typeof event.body === "string" ? JSON.parse(event.body) : event.body;
@@ -41,9 +44,10 @@ export const onCallImportFromJsonHandler = async (event) => {
       headers: {
         "Content-Type": "application/json"
       },
-      error: err.message,
+      error: err.message
     };
   }
+
   if (!Array.isArray(data)) {
     return {
       statusCode: 400,
@@ -54,33 +58,36 @@ export const onCallImportFromJsonHandler = async (event) => {
     };
   }
 
-  let imported = 0;
+  const validEntries = [];
   const errors: OnCallImportError[] = [];
   for (const entry of data) {
     if (
       typeof entry.Week !== "number" ||
       typeof entry.Person !== "string" ||
-      entry.Week < 1 || 
+      entry.Week < 1 ||
       entry.Week > 52
     ) {
       errors.push({ entry, error: "Invalid entry" });
       continue;
     }
-    try {
-      await onCallScheduleService.createOnCallFromJSON({
-        Year: year,
-        Week: entry.Week,
-        Username: entry.Person,
-        Paid: false,
-      });
-      imported++;
-    } catch (err) {
-      errors.push({ entry, error: err });
-    }
+
+    validEntries.push({
+      Year: year,
+      Week: entry.Week,
+      Username: entry.Person,
+      Paid: false
+    });
   }
+
+  try {
+    await onCallScheduleService.createOnCallBatchFromJSON(validEntries);
+  } catch (err) {
+    errors.push({ error: err });
+  }
+
   return {
     statusCode: errors.length ? 207 : 200,
-    body: JSON.stringify({ imported, errors }),
+    body: JSON.stringify({ validEntries, errors })
   };
 };
 

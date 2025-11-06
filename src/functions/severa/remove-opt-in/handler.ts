@@ -39,10 +39,8 @@ export const removeSeveraOptInHandler: APIGatewayProxyHandler = async (event) =>
       let keywordGuid: string | null = null;
       try {
         keywordGuid = await severaApi.getKeywordIdForUser(severaUserId, "isSeveraOptIn");
-      } catch (error) {
-        if (process.env.NODE_ENV !== "production") {
-          console.debug(`Failed to get keyword ID for user ${severaUserId}: ${error instanceof Error ? error.message : String(error)}`);
-        }
+      } catch {
+        keywordGuid = null;
       }
 
       if (keywordGuid) {
@@ -51,16 +49,28 @@ export const removeSeveraOptInHandler: APIGatewayProxyHandler = async (event) =>
         } catch (error) {
           return {
             statusCode: 502,
-            body: JSON.stringify({ error: `Failed to remove Severa opt-in keyword: ${error instanceof Error ? error.message : String(error)}` }),
+            body: JSON.stringify({ 
+              error: `Failed to remove Severa opt-in keyword.`,
+              details: error instanceof Error ? error.message : String(error) }),
           };
         }
       }
     }
 
     try {
-      await keycloakApi.removeUserAttribute(keycloakUserId, "severaUserId");
-    } catch (error) {
-      console.warn(`Failed to remove severaUserId attribute for user ${keycloakUserId}: ${error instanceof Error ? error.message : String(error)}`);
+      await keycloakApi.removeUserAttribute(keycloakUserId, "isSeveraOptIn");
+    } catch {
+      try {
+        await keycloakApi.updateUserAttributes(keycloakUserId, { isSeveraOptIn: [] });
+      } catch (updateError) {
+        return {
+          statusCode: 502,
+          body: JSON.stringify({ 
+            error: "Failed to remove/clear isSeveraOptIn attribute.",
+            details: updateError instanceof Error ? updateError.message : String(updateError)
+          })
+        };
+      } 
     }
 
     /**
@@ -69,15 +79,17 @@ export const removeSeveraOptInHandler: APIGatewayProxyHandler = async (event) =>
      */
 
     try {
-      await keycloakApi.removeUserAttribute(keycloakUserId, "isSeveraOptIn");
-    } catch (error) {
-      console.warn(`Failed to remove isSeveraOptIn attribute for user ${keycloakUserId}: ${error instanceof Error ? error.message : String(error)}`);
+      await keycloakApi.removeUserAttribute(keycloakUserId, "severaUserId");
+    } catch {
       try {
         await keycloakApi.updateUserAttributes(keycloakUserId, { severaUserId: [] });
       } catch (updateError) {
         return {
           statusCode: 502,
-          body: JSON.stringify({ error: `Failed to remove/clear isSeveraOptIn attribute: ${updateError instanceof Error ? updateError.message : String(updateError)}` }),
+          body: JSON.stringify({ 
+            error: "Failed to remove severaUserId attribute.",
+            details: updateError instanceof Error ? updateError.message : String(updateError)
+          }),
         };
       }
     }
@@ -86,7 +98,10 @@ export const removeSeveraOptInHandler: APIGatewayProxyHandler = async (event) =>
   } catch (error) {
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: error instanceof Error ? error.message : String(error) }),
+      body: JSON.stringify({ 
+        error: "Failed to remove Severa opt-in.",
+        details: error instanceof Error ? error.message : String(error)
+      }),
     };
   }
 };

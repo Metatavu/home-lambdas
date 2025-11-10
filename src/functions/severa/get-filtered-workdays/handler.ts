@@ -52,13 +52,17 @@ export const getContractedWorkWeekHandler: APIGatewayProxyHandler = async (event
       );
 
       /**
-       * Filter out zero hour days and holidays
-       *
-       * @return a numeric array of normal work days in a week for the user where Monday = 1...Sunday = 7, and number of active workdays in a week.
+       * foundWeek = previous 4 weeks where week contains no holidays
+       * When week is found, find workdays where expected hours > 0
        */
-      const workdays = workWeekData.filter((day) => day.expectedHours > 0 && !day.isHoliday);
+      const hasHoliday = workWeekData.some((day) => day.isHoliday);
+      if (hasHoliday) {
+        continue;
+      }
 
-      if (workdays.length > 0 && workdays.length <= 7) {
+      const workdays = workWeekData.filter((day) => day.expectedHours > 0);
+
+      if (workdays.length > 0) {
         contractedWeek = workdays.map((day) => DateTime.fromISO(day.date).weekday);
         foundWeek = true;
       }

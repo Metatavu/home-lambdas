@@ -2,48 +2,49 @@
  * Date range type
  */
 export type DateRange = {
-    start_date: string,
-    end_date: string
+  start_date: string;
+  end_date: string;
 };
 
 /**
  * Details of a vacation request.
  */
 export interface VacationDetails {
-    id: string;
-    user: string;
-    startDate: string;
-    endDate: string;
-    type?: string;
+  id: string;
+  user: string;
+  startDate: string;
+  endDate: string;
+  type?: string;
 }
 
 /**
  * Application configuration
  */
 export interface Configuration {
-    auth: {
-        issuer: string;
-    },
-    splunkApi: {
-        apiKey: string
-        apiId: string,
-        teamOnCallUrl: string,
-        schedulePolicyName: string
-    }
-    testUser: {
-        email: string
-    }
-    email: {
-        mailgunPort: number;                          
-        mailgunSmtpHost: string;
-        mailgunSmtpUser: string;
-        mailgunSmtpPassword: string;
-        adminEmails: string[];
-    }
-    slack: {
-        botToken: string;
-        adminUsers: string[];
-    }
-    vacationDetails?: VacationDetails;
-    homeBaseUrl: string;
+  auth: {
+    issuer: string;
+  };
+  splunkApi: {
+    apiKey: string;
+    apiId: string;
+    teamOnCallUrl: string;
+    schedulePolicyName: string;
+    userOnCallUrl: string;
+  };
+  testUser: {
+    email: string;
+  };
+  email: {
+    mailgunPort: number;
+    mailgunSmtpHost: string;
+    mailgunSmtpUser: string;
+    mailgunSmtpPassword: string;
+    adminEmails: string[];
+  };
+  slack: {
+    botToken: string;
+    adminUsers: string[];
+  };
+  vacationDetails?: VacationDetails;
+  homeBaseUrl: string;
 }

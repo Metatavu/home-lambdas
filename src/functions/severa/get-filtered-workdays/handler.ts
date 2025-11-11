@@ -8,7 +8,7 @@ import type SeveraResponseWorkDays from "src/types/severa/workDays/severaRespons
 /**
  * Lambda handler to calculate the contracted work week of a user from Severa. Check user has SeveraId which should come from opting in.
  * Tests email matches requested user data so url cannot be manipulated.
- * Lastly find a holiday free week for the user to find a normal expecetd work week.
+ * Lastly find a holiday free week for the user to find a normal expeceted work week.
  */
 export const getContractedWorkWeekHandler: APIGatewayProxyHandler = async (event) => {
   const severaUserId = event.pathParameters?.userId;

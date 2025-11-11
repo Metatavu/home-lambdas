@@ -197,7 +197,6 @@ export const CreateSeveraApiService = (): SeveraApiService => {
 
     /**
      * Fetches workdays for a user from Severa within an optional data range
-     * Modified for calculating user vacation days consumption
      *
      * @param severaUserId - GUID of the Severa user whos workdays are being retrieved
      * @param startDate - Optional start date for filtering workdays in ISO format, defaults to 7 days before

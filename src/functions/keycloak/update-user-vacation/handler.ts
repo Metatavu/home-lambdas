@@ -82,7 +82,7 @@ const updateVacationHandler: APIGatewayProxyHandlerV2 = async (event) => {
       const yearInt = Number.parseInt(year, 10);
       if (
         Number.isNaN(yearInt) ||
-        yearInt > currentYear ||
+        yearInt > currentYear + 1 ||
         typeof data.total !== "number" ||
         typeof data.remaining !== "number"
       ) {

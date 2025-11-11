@@ -6,7 +6,7 @@ export default {
     {
       httpApi: {
         method: "get",
-        path: "severa/users/{severaUserId}/workWeek",
+        path: "/severa/users/{severaUserId}/workWeek",
         authorizer: {
           name: "homeKeycloakAuthorizer"
         }

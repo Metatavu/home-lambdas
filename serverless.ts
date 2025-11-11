@@ -13,6 +13,7 @@ import onCallListDataHandler from "src/functions/on-call/list-on-call-data";
 import deleteQuestionnaireHandler from "src/functions/questionnaire/delete-questionnaire";
 import listQuestionnaireHandler from "src/functions/questionnaire/list-questionnaire";
 import updateQuestionnaireHandler from "src/functions/questionnaire/update-questionnaire";
+import getWorkWeek from "src/functions/severa/get-filtered-workdays";
 import getWorkHoursHandler from "src/functions/severa/get-filtered-workhours";
 import getFlextimeHandler from "src/functions/severa/get-flextime-by-user";
 import getPhasesHandler from "src/functions/severa/get-phases-by-project";
@@ -190,7 +191,8 @@ const serverlessConfiguration: AWS = {
     updateArticleHandler,
     deleteArticleHandler,
     readArticleHandler,
-    uploadFileHandler
+    uploadFileHandler,
+    getWorkWeek
   },
   package: { individually: true },
   custom: {

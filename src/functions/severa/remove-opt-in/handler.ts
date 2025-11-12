@@ -46,12 +46,10 @@ export const removeSeveraOptInHandler: APIGatewayProxyHandler = async (event) =>
       if (keywordGuid) {
         try {
           await severaApi.removeKeyWordFromUser(severaUserId, keywordGuid);
-        } catch (error) {
+        } catch {
           return {
             statusCode: 502,
-            body: JSON.stringify({ 
-              error: `Failed to remove Severa opt-in keyword.`,
-              details: error instanceof Error ? error.message : String(error) }),
+            body: JSON.stringify({ message: "Failed to remove isSeveraOptIn keyword from Severa user." })
           };
         }
       }
@@ -62,13 +60,10 @@ export const removeSeveraOptInHandler: APIGatewayProxyHandler = async (event) =>
     } catch {
       try {
         await keycloakApi.updateUserAttributes(keycloakUserId, { isSeveraOptIn: [] });
-      } catch (updateError) {
+      } catch {
         return {
           statusCode: 502,
-          body: JSON.stringify({ 
-            error: "Failed to remove/clear isSeveraOptIn attribute.",
-            details: updateError instanceof Error ? updateError.message : String(updateError)
-          })
+          body: JSON.stringify({ message: "Failed to remove/clear isSeveraOptIn attribute." })
         };
       } 
     }
@@ -83,25 +78,19 @@ export const removeSeveraOptInHandler: APIGatewayProxyHandler = async (event) =>
     } catch {
       try {
         await keycloakApi.updateUserAttributes(keycloakUserId, { severaUserId: [] });
-      } catch (updateError) {
+      } catch {
         return {
           statusCode: 502,
-          body: JSON.stringify({ 
-            error: "Failed to remove severaUserId attribute.",
-            details: updateError instanceof Error ? updateError.message : String(updateError)
-          }),
+          body: JSON.stringify({ message: "Failed to remove severaUserId attribute." }),
         };
       }
     }
 
     return { statusCode: 200, body: JSON.stringify({ message: "Opt-out completed" }) };
-  } catch (error) {
+  } catch {
     return {
       statusCode: 500,
-      body: JSON.stringify({ 
-        error: "Failed to remove Severa opt-in.",
-        details: error instanceof Error ? error.message : String(error)
-      }),
+      body: JSON.stringify({ message: "Severa opt-out failed." }),
     };
   }
 };

@@ -193,7 +193,8 @@ const serverlessConfiguration: AWS = {
     deleteArticleHandler,
     readArticleHandler,
     uploadFileHandler,
-    getContractedWorkWeekHandler
+    getContractedWorkWeekHandler,
+    removeOptIn
   },
   package: { individually: true },
   custom: {

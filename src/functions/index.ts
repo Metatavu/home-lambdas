@@ -28,6 +28,7 @@ export { default as deleteQuestionnaireHandler } from "./questionnaire/delete-qu
 export { default as findQuestionnaireHandler } from "./questionnaire/find-questionnaire";
 export { default as listQuestionnaireHandler } from "./questionnaire/list-questionnaire";
 export { default as updateQuestionnaireHandler } from "./questionnaire/update-questionnaire";
+export { default as getContractedWorkWeekHandler } from "./severa/get-filtered-workdays";
 export { default as getWorkHoursHandler } from "./severa/get-filtered-workhours";
 export { default as getFlextimeHandler } from "./severa/get-flextime-by-user";
 export { default as getPhasesHandler } from "./severa/get-phases-by-project";

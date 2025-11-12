@@ -197,12 +197,11 @@ export const CreateSeveraApiService = (): SeveraApiService => {
 
     /**
      * Fetches workdays for a user from Severa within an optional data range
-     * Modified for calculating user vacation days consumption
      *
      * @param severaUserId - GUID of the Severa user whos workdays are being retrieved
      * @param startDate - Optional start date for filtering workdays in ISO format, defaults to 7 days before
      * @param endDate - Optional end date, defaults to today
-     * @returns - {Promise<SeveraResponseWorkDays[]>} - A promise that resolves to an array of workday objects for the user
+     * @returns - {Promise<SeveraResponseWorkDays[]>}
      */
     getWorkWeek: async (severaUserId: string, startDate?: string, endDate?: string) => {
       const demoDataDate = process.env.DEMO_DATA_DATE;

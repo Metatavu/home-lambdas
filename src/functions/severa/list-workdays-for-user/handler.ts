@@ -1,8 +1,8 @@
 import type { APIGatewayProxyHandler } from "aws-lambda";
 import Config from "src/app/config";
+import type { ListWorkdaysForUser } from "src/generated/homeLambdasModels/model/listWorkdaysForUser";
 import { middyfy } from "src/libs/lambda";
 import { CreateSeveraApiService } from "src/services/severa-api-service";
-import type SeveraResponseWorkDays from "src/types/severa/workDays/severaResponseWorkDays";
 
 /**
  * Lambda handler that lists a user's workdays from Severa within a given date range.
@@ -49,13 +49,9 @@ export const listWorkdaysForUserHandler: APIGatewayProxyHandler = async (event) 
     const startDate = event.queryStringParameters?.startDate;
     const endDate = event.queryStringParameters?.endDate;
 
-    const rawWorkWeekData: SeveraResponseWorkDays[] = await SeveraApi.getWorkWeek(
-      severaUserId,
-      startDate,
-      endDate
-    );
+    const rawWorkWeekData = await SeveraApi.getWorkWeek(severaUserId, startDate, endDate);
 
-    const workWeekData = rawWorkWeekData.map((day) => ({
+    const workWeekData: ListWorkdaysForUser[] = rawWorkWeekData.map((day) => ({
       date: day.date,
       userGuid: day.userGuid,
       expectedHours: day.expectedHours ?? 0,

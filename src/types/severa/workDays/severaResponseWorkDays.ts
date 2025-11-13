@@ -6,8 +6,9 @@ interface SeveraResponseWorkDays {
   userGuid: string;
   expectedHours: number;
   enteredHours: number;
-  enteredTimeEntries: number;
+  enteredTimeEntries?: number;
   isHoliday: boolean;
+  holidayName?: string | null;
 }
 
 export default SeveraResponseWorkDays;

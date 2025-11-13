@@ -1,6 +1,12 @@
 import fetch from "node-fetch";
 import Config from "src/app/config";
 
+/**
+ * Fetches the email address of a VictorOps user by their username.
+ *
+ * @param username - The VictorOps username to look up.
+ * @returns A promise that resolves to the user's email address if found, or `null` if not found or an error occurs.
+ */
 export const getUserEmail = async (username: string): Promise<string | null> => {
   try {
     const { apiId, apiKey, userOnCallUrl } = Config.get().splunkApi;

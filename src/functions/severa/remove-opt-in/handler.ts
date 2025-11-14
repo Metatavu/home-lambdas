@@ -25,16 +25,28 @@ export const removeSeveraOptInHandler: APIGatewayProxyHandler = async (event) =>
     /**
      * Fetch Keycloak user and severaUserId attribute
      */
-    let keycloakUser = await keycloakApi.findUser(keycloakUserId);
-    if (Array.isArray(keycloakUser)) keycloakUser = keycloakUser[0];
-    const attrs = (keycloakUser as any)?.attributes || {};
-    const severaUserId: string | undefined = Array.isArray(attrs.severaUserId)
-      ? attrs.severaUserId[0]
-      : attrs.severaUserId;
+    let severaUserId: string | undefined;
+    try {
+      const keycloakUser = await keycloakApi.findUser(keycloakUserId);
+    
+      if (!keycloakUser) {
+      return {
+        statusCode: 404,
+        body: JSON.stringify({ message: "Keycloak user not found." }),
+      };
+    }
 
-    /**
-     * If we have Severa user id, try to remove the opt-in keyword from Severa
-     */
+    const attr = keycloakUser?.attributes || {};
+    severaUserId = attr.severaUserId?.[0];
+
+  } catch {
+    return {
+      statusCode: 502,
+      body: JSON.stringify({ message: "Failed to fetch Keycloak user." }),
+    };
+  }
+
+    // If we have Severa user id, try to remove the opt-in keyword from Severa
     if (severaUserId) {
       let keywordGuid: string | null = null;
       try {
@@ -58,32 +70,20 @@ export const removeSeveraOptInHandler: APIGatewayProxyHandler = async (event) =>
     try {
       await keycloakApi.removeUserAttribute(keycloakUserId, "isSeveraOptIn");
     } catch {
-      try {
-        await keycloakApi.updateUserAttributes(keycloakUserId, { isSeveraOptIn: [] });
-      } catch {
-        return {
-          statusCode: 502,
-          body: JSON.stringify({ message: "Failed to remove/clear isSeveraOptIn attribute." })
-        };
-      } 
+      return {
+        statusCode: 502,
+        body: JSON.stringify({ message: "Failed to remove isSeveraOptIn attribute." })
+      };
     }
 
-    /**
-     * If direct removal fails, fallback by clearing the 'severaUserId' attribute
-     * using updateUserAttributes method to ensure the user is opted out.
-     */
-
+    // Remove severaUserId attribute as well
     try {
       await keycloakApi.removeUserAttribute(keycloakUserId, "severaUserId");
     } catch {
-      try {
-        await keycloakApi.updateUserAttributes(keycloakUserId, { severaUserId: [] });
-      } catch {
-        return {
-          statusCode: 502,
-          body: JSON.stringify({ message: "Failed to remove severaUserId attribute." }),
-        };
-      }
+      return {
+        statusCode: 502,
+        body: JSON.stringify({ message: "Failed to remove severaUserId attribute." })
+      };
     }
 
     return { statusCode: 200, body: JSON.stringify({ message: "Opt-out completed" }) };

@@ -1,14 +1,16 @@
 import { middyfy } from "@libs/lambda";
-import { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
-import { OnCall } from "src/generated/homeLambdasModels/model/onCall";
 import { onCallScheduleService } from "src/database/services";
+import type { OnCall } from "src/generated/homeLambdasModels/model/onCall";
+import type { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
 
 /**
  * Lambda method for loading on-call data
  *
  * @param event event
  */
-export const onCallListDataHandler: ValidatedEventAPIGatewayProxyEvent<OnCall> = async (event: { queryStringParameters: { [key: string]: string } }) => {
+export const onCallListDataHandler: ValidatedEventAPIGatewayProxyEvent<OnCall> = async (event: {
+  queryStringParameters: { [key: string]: string };
+}) => {
   const { queryStringParameters } = event;
 
   if (!queryStringParameters || !queryStringParameters.year) {
@@ -18,10 +20,10 @@ export const onCallListDataHandler: ValidatedEventAPIGatewayProxyEvent<OnCall> =
       headers: {
         "Content-Type": "application/json"
       }
-    }
+    };
   }
 
-  const year = parseInt(queryStringParameters.year)
+  const year = Number.parseInt(queryStringParameters.year, 10);
   if (!year || year < 2020 || year > new Date().getFullYear()) {
     return {
       statusCode: 400,
@@ -29,11 +31,11 @@ export const onCallListDataHandler: ValidatedEventAPIGatewayProxyEvent<OnCall> =
       headers: {
         "Content-Type": "application/json"
       }
-    }
+    };
   }
 
   const data = await onCallScheduleService.listOnCallSchedulesByYear(year);
-  
+
   if (!data.length) {
     return {
       statusCode: 204,
@@ -41,17 +43,20 @@ export const onCallListDataHandler: ValidatedEventAPIGatewayProxyEvent<OnCall> =
       headers: {
         "Content-Type": "application/json"
       }
-    }
+    };
   }
 
   return {
     statusCode: 200,
-    body: JSON.stringify(data.map((entry) => ({
-      ...entry,
-      Username: entry.Username,
-      Paid: entry.Paid || false
-    })))
+    body: JSON.stringify(
+      data.map((entry) => ({
+        ...entry,
+        Username: entry.Username,
+        Email: entry.Email || null,
+        Paid: entry.Paid || false
+      }))
+    )
   };
-}
+};
 
 export const main = middyfy(onCallListDataHandler);

@@ -1,11 +1,12 @@
-import fetch from "node-fetch";
 import { DateTime } from "luxon";
+import fetch from "node-fetch";
 import Config from "src/app/config";
-import { SplunkSchedule } from "src/types/on-call";
-import { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
-import { OnCall } from "src/generated/homeLambdasModels/api";
-import { OnCallEntry } from "src/database/models/oncall";
+import type OnCallEntry from "src/database/models/oncall";
 import { onCallScheduleService } from "src/database/services";
+import type { OnCall } from "src/generated/homeLambdasModels/model/onCall";
+import type { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
+import { getUserEmail } from "src/services/on-call-service";
+import type { SplunkSchedule } from "src/types/on-call";
 
 /**
  * Resolve next week from schedule
@@ -15,8 +16,14 @@ import { onCallScheduleService } from "src/database/services";
  * @param policyName name of policy
  * @returns week from schedule
  */
-const getNextWeekFromSchedule = (schedule: SplunkSchedule, nextThursday: DateTime, policyName: string) => {
-  const scheduleFromSplunk = schedule.schedules.find(schedule => schedule.policy.name === policyName)?.schedule[0];
+const getNextWeekFromSchedule = (
+  schedule: SplunkSchedule,
+  nextThursday: DateTime,
+  policyName: string
+) => {
+  const scheduleFromSplunk = schedule.schedules.find(
+    (schedule) => schedule.policy.name === policyName
+  )?.schedule[0];
   if (!scheduleFromSplunk) {
     return null;
   }
@@ -36,18 +43,20 @@ const getNextWeekFromSchedule = (schedule: SplunkSchedule, nextThursday: DateTim
  *
  * @param event event
  */
-export const onCallWeeklyCheckHandler : ValidatedEventAPIGatewayProxyEvent<OnCall> = async () => {
-  const { apiId, apiKey, schedulePolicyName, teamOnCallUrl } = Config.get().splunkApi
+export const onCallWeeklyCheckHandler: ValidatedEventAPIGatewayProxyEvent<OnCall> = async () => {
+  const { apiId, apiKey, schedulePolicyName, teamOnCallUrl } = Config.get().splunkApi;
 
-  const splunkTeamOnCallUrl = teamOnCallUrl
+  const splunkTeamOnCallUrl = teamOnCallUrl;
 
-  const schedule = await (await fetch(`${splunkTeamOnCallUrl}/schedule?daysForward=4&daysSkip=3`, {
-    headers: {
-      'X-VO-Api-Id': apiId,
-      'X-VO-Api-Key': apiKey,
-      'Accept': 'application/json'
-    }
-  })).json() as SplunkSchedule;
+  const schedule = (await (
+    await fetch(`${splunkTeamOnCallUrl}/schedule?daysForward=4&daysSkip=3`, {
+      headers: {
+        "X-VO-Api-Id": apiId,
+        "X-VO-Api-Key": apiKey,
+        Accept: "application/json"
+      }
+    })
+  ).json()) as SplunkSchedule;
 
   const nextThursday = DateTime.now().plus({ days: 4 });
   const nextWeek = getNextWeekFromSchedule(schedule, nextThursday, schedulePolicyName);
@@ -59,10 +68,13 @@ export const onCallWeeklyCheckHandler : ValidatedEventAPIGatewayProxyEvent<OnCal
   const week = nextWeek.week;
   const user = nextWeek.user;
 
+  const email = await getUserEmail(user);
+
   const entry: OnCallEntry = {
     Year: year,
     Week: week,
     Username: user,
+    Email: email || null,
     Paid: false
   };
 

@@ -33,6 +33,7 @@ export { default as getWorkHoursHandler } from "./severa/get-filtered-workhours"
 export { default as getFlextimeHandler } from "./severa/get-flextime-by-user";
 export { default as getPhasesHandler } from "./severa/get-phases-by-project";
 export { default as getResourceAllocationHandler } from "./severa/get-resource-allocations-by-user";
+export { default as listWorkdaysForUserHandler } from "./severa/list-workdays-for-user";
 export { default as createSoftwareHandler } from "./software-registry/create-software";
 export { default as deleteSoftwareHandler } from "./software-registry/delete-software";
 export { default as findSoftwareHandler } from "./software-registry/find-software";

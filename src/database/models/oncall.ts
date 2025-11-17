@@ -2,6 +2,7 @@ interface OnCallEntry {
   Year: number;
   Week: number;
   Username: string;
+  Email?: string | null;
   Paid?: boolean;
 }
 

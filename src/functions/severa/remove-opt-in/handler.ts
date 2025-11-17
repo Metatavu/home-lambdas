@@ -22,9 +22,7 @@ export const removeSeveraOptInHandler: APIGatewayProxyHandler = async (event) =>
     const severaApi = CreateSeveraApiService();
     const keycloakApi = CreateKeycloakApiService();
 
-    /**
-     * Fetch Keycloak user and severaUserId attribute
-     */
+    // Fetch Keycloak user and severaUserId attribute
     let severaUserId: string | undefined;
     try {
       const keycloakUser = await keycloakApi.findUser(keycloakUserId);
@@ -39,12 +37,12 @@ export const removeSeveraOptInHandler: APIGatewayProxyHandler = async (event) =>
     const attr = keycloakUser?.attributes || {};
     severaUserId = attr.severaUserId?.[0];
 
-  } catch {
-    return {
-      statusCode: 502,
-      body: JSON.stringify({ message: "Failed to fetch Keycloak user." }),
-    };
-  }
+    } catch {
+      return {
+        statusCode: 502,
+        body: JSON.stringify({ message: "Failed to fetch Keycloak user." }),
+      };
+    }
 
     // If we have Severa user id, try to remove the opt-in keyword from Severa
     if (severaUserId) {

@@ -1,16 +1,18 @@
-import fetch from "node-fetch";
-import type { KeywordModel } from "../generated/severaClient/models/KeywordModel";
-import type { UserOutputModel } from "../generated/severaClient/models/UserOutputModel";
-import type { UserKeywordModel } from "../generated/severaClient/models/UserKeywordModel";
-import type { Flextime } from "../types/severa/flexTime/flexTime";
 import { DateTime } from "luxon";
+import fetch from "node-fetch";
 import TimeUtilities from "src/meta-assistant/generic/time-utils";
-import type SeveraResponseWorkHours from "src/types/severa/workHour/severaResponseWorkHours";
 import type SeveraResponsePhases from "src/types/severa/phase/severaResponsePhases";
-import type SeveraResponseResourceAllocation from "src/types/severa/resourceAllocation/severaResponseResourceAllocation";
 import type SeveraResponsePreviousWorkHours from "src/types/severa/previousWorkHours/severaResponsePreviousWorkHours";
-import type SeveraResponseWorkDays from "src/types/severa/workDays/severaResponseWorkDays";
+import type SeveraResponseResourceAllocation from "src/types/severa/resourceAllocation/severaResponseResourceAllocation";
 import type SeveraResponseUser from "src/types/severa/user/severaResponseUser";
+import type SeveraResponseWorkDays from "src/types/severa/workDays/severaResponseWorkDays";
+import type SeveraResponseWorkHours from "src/types/severa/workHour/severaResponseWorkHours";
+import type {
+  KeywordModel,
+  UserKeywordModel,
+  UserOutputModel
+} from "../generated/severaClient/api";
+import type { Flextime } from "../types/severa/flexTime/flexTime";
 
 /**
  * Interface for a SeveraApiService.
@@ -19,22 +21,47 @@ export interface SeveraApiService {
   getFlextimeBySeveraUserId: (severaUserId: string) => Promise<Flextime>;
   getResourceAllocation: (endpointPath: URL) => Promise<SeveraResponseResourceAllocation[]>;
   getPhasesBySeveraProjectId: (severaProjectId: string) => Promise<SeveraResponsePhases[]>;
-  getWorkHours: (endpointPath: URL, startDate?: string, endDate?: string ) => Promise<SeveraResponseWorkHours[]>;  
+  getWorkHours: (
+    endpointPath: URL,
+    startDate?: string,
+    endDate?: string
+  ) => Promise<SeveraResponseWorkHours[]>;
   getPreviousWorkHours: () => Promise<SeveraResponsePreviousWorkHours[]>;
   getWorkDays: (severaUserId: string) => Promise<SeveraResponseWorkDays>;
   getOptInUsers: () => Promise<SeveraResponseUser[]>;
   getResourceAllocations: () => Promise<SeveraResponseResourceAllocation>;
   getUser: (severaUserId: string) => Promise<SeveraResponseUser>;
   getKeywordIdForUser: (severaUserId: string, keywordValue: string) => Promise<string>;
-  getWorkWeek: (severaUserId: string) => Promise<SeveraResponseWorkDays[]>;
+  getWorkWeek: (
+    severaUserId: string,
+    startDate?: string,
+    endDate?: string
+  ) => Promise<SeveraResponseWorkDays[]>;
+
   getPreviousWeekHours: (severaUserId: string) => Promise<SeveraResponsePreviousWorkHours[]>;
-  getFilteredWorkHoursForUsers: (users: { guid: string }[], severaProjectId: string, startDate?: string, endDate?: string) => Promise<SeveraResponseWorkHours[]>;
-  getWorkHoursForUser: (severaUserId: string, startDate?: string, endDate?: string) => Promise<SeveraResponseWorkHours[]>;
-  getResourceAllocationsByUserOrAll: (severaUserId: string | undefined, optInUsers: { guid: string }[]) => Promise<SeveraResponseResourceAllocation[]>;
+  getFilteredWorkHoursForUsers: (
+    users: { guid: string }[],
+    severaProjectId: string,
+    startDate?: string,
+    endDate?: string
+  ) => Promise<SeveraResponseWorkHours[]>;
+  getWorkHoursForUser: (
+    severaUserId: string,
+    startDate?: string,
+    endDate?: string
+  ) => Promise<SeveraResponseWorkHours[]>;
+  getResourceAllocationsByUserOrAll: (
+    severaUserId: string | undefined,
+    optInUsers: { guid: string }[]
+  ) => Promise<SeveraResponseResourceAllocation[]>;
   checkKeywordExists: (keyword: string) => Promise<KeywordModel>;
   fetchUserByEmail: (email: string) => Promise<UserOutputModel>;
   getUserKeywords: (userGuid: string) => Promise<UserKeywordModel[]>;
-  updateSeveraOptInKeyword: (userGuid: string, isSeveraOptIn: string, isSeveraOptInKeywordGuid: string) => Promise<UserKeywordModel>;
+  updateSeveraOptInKeyword: (
+    userGuid: string,
+    isSeveraOptIn: string,
+    isSeveraOptInKeywordGuid: string
+  ) => Promise<UserKeywordModel>;
 }
 
 /**
@@ -169,34 +196,39 @@ export const CreateSeveraApiService = (): SeveraApiService => {
     },
 
     /**
-     * Gets Work week from Severa
-     * 
-     * @param severaUserId Severa user id
-     * @returns Workdays of a user
+     * Fetches workdays for a user from Severa within an optional data range
+     *
+     * @param severaUserId - GUID of the Severa user whos workdays are being retrieved
+     * @param startDate - Optional start date for filtering workdays in ISO format, defaults to 7 days before
+     * @param endDate - Optional end date, defaults to today
+     * @returns - {Promise<SeveraResponseWorkDays[]>}
      */
-    getWorkWeek: async (severaUserId: string) => {
-
+    getWorkWeek: async (severaUserId: string, startDate?: string, endDate?: string) => {
       const demoDataDate = process.env.DEMO_DATA_DATE;
-      const today = demoDataDate ? DateTime.fromISO(demoDataDate).toISODate() : DateTime.now().toISODate();
-      const weekAgo = demoDataDate ? DateTime.fromISO(demoDataDate).minus({ days: 7 }).toISODate() : DateTime.now().minus({ days: 7 }).toISODate();
-      const startDate = weekAgo;
-      const endDate = today;
+      const today =
+        endDate ??
+        (demoDataDate ? DateTime.fromISO(demoDataDate).toISODate() : DateTime.now().toISODate());
+      const weekAgo =
+        startDate ??
+        (demoDataDate
+          ? DateTime.fromISO(demoDataDate).minus({ days: 7 }).toISODate()
+          : DateTime.now().minus({ days: 7 }).toISODate());
 
-      const url = `${baseUrl}/v1/users/${severaUserId}/workdays?startDate=${startDate}&endDate=${endDate}`;
+      const url = `${baseUrl}/v1/users/${severaUserId}/workdays?startDate=${weekAgo}&endDate=${today}`;
 
       const response = await fetch(url, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${await getSeveraAccessToken()}`,
           Client_Id: getSeveraClientId(),
-          "Content-Type": "application/json",
-        },
+          "Content-Type": "application/json"
+        }
       });
+
       if (!response.ok) {
-        throw new Error(
-          `Failed to fetch workdays: ${response.status} - ${response.statusText}`,
-        );
+        throw new Error(`Failed to fetch workdays: ${response.status} - ${response.statusText}`);
       }
+
       return response.json();
     },
 
@@ -250,9 +282,13 @@ export const CreateSeveraApiService = (): SeveraApiService => {
      */
     getPreviousWorkHours: async () => {
       const demoDataDate = process.env.DEMO_DATA_DATE;
-      const startDate = demoDataDate ? DateTime.fromISO(demoDataDate).minus({ days: 1 }).toISODate() : TimeUtilities.getPreviousTwoWorkdays().yesterday.toISODate();
-      const endDate = demoDataDate ? DateTime.fromISO(demoDataDate).toISODate() : DateTime.now().toISODate();
-      
+      const startDate = demoDataDate
+        ? DateTime.fromISO(demoDataDate).minus({ days: 1 }).toISODate()
+        : TimeUtilities.getPreviousTwoWorkdays().yesterday.toISODate();
+      const endDate = demoDataDate
+        ? DateTime.fromISO(demoDataDate).toISODate()
+        : DateTime.now().toISODate();
+
       const url = `${baseUrl}/v1/workhours?eventDateStart=${startDate}&eventDateEnd=${endDate}`;
 
       const response = await fetch(url, {
@@ -260,14 +296,12 @@ export const CreateSeveraApiService = (): SeveraApiService => {
         headers: {
           Authorization: `Bearer ${await getSeveraAccessToken()}`,
           Client_Id: getSeveraClientId(),
-          "Content-Type": "application/json",
-        },
+          "Content-Type": "application/json"
+        }
       });
 
       if (!response.ok) {
-        throw new Error(
-          `Failed to fetch work hours: ${response.status} - ${response.statusText}`,
-        );
+        throw new Error(`Failed to fetch work hours: ${response.status} - ${response.statusText}`);
       }
       return response.json();
     },
@@ -280,8 +314,12 @@ export const CreateSeveraApiService = (): SeveraApiService => {
      */
     getPreviousWeekHours: async (severaUserId: string) => {
       const demoDataDate = process.env.DEMO_DATA_DATE;
-      const today = demoDataDate ? DateTime.fromISO(demoDataDate).toISODate() : DateTime.now().toISODate();
-      const weekAgo = demoDataDate ? DateTime.fromISO(demoDataDate).minus({ days: 7 }).toISODate() : DateTime.now().minus({ days: 7 }).toISODate();
+      const today = demoDataDate
+        ? DateTime.fromISO(demoDataDate).toISODate()
+        : DateTime.now().toISODate();
+      const weekAgo = demoDataDate
+        ? DateTime.fromISO(demoDataDate).minus({ days: 7 }).toISODate()
+        : DateTime.now().minus({ days: 7 }).toISODate();
       const startDate = weekAgo;
       const endDate = today;
 
@@ -301,16 +339,16 @@ export const CreateSeveraApiService = (): SeveraApiService => {
       }
       return response.json();
     },
-    
+
     /**
-   * Gets a specific user from Severa by their user ID.
-   *
-   * @param severaUserId - Severa user ID
-   * @returns Severa user object, including keywords
-   */
+     * Gets a specific user from Severa by their user ID.
+     *
+     * @param severaUserId - Severa user ID
+     * @returns Severa user object, including keywords
+     */
     getUser: async (severaUserId: string) => {
-    const url = `${baseUrl}/v1/users/${severaUserId}`;
-      
+      const url = `${baseUrl}/v1/users/${severaUserId}`;
+
       const response = await fetch(url, {
         method: "GET",
         headers: {
@@ -347,7 +385,9 @@ export const CreateSeveraApiService = (): SeveraApiService => {
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to fetch keywords for user: ${response.status} - ${response.statusText}`);
+        throw new Error(
+          `Failed to fetch keywords for user: ${response.status} - ${response.statusText}`
+        );
       }
 
       const keywords = await response.json();
@@ -369,13 +409,8 @@ export const CreateSeveraApiService = (): SeveraApiService => {
      * @param endDate Optional end date
      * @returns Array of work hours for all users
      */
-    getFilteredWorkHoursForUsers: async (
-      users,
-      severaProjectId,
-      startDate,
-      endDate
-    ) => {
-      const errors: Array<{ userGuid: string, error: any }> = [];
+    getFilteredWorkHoursForUsers: async (users, severaProjectId, startDate, endDate) => {
+      const errors: Array<{ userGuid: string; error: any }> = [];
       const workHoursResults = await Promise.all(
         users.map(async (user) => {
           try {
@@ -384,14 +419,16 @@ export const CreateSeveraApiService = (): SeveraApiService => {
             url.searchParams.append("projectGuid", severaProjectId);
             if (startDate) url.searchParams.append("startDate", startDate);
             if (endDate) url.searchParams.append("endDate", endDate);
-            const userWorkHours = await (await fetch(url.toString(), {
-              method: "GET",
-              headers: {
-                Authorization: `Bearer ${await getSeveraAccessToken()}`,
-                Client_Id: getSeveraClientId(),
-                "Content-Type": "application/json"
-              }
-            })).json();
+            const userWorkHours = await (
+              await fetch(url.toString(), {
+                method: "GET",
+                headers: {
+                  Authorization: `Bearer ${await getSeveraAccessToken()}`,
+                  Client_Id: getSeveraClientId(),
+                  "Content-Type": "application/json"
+                }
+              })
+            ).json();
             return userWorkHours;
           } catch (e) {
             errors.push({ userGuid: user.guid, error: e });
@@ -457,28 +494,34 @@ export const CreateSeveraApiService = (): SeveraApiService => {
       let allResourceAllocations: SeveraResponseResourceAllocation[] = [];
 
       if (url) {
-        const response = await (await fetch(url.toString(), {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${await getSeveraAccessToken()}`,
-            Client_Id: getSeveraClientId(),
-            "Content-Type": "application/json"
-          }
-        })).json();
+        const response = await (
+          await fetch(url.toString(), {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${await getSeveraAccessToken()}`,
+              Client_Id: getSeveraClientId(),
+              "Content-Type": "application/json"
+            }
+          })
+        ).json();
         allResourceAllocations = response;
       } else {
         const resourceAllocationsResults = await Promise.all(
           optInUsers.map(async (user: { guid: string }) => {
             try {
-              const userUrl = new URL(`${baseUrl}/v1/users/${user.guid}/resourceallocations/allocations`);
-              const userResourceAllocations = await (await fetch(userUrl.toString(), {
-                method: "GET",
-                headers: {
-                  Authorization: `Bearer ${await getSeveraAccessToken()}`,
-                  Client_Id: getSeveraClientId(),
-                  "Content-Type": "application/json"
-                }
-              })).json();
+              const userUrl = new URL(
+                `${baseUrl}/v1/users/${user.guid}/resourceallocations/allocations`
+              );
+              const userResourceAllocations = await (
+                await fetch(userUrl.toString(), {
+                  method: "GET",
+                  headers: {
+                    Authorization: `Bearer ${await getSeveraAccessToken()}`,
+                    Client_Id: getSeveraClientId(),
+                    "Content-Type": "application/json"
+                  }
+                })
+              ).json();
               return userResourceAllocations;
             } catch (e) {
               console.error(`Error fetching resource allocations for user ${user.guid}:`, e);
@@ -565,7 +608,9 @@ export const CreateSeveraApiService = (): SeveraApiService => {
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to fetch user by email: ${response.status} - ${response.statusText}`);
+        throw new Error(
+          `Failed to fetch user by email: ${response.status} - ${response.statusText}`
+        );
       }
 
       const users = await response.json();
@@ -635,8 +680,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
       }
 
       return await updateResponse.json();
-    },
-
+    }
   };
 };
 

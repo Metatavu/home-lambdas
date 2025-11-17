@@ -23,7 +23,7 @@ export const onCallListDataHandler: ValidatedEventAPIGatewayProxyEvent<OnCall> =
     };
   }
 
-  const year = parseInt(queryStringParameters.year, 10);
+  const year = Number.parseInt(queryStringParameters.year, 10);
   if (!year || year < 2020 || year > new Date().getFullYear()) {
     return {
       statusCode: 400,

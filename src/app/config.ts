@@ -7,7 +7,6 @@ const env = cleanEnv(process.env, {
   SPLUNK_API_ID: str(),
   SPLUNK_TEAM_ONCALL_URL: str(),
   SPLUNK_SCHEDULE_POLICY_NAME: str(),
-  SPLUNK_USER_ONCALL_URL: str(),
   SEVERA_TEST_USER_EMAIL: str({ default: undefined }),
   MAILGUN_PORT: port(),
   MAILGUN_SMTP_HOST: str(),
@@ -33,8 +32,7 @@ export default class Config {
       apiKey: env.SPLUNK_API_KEY,
       apiId: env.SPLUNK_API_ID,
       teamOnCallUrl: env.SPLUNK_TEAM_ONCALL_URL,
-      schedulePolicyName: env.SPLUNK_SCHEDULE_POLICY_NAME,
-      userOnCallUrl: env.SPLUNK_USER_ONCALL_URL
+      schedulePolicyName: env.SPLUNK_SCHEDULE_POLICY_NAME
     },
     testUser: {
       email: env.SEVERA_TEST_USER_EMAIL

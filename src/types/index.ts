@@ -29,7 +29,6 @@ export interface Configuration {
     apiId: string;
     teamOnCallUrl: string;
     schedulePolicyName: string;
-    userOnCallUrl: string;
   };
   testUser: {
     email: string;

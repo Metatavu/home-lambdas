@@ -9,8 +9,8 @@ import Config from "src/app/config";
  */
 export const getUserEmail = async (username: string): Promise<string | null> => {
   try {
-    const { apiId, apiKey, userOnCallUrl } = Config.get().splunkApi;
-    const response = await fetch(`${userOnCallUrl}/${username}`, {
+    const { apiId, apiKey } = Config.get().splunkApi;
+    const response = await fetch(`https://api.victorops.com/api-public/v1/user/${username}`, {
       method: "GET",
       headers: {
         "X-VO-Api-Id": apiId,

@@ -1,10 +1,21 @@
 import fetch from "node-fetch";
-import type { KeycloakProfile } from "keycloak-js/lib/keycloak";
+
+/**
+ * Minimal Keycloak User Profile type based on Admin REST API
+ */
+export interface KeycloakUserProfile {
+  id: string;
+  username?: string;
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+  attributes?: Record<string, string[]>;
+}
 
 /**
  * Custom Interface for a user in keycloak functions with severaUserId added.
  */
-export interface CustomKeycloakProfile extends KeycloakProfile {
+export interface CustomKeycloakProfile extends KeycloakUserProfile {
   severaUserId: string;
 }
 
@@ -39,21 +50,19 @@ export const CreateKeycloakApiService = (): KeycloakApiService => {
       const response = await fetch(`${baseUrl}/admin/realms/${realm}/users`, {
         method: "GET",
         headers: {
-          Authorization: `Bearer ${await getAccessToken()}`,
-        },
+          Authorization: `Bearer ${await getAccessToken()}`
+        }
       });
 
       if (!response.ok) {
-        throw new Error(
-          `Failed to fetch users: ${response.status} - ${response.statusText}`
-        );
+        throw new Error(`Failed to fetch users: ${response.status} - ${response.statusText}`);
       }
 
-      const users: KeycloakProfile[] = await response.json();
+      const users: KeycloakUserProfile[] = await response.json();
       return users.map((user) => ({
         ...user,
-        severaUserId: (user as CustomKeycloakProfile).severaUserId ?? undefined,
-      })) as CustomKeycloakProfile[];
+        severaUserId: user.attributes?.severaUserId?.[0]
+      }));
     },
 
     /**
@@ -64,26 +73,22 @@ export const CreateKeycloakApiService = (): KeycloakApiService => {
      */
     findUser: async (id: string): Promise<CustomKeycloakProfile> => {
       try {
-        const response = await fetch(
-          `${baseUrl}/admin/realms/${realm}/users/${id}`,
-          {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${await getAccessToken()}`,
-            },
+        const response = await fetch(`${baseUrl}/admin/realms/${realm}/users/${id}`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${await getAccessToken()}`
           }
-        );
+        });
 
         if (!response.ok) {
           throw new Error(`Failed to find user with id: ${id}`);
         }
 
-        const user: KeycloakProfile = await response.json();
+        const user: KeycloakUserProfile = await response.json();
         return {
           ...user,
-          severaUserId:
-            (user as CustomKeycloakProfile).severaUserId ?? undefined,
-        } as CustomKeycloakProfile;
+          severaUserId: user.attributes?.severaUserId?.[0]
+        };
       } catch (error) {
         throw new Error(
           `An error occurred while fetching the user: ${
@@ -105,16 +110,13 @@ export const CreateKeycloakApiService = (): KeycloakApiService => {
       attributes: Record<string, string[]>
     ): Promise<{ updatedFields: Record<string, string[]> }> => {
       try {
-        const userDetailsResponse = await fetch(
-          `${baseUrl}/admin/realms/${realm}/users/${id}`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${await getAccessToken()}`,
-            },
+        const userDetailsResponse = await fetch(`${baseUrl}/admin/realms/${realm}/users/${id}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${await getAccessToken()}`
           }
-        );
+        });
 
         if (!userDetailsResponse.ok) {
           const errorText = await userDetailsResponse.text();
@@ -122,32 +124,29 @@ export const CreateKeycloakApiService = (): KeycloakApiService => {
             `Failed to fetch user details: ${userDetailsResponse.status} - ${userDetailsResponse.statusText}. Details: ${errorText}`
           );
         }
-        const userDetails = await userDetailsResponse.json();
+        const userDetails: KeycloakUserProfile = await userDetailsResponse.json();
         const existingAttributes = userDetails.attributes || {};
 
         const existingEmail = userDetails.email;
 
         const updatedAttributes = {
           ...existingAttributes,
-          ...attributes,
+          ...attributes
         };
 
         const bodyContent = {
           attributes: updatedAttributes,
-          email: existingEmail,
+          email: existingEmail
         };
 
-        const updateResponse = await fetch(
-          `${baseUrl}/admin/realms/${realm}/users/${id}`,
-          {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${await getAccessToken()}`,
-            },
-            body: JSON.stringify(bodyContent),
-          }
-        );
+        const updateResponse = await fetch(`${baseUrl}/admin/realms/${realm}/users/${id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${await getAccessToken()}`
+          },
+          body: JSON.stringify(bodyContent)
+        });
 
         if (!updateResponse.ok) {
           const errorText = await updateResponse.text();
@@ -156,7 +155,7 @@ export const CreateKeycloakApiService = (): KeycloakApiService => {
           );
         }
         return {
-          updatedFields: bodyContent.attributes,
+          updatedFields: bodyContent.attributes
         };
       } catch (error) {
         throw new Error(
@@ -173,21 +172,15 @@ export const CreateKeycloakApiService = (): KeycloakApiService => {
      * @param id  string
      * @param attributeName string
      */
-    removeUserAttribute: async (
-      id: string,
-      attributeName: string
-    ): Promise<void> => {
+    removeUserAttribute: async (id: string, attributeName: string): Promise<void> => {
       try {
-        const response = await fetch(
-          `${baseUrl}/admin/realms/${realm}/users/${id}`,
-          {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${await getAccessToken()}`,
-              "Content-Type": "application/json",
-            },
+        const response = await fetch(`${baseUrl}/admin/realms/${realm}/users/${id}`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${await getAccessToken()}`,
+            "Content-Type": "application/json"
           }
-        );
+        });
 
         if (!response.ok) {
           const errorText = await response.text();
@@ -196,7 +189,7 @@ export const CreateKeycloakApiService = (): KeycloakApiService => {
           );
         }
 
-        const user = await response.json();
+        const user: KeycloakUserProfile = await response.json();
         const existingEmail = user.email;
 
         const currentAttributes = user.attributes || {};
@@ -205,20 +198,17 @@ export const CreateKeycloakApiService = (): KeycloakApiService => {
 
         const bodyContent = {
           email: existingEmail,
-          attributes: currentAttributes,
+          attributes: currentAttributes
         };
 
-        const updateResponse = await fetch(
-          `${baseUrl}/admin/realms/${realm}/users/${id}`,
-          {
-            method: "PUT",
-            headers: {
-              Authorization: `Bearer ${await getAccessToken()}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(bodyContent),
-          }
-        );
+        const updateResponse = await fetch(`${baseUrl}/admin/realms/${realm}/users/${id}`, {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${await getAccessToken()}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(bodyContent)
+        });
 
         if (!updateResponse.ok) {
           const errorText = await updateResponse.text();
@@ -235,20 +225,15 @@ export const CreateKeycloakApiService = (): KeycloakApiService => {
       }
     },
 
-    getUserAttributes: async (
-      id: string
-    ): Promise<Record<string, string[]>> => {
+    getUserAttributes: async (id: string): Promise<Record<string, string[]>> => {
       try {
-        const response = await fetch(
-          `${baseUrl}/admin/realms/${realm}/users/${id}`,
-          {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${await getAccessToken()}`,
-              "Content-Type": "application/json",
-            },
+        const response = await fetch(`${baseUrl}/admin/realms/${realm}/users/${id}`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${await getAccessToken()}`,
+            "Content-Type": "application/json"
           }
-        );
+        });
 
         if (!response.ok) {
           throw new Error(
@@ -256,7 +241,7 @@ export const CreateKeycloakApiService = (): KeycloakApiService => {
           );
         }
 
-        const user = await response.json();
+        const user: KeycloakUserProfile = await response.json();
         return user.attributes || {};
       } catch (error) {
         throw new Error(
@@ -265,7 +250,7 @@ export const CreateKeycloakApiService = (): KeycloakApiService => {
           }`
         );
       }
-    },
+    }
   };
 };
 
@@ -281,16 +266,16 @@ const getAccessToken = async (): Promise<string> => {
   const requestBody = new URLSearchParams({
     client_id: process.env.KEYCLOAK_CLIENT_ID,
     client_secret: process.env.KEYCLOAK_ADMIN_SECRET,
-    grant_type: "client_credentials",
+    grant_type: "client_credentials"
   });
 
   try {
     const response = await fetch(url, {
       method: "POST",
       headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
+        "Content-Type": "application/x-www-form-urlencoded"
       },
-      body: requestBody.toString(),
+      body: requestBody.toString()
     });
     const jsonResponse = await response.json();
 

@@ -61,7 +61,7 @@ export const CreateKeycloakApiService = (): KeycloakApiService => {
       const users: KeycloakUserProfile[] = await response.json();
       return users.map((user) => ({
         ...user,
-        severaUserId: user.attributes?.severaUserId?.[0] ?? ""
+        severaUserId: user.attributes?.severaUserId?.[0] ?? undefined
       }));
     },
 
@@ -87,7 +87,7 @@ export const CreateKeycloakApiService = (): KeycloakApiService => {
         const user: KeycloakUserProfile = await response.json();
         return {
           ...user,
-          severaUserId: user.attributes?.severaUserId?.[0] ?? ""
+          severaUserId: user.attributes?.severaUserId?.[0] ?? undefined
         };
       } catch (error) {
         throw new Error(

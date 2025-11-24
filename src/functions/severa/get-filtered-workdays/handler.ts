@@ -10,7 +10,7 @@ import type SeveraResponseWorkDays from "src/types/severa/workDays/severaRespons
  * Test user email matches requested severaUserId.
  */
 export const getContractedWorkWeekHandler: APIGatewayProxyHandler = async (event) => {
-  const severaUserId = event.pathParameters?.userId;
+  const severaUserId = event.pathParameters?.severaUserId;
 
   try {
     if (!severaUserId) {

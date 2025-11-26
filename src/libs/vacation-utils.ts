@@ -2,36 +2,56 @@ import { DateTime } from "luxon";
 import { CreateKeycloakApiService } from "src/database/services/keycloak-api-service";
 
 /**
- * Splits a vacation period into the number of vacation days per year.
- *
- * Counts weekdays (Monday to Friday) by default, and optionally includes Saturdays
- * if the vacation period is longer than 7 days.
+ * Splits a vacation period into the number of vacation days per year. Uses Severa as the source of truth.
+ * Calculates the number of vacation days using 6 day work week logic.
  *
  * @param startDate - The start date of the vacation in ISO format (YYYY-MM-DD).
  * @param endDate - The end date of the vacation in ISO format (YYYY-MM-DD).
+ * @param contractedWeek - An array of numbers representing the user's contracted work week (1 = Monday, 7 = Sunday).
+ * @param workDays - The number of work days in a full work week.
  *
  * @returns An object where the keys are years and the values are the number of vacation days in that year.
  */
 
-// TODO: This requires updating to handle part time workers.
 export const splitVacationDaysByYear = (
   startDate: string,
-  endDate: string
+  endDate: string,
+  contractedWeek: number[],
+  workDays: number
 ): Record<string, number> => {
   const start = DateTime.fromISO(startDate);
   const end = DateTime.fromISO(endDate);
 
-  const allDays = end.diff(start, "days").days + 1;
-  const includeSaturdays = allDays > 7;
-
-  const daysByYear: Record<string, number> = {};
+  let totalWeekdays = 0;
   let current = start;
 
   while (current <= end) {
-    const weekday = current.weekday;
-    if (weekday <= 5 || (includeSaturdays && weekday === 6)) {
-      const year = current.year.toString();
-      daysByYear[year] = (daysByYear[year] || 0) + 1;
+    if (contractedWeek.includes(current.weekday)) {
+      totalWeekdays++;
+    }
+    current = current.plus({ days: 1 });
+  }
+
+  /**
+   * Calculate weeks & days of request for 6 day work week logic
+   */
+  const fullWeeks = Math.floor(totalWeekdays / workDays);
+  const extraDays = totalWeekdays % workDays;
+
+  const totalDays = fullWeeks * 6 + extraDays;
+
+  const daysByYear: Record<string, number> = {};
+  current = start;
+  let daysLeft = totalDays;
+
+  while (current <= end && daysLeft > 0) {
+    const year = current.year.toString();
+    if (!daysByYear[year]) daysByYear[year] = 0;
+
+    if (contractedWeek.includes(current.weekday)) {
+      const addDay = Math.min(daysLeft, 1);
+      daysByYear[year] += addDay;
+      daysLeft -= addDay;
     }
 
     current = current.plus({ days: 1 });

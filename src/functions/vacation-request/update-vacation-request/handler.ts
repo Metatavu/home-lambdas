@@ -1,16 +1,19 @@
 import type { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway";
 import { middyfy } from "@libs/lambda";
-import { DateTime } from "luxon";
 import { vacationRequestService } from "src/database/services";
 import { CreateKeycloakApiService } from "src/database/services/keycloak-api-service";
 import type { VacationRequest } from "src/generated/homeLambdasModels/model/vacationRequest";
-import { splitVacationDaysByYear, updateRemainingVacationDays } from "src/libs/vacation-utils";
+import {
+  getContractedWeek,
+  getWorkDays,
+  splitVacationDaysByYear,
+  updateRemainingVacationDays
+} from "src/libs/vacation-utils";
 import {
   notifyAdminsVacationSubmittedAll,
   notifyUserVacationStatusUpdatedAll
 } from "src/notifications/vacation-notifications";
 import type vacationRequestSchema from "src/schema/vacationRequest";
-import { CreateSeveraApiService } from "src/services/severa-api-service";
 
 /**
  * Lambda function to update a vacation request
@@ -90,40 +93,8 @@ const updateVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
   const api = CreateKeycloakApiService();
   const userDetails = await api.findUser(userId);
   const currentStatus = Array.isArray(status) ? status.at(-1)?.status : "UNKNOWN";
-
-  const severaApi = CreateSeveraApiService();
-  /**
-   * Get users work week from Severa to determine contracted week days
-   */
-  const contractedWeek: number[] = await (async () => {
-    const today = DateTime.now();
-    try {
-      for (let weeksBack = 0; weeksBack < 5; weeksBack++) {
-        const weekStart = today.minus({ weeks: weeksBack }).startOf("week");
-        const weekEnd = weekStart.plus({ days: 6 });
-
-        const workWeekData = await severaApi.getWorkWeek(
-          userId,
-          weekStart.toISODate(),
-          weekEnd.toISODate()
-        );
-
-        const hasHoliday = workWeekData.some((day) => day.isHoliday);
-        if (hasHoliday) continue;
-
-        const workdays = workWeekData.filter((day) => day.expectedHours > 0);
-        if (workdays.length > 0) {
-          return workdays.map((day) => DateTime.fromISO(day.date).weekday);
-        }
-      }
-    } catch (error) {
-      console.warn("Could not fetch contracted work week, defaulting to Mon–Fri", error);
-    }
-
-    return [1, 2, 3, 4, 5];
-  })();
-  const workDays = contractedWeek.length;
-
+  const contractedWeek = await getContractedWeek(userId);
+  const workDays = getWorkDays(contractedWeek);
   try {
     const updatedVacationRequest =
       await vacationRequestService.updateVacationRequest(vacationRequestUpdates);

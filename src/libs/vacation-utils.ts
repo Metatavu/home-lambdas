@@ -1,5 +1,42 @@
 import { DateTime } from "luxon";
 import { CreateKeycloakApiService } from "src/database/services/keycloak-api-service";
+import { CreateSeveraApiService } from "src/services/severa-api-service";
+
+// src/libs/vacation-utils.ts
+
+export const getContractedWeek = async (userId: string): Promise<number[]> => {
+  const severaApi = CreateSeveraApiService();
+  const today = DateTime.now();
+
+  try {
+    for (let weeksBack = 0; weeksBack < 5; weeksBack++) {
+      const weekStart = today.minus({ weeks: weeksBack }).startOf("week");
+      const weekEnd = weekStart.plus({ days: 6 });
+
+      const workWeekData = await severaApi.getWorkWeek(
+        userId,
+        weekStart.toISODate(),
+        weekEnd.toISODate()
+      );
+
+      const hasHoliday = workWeekData.some((day) => day.isHoliday);
+      if (hasHoliday) continue;
+
+      const workdays = workWeekData.filter((day) => day.expectedHours > 0);
+      if (workdays.length > 0) {
+        return workdays.map((day) => DateTime.fromISO(day.date).weekday);
+      }
+    }
+  } catch (error) {
+    console.warn("Could not fetch contracted work week, defaulting to Mon–Fri", error);
+  }
+
+  return [1, 2, 3, 4, 5]; // default Mon–Fri
+};
+
+export const getWorkDays = (contractedWeek: number[]): number => {
+  return contractedWeek.length;
+};
 
 /**
  * Splits a vacation period into the number of vacation days per year. Uses Severa as the source of truth.

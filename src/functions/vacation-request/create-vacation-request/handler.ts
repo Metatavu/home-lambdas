@@ -2,7 +2,12 @@ import { vacationRequestService } from "src/database/services";
 import { CreateKeycloakApiService } from "src/database/services/keycloak-api-service";
 import type { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
 import { middyfy } from "src/libs/lambda";
-import { splitVacationDaysByYear, updateRemainingVacationDays } from "src/libs/vacation-utils";
+import {
+  getContractedWeek,
+  getWorkDays,
+  splitVacationDaysByYear,
+  updateRemainingVacationDays
+} from "src/libs/vacation-utils";
 import { notifyAdminsVacationSubmittedAll } from "src/notifications/vacation-notifications";
 import type vacationRequestSchema from "src/schema/vacationRequest";
 import { v4 as uuidv4 } from "uuid";
@@ -79,7 +84,9 @@ export const createVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
       updatedAt: updatedAt
     });
 
-    const daysByYear = splitVacationDaysByYear(startDate, endDate);
+    const contractedWeek = await getContractedWeek(userId);
+    const workDays = getWorkDays(contractedWeek);
+    const daysByYear = splitVacationDaysByYear(startDate, endDate, contractedWeek, workDays);
     const currentStatus = Array.isArray(status) ? status.at(-1)?.status : "UNKNOWN";
 
     for (const [year, daysInYear] of Object.entries(daysByYear)) {

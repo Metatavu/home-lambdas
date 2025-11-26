@@ -92,9 +92,8 @@ export const splitVacationDaysByYear = (
     if (!daysByYear[year]) daysByYear[year] = 0;
 
     if (contractedWeek.includes(current.weekday)) {
-      const addDay = Math.min(daysLeft, 1);
-      daysByYear[year] += addDay;
-      daysLeft -= addDay;
+      daysByYear[year] += 1;
+      daysLeft -= 1;
     }
 
     current = current.plus({ days: 1 });

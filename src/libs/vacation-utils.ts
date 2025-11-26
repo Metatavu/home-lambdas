@@ -2,7 +2,12 @@ import { DateTime } from "luxon";
 import { CreateKeycloakApiService } from "src/database/services/keycloak-api-service";
 import { CreateSeveraApiService } from "src/services/severa-api-service";
 
-// src/libs/vacation-utils.ts
+/**
+ * Fetches the contracted work week for a given user from Severa.
+ *
+ * @param userId - Employee ID to get contracted week for
+ * @returns
+ */
 
 export const getContractedWeek = async (userId: string): Promise<number[]> => {
   const severaApi = CreateSeveraApiService();
@@ -31,9 +36,13 @@ export const getContractedWeek = async (userId: string): Promise<number[]> => {
     console.warn("Could not fetch contracted work week, defaulting to Mon–Fri", error);
   }
 
-  return [1, 2, 3, 4, 5]; // default Mon–Fri
+  return [1, 2, 3, 4, 5];
 };
-
+/**
+ * Check how many days are in a full work week based on contracted week
+ * @param contractedWeek - An array of numbers representing the user's contracted work week (1 = Monday, 7 = Sunday).
+ * @returns The number of work days in a full work week.
+ */
 export const getWorkDays = (contractedWeek: number[]): number => {
   return contractedWeek.length;
 };
@@ -69,9 +78,7 @@ export const splitVacationDaysByYear = (
     current = current.plus({ days: 1 });
   }
 
-  /**
-   * Calculate weeks & days of request for 6 day work week logic
-   */
+  // Calculate weeks & days of request for 6 day work week logic
   const fullWeeks = Math.floor(totalWeekdays / workDays);
   const extraDays = totalWeekdays % workDays;
 

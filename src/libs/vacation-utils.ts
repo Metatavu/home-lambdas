@@ -5,8 +5,7 @@ import { CreateSeveraApiService } from "src/services/severa-api-service";
 /**
  * Fetches the contracted work week for a given user from Severa.
  *
- * @param userId - Employee ID to get contracted week for
- * @returns
+ * @param userId - Employee ID to get contracted week for.
  */
 
 export const getContractedWeek = async (userId: string): Promise<number[]> => {

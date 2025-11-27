@@ -69,7 +69,7 @@ export interface SeveraApiService {
  * Creates SeveraApiService
  */
 export const CreateSeveraApiService = (): SeveraApiService => {
-  const baseUrl: string = process.env.SEVERA_DEMO_BASE_URL;
+  const baseUrl: string = process.env.SEVERA_BASE_URL;
   return {
     /**
      * Gets flextime by severaUserId
@@ -450,7 +450,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
      * @throws {Error} If the request to the Severa API fails.
      */
     getWorkHoursForUser: async (severaUserId, startDate, endDate) => {
-      const url = new URL(`${process.env.SEVERA_DEMO_BASE_URL}/v1/users/${severaUserId}/workhours`);
+      const url = new URL(`${process.env.SEVERA_BASE_URL}/v1/users/${severaUserId}/workhours`);
       if (startDate) url.searchParams.append("startDate", startDate);
       if (endDate) url.searchParams.append("endDate", endDate);
 
@@ -706,7 +706,6 @@ export const CreateSeveraApiService = (): SeveraApiService => {
         );
       }
     }
-
   };
 };
 
@@ -716,9 +715,9 @@ export const CreateSeveraApiService = (): SeveraApiService => {
  * @returns Access token as string
  */
 const getSeveraAccessToken = async (): Promise<string> => {
-  const url: string = `${process.env.SEVERA_DEMO_BASE_URL}/v1/token`;
+  const url: string = `${process.env.SEVERA_BASE_URL}/v1/token`;
   const client_Id: string = getSeveraClientId();
-  const client_Secret: string = process.env.SEVERA_DEMO_CLIENT_SECRET;
+  const client_Secret: string = process.env.SEVERA_CLIENT_SECRET;
 
   const requestBody = {
     client_id: client_Id,
@@ -754,6 +753,6 @@ const getSeveraClientId = (): string => {
   if (process.env.STAGE === "production") {
     return process.env.SEVERA_CLIENT_ID;
   } else {
-    return process.env.SEVERA_DEMO_CLIENT_ID;
+    return process.env.SEVERA_CLIENT_ID;
   }
 };

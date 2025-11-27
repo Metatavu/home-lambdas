@@ -15,7 +15,10 @@ const env = cleanEnv(process.env, {
   ADMIN_EMAILS: str({ default: undefined }),
   METATAVU_BOT_TOKEN: str(),
   ADMIN_SLACK_USERS: str({ default: undefined }),
-  HOME_BASE_URL: str({ default: "http://localhost:5173" })
+  HOME_BASE_URL: str({ default: "http://localhost:5173" }),
+  SEVERA_BASE_URL: str(),
+  SEVERA_CLIENT_ID: str(),
+  SEVERA_CLIENT_SECRET: str()
 });
 
 export default class Config {

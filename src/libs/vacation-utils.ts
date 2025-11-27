@@ -7,7 +7,6 @@ import { CreateSeveraApiService } from "src/services/severa-api-service";
  *
  * @param userId - Employee ID to get contracted week for.
  */
-
 export const getContractedWeek = async (userId: string): Promise<number[]> => {
   const severaApi = CreateSeveraApiService();
   const today = DateTime.now();

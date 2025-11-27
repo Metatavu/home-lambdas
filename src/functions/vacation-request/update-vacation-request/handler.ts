@@ -95,6 +95,7 @@ const updateVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
   const currentStatus = Array.isArray(status) ? status.at(-1)?.status : "UNKNOWN";
   const contractedWeek = await getContractedWeek(userId);
   const workDays = getWorkDays(contractedWeek);
+  
   try {
     const updatedVacationRequest =
       await vacationRequestService.updateVacationRequest(vacationRequestUpdates);

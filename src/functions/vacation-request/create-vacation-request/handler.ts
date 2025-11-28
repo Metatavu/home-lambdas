@@ -93,7 +93,7 @@ export const createVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
 
         if (!success) {
           return {
-            statusCode: 409,
+            statusCode: 400,
             body: JSON.stringify({
               message: `Cannot create request: user does not have enough remaining vacation days for ${year}.`
             })

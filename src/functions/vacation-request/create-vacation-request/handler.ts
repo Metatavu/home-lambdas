@@ -87,16 +87,27 @@ export const createVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
     const daysByYear = splitVacationDaysByYear(startDate, endDate, contractedWeek);
     const currentStatus = Array.isArray(status) ? status.at(-1)?.status : "UNKNOWN";
 
-    for (const [year, daysInYear] of Object.entries(daysByYear)) {
-      const success = await updateRemainingVacationDays(userId, daysInYear, currentStatus, year);
-      if (!success) {
-        return {
-          statusCode: 400,
-          body: JSON.stringify({
-            message: `Cannot create request: user does not have enough remaining vacation days for ${year}.`
-          })
-        };
+    try {
+      for (const [year, daysInYear] of Object.entries(daysByYear)) {
+        const success = await updateRemainingVacationDays(userId, daysInYear, currentStatus, year);
+
+        if (!success) {
+          return {
+            statusCode: 409,
+            body: JSON.stringify({
+              message: `Cannot create request: user does not have enough remaining vacation days for ${year}.`
+            })
+          };
+        }
       }
+    } catch (err) {
+      console.error("Vacation update failure:", err);
+      return {
+        statusCode: 500,
+        body: JSON.stringify({
+          message: "Unexpected error while updating remaining vacation days."
+        })
+      };
     }
 
     if (draft === false) {

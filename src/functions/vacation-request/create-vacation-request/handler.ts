@@ -4,7 +4,6 @@ import type { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
 import { middyfy } from "src/libs/lambda";
 import {
   getContractedWeek,
-  getWorkDays,
   splitVacationDaysByYear,
   updateRemainingVacationDays
 } from "src/libs/vacation-utils";
@@ -85,8 +84,7 @@ export const createVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
     });
 
     const contractedWeek = await getContractedWeek(userId);
-    const workDays = getWorkDays(contractedWeek);
-    const daysByYear = splitVacationDaysByYear(startDate, endDate, contractedWeek, workDays);
+    const daysByYear = splitVacationDaysByYear(startDate, endDate, contractedWeek);
     const currentStatus = Array.isArray(status) ? status.at(-1)?.status : "UNKNOWN";
 
     for (const [year, daysInYear] of Object.entries(daysByYear)) {

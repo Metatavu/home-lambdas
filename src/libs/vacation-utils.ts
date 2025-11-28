@@ -11,6 +11,7 @@ export const getContractedWeek = async (userId: string): Promise<number[]> => {
   const severaApi = CreateSeveraApiService();
   const today = DateTime.now();
 
+  // Check over past 5 weeks to find a week without holidays
   try {
     for (let weeksBack = 0; weeksBack < 5; weeksBack++) {
       const weekStart = today.minus({ weeks: weeksBack }).startOf("week");
@@ -25,6 +26,7 @@ export const getContractedWeek = async (userId: string): Promise<number[]> => {
       const hasHoliday = workWeekData.some((day) => day.isHoliday);
       if (hasHoliday) continue;
 
+      // Assign workdays based on expected hours for a work week without.
       const workdays = workWeekData.filter((day) => day.expectedHours > 0);
       if (workdays.length > 0) {
         return workdays.map((day) => DateTime.fromISO(day.date).weekday);
@@ -35,14 +37,6 @@ export const getContractedWeek = async (userId: string): Promise<number[]> => {
   }
 
   return [1, 2, 3, 4, 5];
-};
-/**
- * Check how many days are in a full work week based on contracted week
- * @param contractedWeek - An array of numbers representing the user's contracted work week (1 = Monday, 7 = Sunday).
- * @returns The number of work days in a full work week.
- */
-export const getWorkDays = (contractedWeek: number[]): number => {
-  return contractedWeek.length;
 };
 
 /**
@@ -56,46 +50,45 @@ export const getWorkDays = (contractedWeek: number[]): number => {
  *
  * @returns An object where the keys are years and the values are the number of vacation days in that year.
  */
-
 export const splitVacationDaysByYear = (
   startDate: string,
   endDate: string,
-  contractedWeek: number[],
-  workDays: number
+  contractedWeek: number[]
 ): Record<string, number> => {
-  const start = DateTime.fromISO(startDate);
-  const end = DateTime.fromISO(endDate);
+  const startDateObj = DateTime.fromISO(startDate);
+  const endDateObj = DateTime.fromISO(endDate);
+  const workDays = contractedWeek.length;
 
-  let totalWeekdays = 0;
-  let current = start;
+  let workDaysInRange = 0;
+  let currentDate = startDateObj;
 
-  while (current <= end) {
-    if (contractedWeek.includes(current.weekday)) {
-      totalWeekdays++;
+  while (currentDate <= endDateObj) {
+    if (contractedWeek.includes(currentDate.weekday)) {
+      workDaysInRange++;
     }
-    current = current.plus({ days: 1 });
+    currentDate = currentDate.plus({ days: 1 });
   }
 
   // Calculate weeks & days of request for 6 day work week logic
-  const fullWeeks = Math.floor(totalWeekdays / workDays);
-  const extraDays = totalWeekdays % workDays;
+  const fullWeeks = Math.floor(workDaysInRange / workDays);
+  const extraDays = workDaysInRange % workDays;
 
   const totalDays = fullWeeks * 6 + extraDays;
 
   const daysByYear: Record<string, number> = {};
-  current = start;
+  currentDate = startDateObj;
   let daysLeft = totalDays;
 
-  while (current <= end && daysLeft > 0) {
-    const year = current.year.toString();
+  while (currentDate <= endDateObj && daysLeft > 0) {
+    const year = currentDate.year.toString();
     if (!daysByYear[year]) daysByYear[year] = 0;
 
-    if (contractedWeek.includes(current.weekday)) {
+    if (contractedWeek.includes(currentDate.weekday)) {
       daysByYear[year] += 1;
       daysLeft -= 1;
     }
 
-    current = current.plus({ days: 1 });
+    currentDate = currentDate.plus({ days: 1 });
   }
 
   return daysByYear;

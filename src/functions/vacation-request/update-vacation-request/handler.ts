@@ -5,7 +5,6 @@ import { CreateKeycloakApiService } from "src/database/services/keycloak-api-ser
 import type { VacationRequest } from "src/generated/homeLambdasModels/model/vacationRequest";
 import {
   getContractedWeek,
-  getWorkDays,
   splitVacationDaysByYear,
   updateRemainingVacationDays
 } from "src/libs/vacation-utils";
@@ -94,13 +93,12 @@ const updateVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
   const userDetails = await api.findUser(userId);
   const currentStatus = Array.isArray(status) ? status.at(-1)?.status : "UNKNOWN";
   const contractedWeek = await getContractedWeek(userId);
-  const workDays = getWorkDays(contractedWeek);
-  
+
   try {
     const updatedVacationRequest =
       await vacationRequestService.updateVacationRequest(vacationRequestUpdates);
     if (currentStatus === "APPROVED") {
-      const daysByYear = splitVacationDaysByYear(startDate, endDate, contractedWeek, workDays);
+      const daysByYear = splitVacationDaysByYear(startDate, endDate, contractedWeek);
       for (const [year, daysInYear] of Object.entries(daysByYear)) {
         const success = await updateRemainingVacationDays(userId, daysInYear, currentStatus, year);
         if (!success) {

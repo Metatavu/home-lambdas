@@ -46,4 +46,9 @@ export interface Configuration {
   };
   vacationDetails?: VacationDetails;
   homeBaseUrl: string;
+  severa: {
+    baseUrl: string;
+    clientId: string;
+    clientSecret: string;
+  };
 }

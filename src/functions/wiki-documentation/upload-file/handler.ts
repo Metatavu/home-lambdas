@@ -3,17 +3,28 @@ import type { APIGatewayProxyEvent, APIGatewayProxyHandler } from "aws-lambda";
 import { generatePreSignedUrl } from "src/services/s3-file-service";
 
 /**
- * Handler for creating a presigned URL for file uploads.
+ * Handler for creating a presigned url for the following file upload.
+ *
+ * @param event - API Gateway event.
+ * @returns Response object with status code.
  */
 const uploadFileHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
-  console.log("Received event:", JSON.stringify(event));
+  console.log("=== uploadFileHandler invoked ===");
+  console.log("Raw event:", JSON.stringify(event, null, 2));
+  console.log("Raw body:", event.body);
 
-  let parsedBody: any;
+  const { body } = event;
+  let path: string | undefined;
+  let contentType: string | undefined;
   try {
-    parsedBody = typeof event.body === "string" ? JSON.parse(event.body) : event.body;
-    console.log("Parsed body:", parsedBody);
-  } catch (err) {
-    console.error("Failed to parse JSON body:", err);
+    const parsed = typeof body === "string" ? JSON.parse(body) : body;
+    path = parsed?.path;
+    contentType = parsed?.contentType;
+    console.log("Parsed body:", parsed);
+    console.log("path:", path);
+    console.log("contentType:", contentType);
+  } catch (parseErr) {
+    console.error("JSON parsing failed:", parseErr);
     return {
       statusCode: 400,
       body: JSON.stringify({
@@ -23,33 +34,30 @@ const uploadFileHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyE
     };
   }
 
-  const { path, contentType } = parsedBody || {};
-  console.log("Extracted path and contentType:", { path, contentType });
-
   if (!path) {
-    console.warn("Missing path in request body");
+    console.warn("Missing path");
     return {
       statusCode: 400,
       body: JSON.stringify({
         code: 400,
-        message: "Invalid request body: missing path."
+        message: "Invalid request body."
       })
     };
   }
 
   if (!contentType || !contentType.startsWith("image/")) {
-    console.warn("Invalid or missing contentType:", contentType);
+    console.warn("Invalid contentType:", contentType);
     return {
       statusCode: 400,
       body: JSON.stringify({
         code: 400,
-        message: "Invalid or missing file type."
+        message: "Invalid file type."
       })
     };
   }
 
   try {
-    console.log("Generating presigned URL for:", { path, contentType });
+    console.log("Calling generatePreSignedUrl:", { path, method: "put", contentType });
     const presignedUrl = await generatePreSignedUrl(path, "put", contentType);
     console.log("Presigned URL generated:", presignedUrl);
 
@@ -57,7 +65,7 @@ const uploadFileHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyE
       statusCode: 200,
       body: JSON.stringify({ data: presignedUrl })
     };
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error generating presigned URL:", error);
     return {
       statusCode: 500,

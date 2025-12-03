@@ -35,24 +35,16 @@ export const addSeveraOptInHandler: APIGatewayProxyHandler = async (event) => {
     await keycloakApi.updateUserAttributes(keycloakUserId, { severaUserId: [severaUserId] });
 
     // Add the isSeveraOptIn keyword to Severa user
-    try {
-      const keyword = await severaApi.checkKeywordExists("isSeveraOptIn");
-      const keywordGuid = keyword && (keyword.guid);
-      if (!keywordGuid) {
-        return { 
-          statusCode: 502, 
-          body: JSON.stringify({ message: "Failed to ensure isSeveraOptIn keyword." }) 
+    const keyword = await severaApi.checkKeywordExists("isSeveraOptIn");
+    const keywordGuid = keyword && (keyword.guid);
+    if (!keywordGuid) {
+      return { 
+        statusCode: 502, 
+          body: JSON.stringify({ message: "Failed to add the isSeveraOptIn keyword." }) 
         };
       }
 
-      await severaApi.addKeywordToUser(severaUserId, keywordGuid);
-
-    } catch {
-      return { 
-        statusCode: 502, 
-        body: JSON.stringify({ message: "Failed to assign isSeveraOptIn in Severa." }) 
-      };
-    }
+    await severaApi.addKeywordToUser(severaUserId, keywordGuid);
 
     return { 
       statusCode: 200, 

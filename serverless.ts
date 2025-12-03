@@ -46,6 +46,7 @@ import findSoftwareHandler from "@/functions/software-registry/find-software";
 import listSoftwareHandler from "@/functions/software-registry/list-software";
 import updateSoftwareHandler from "@/functions/software-registry/update-software";
 import removeOptIn from "src/functions/severa/remove-opt-in";
+import addOptIn from "src/functions/severa/add-opt-in";
 
 const isLocal = process.env.STAGE === "local";
 const region = (env.AWS_DEFAULT_REGION as any) || "eu-north-1";
@@ -196,7 +197,8 @@ const serverlessConfiguration: AWS = {
     uploadFileHandler,
     getContractedWorkWeekHandler,
     removeOptIn,
-    listWorkdaysForUserHandler
+    listWorkdaysForUserHandler,
+    addOptIn
   },
   package: { individually: true },
   custom: {

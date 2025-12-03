@@ -63,6 +63,8 @@ export interface SeveraApiService {
     isSeveraOptInKeywordGuid: string
   ) => Promise<UserKeywordModel>;
   removeKeyWordFromUser: (userGuid: string, keywordGuid: string) => Promise<void>;
+  addKeywordToUser: (userGuid: string, keywordGuid: string) => Promise<UserKeywordModel>;
+  fetchUserByKeycloakId: (keycloakId: string) => Promise<UserOutputModel>;
 }
 
 /**
@@ -705,8 +707,59 @@ export const CreateSeveraApiService = (): SeveraApiService => {
           `Failed to remove keyword from user: ${removeResponse.status} - ${removeResponse.statusText}`
         );
       }
-    }
+    },
 
+    /**
+     * Adds a keyword to a  Severa user.
+     * 
+     * @param userGuid Severa user GUID
+     * @param keywordGuid Keyword GUID to add to user.
+     */
+    addKeywordToUser: async (userGuid: string, keywordGuid: string) => {
+      const addKeywordUrl = `${baseUrl}/v1/users/${userGuid}/keywords/${keywordGuid}`;
+      const addResponse = await fetch(addKeywordUrl, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${await getSeveraAccessToken()}`,
+          Client_Id: getSeveraClientId(),
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ value: "true" })
+      });
+
+      if (!addResponse.ok) {
+        throw new Error(
+          `Failed to add keyword to user: ${addResponse.status} - ${addResponse.statusText}`
+        );
+      }
+
+      return await addResponse.json();
+    },
+
+    fetchUserByKeycloakId: async (keycloakId: string) => {
+      const url = `${baseUrl}/v1/users?keycloakId=${encodeURIComponent(keycloakId)}`;
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${await getSeveraAccessToken()}`,
+          Client_Id: getSeveraClientId(),
+          "Content-Type": "application/json"
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(
+          `Failed to fetch user by keycloakId: ${response.status} - ${response.statusText}`
+        );
+      }
+
+      const users = await response.json();
+      if (!users?.length) {
+        throw new Error(`No user found with keycloakId: ${keycloakId}`);
+      }
+
+      return users[0];
+    },
   };
 };
 

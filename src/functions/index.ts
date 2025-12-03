@@ -48,3 +48,4 @@ export { default as readArticleHandler } from "./wiki-documentation/read-article
 export { default as updateArticleHandler } from "./wiki-documentation/update-article";
 export { default as uploadFileHandler } from "./wiki-documentation/upload-file";
 export { default as removeSeveraOptInHandler } from "./severa/remove-opt-in";
+export { default as addSeveraOptInHandler } from "./severa/add-opt-in";

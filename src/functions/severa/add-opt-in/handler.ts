@@ -44,7 +44,7 @@ export const addSeveraOptInHandler: APIGatewayProxyHandler = async (event) => {
         };
       }
 
-    await severaApi.addKeywordToUser(severaUserId, keywordGuid);
+    await severaApi.updateSeveraOptInKeyword(severaUserId, "true", keywordGuid);
 
     return { 
       statusCode: 200, 

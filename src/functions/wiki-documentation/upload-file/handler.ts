@@ -23,8 +23,8 @@ const uploadFileHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyE
     console.log("Parsed body:", parsed);
     console.log("path:", path);
     console.log("contentType:", contentType);
-  } catch (parseErr) {
-    console.error("JSON parsing failed:", parseErr);
+  } catch (Error_) {
+    console.error("JSON parsing failed:", Error_);
     return {
       statusCode: 400,
       body: JSON.stringify({
@@ -45,7 +45,7 @@ const uploadFileHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyE
     };
   }
 
-  if (!contentType || !contentType.startsWith("image/")) {
+  if (!contentType?.startsWith("image/")) {
     console.warn("Invalid contentType:", contentType);
     return {
       statusCode: 400,

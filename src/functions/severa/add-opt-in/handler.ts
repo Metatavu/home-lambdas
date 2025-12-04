@@ -3,6 +3,11 @@ import { CreateSeveraApiService } from "src/services/severa-api-service";
 import { CreateKeycloakApiService } from "src/database/services/keycloak-api-service";
 import { middyfy } from "src/libs/lambda";
 
+/**
+ * Lambda handler for adding a user's Severa opt-in (keyword and Keycloak attribute).
+ *
+ * @param event API Gateway event containing the userId path parameter.
+ */
 export const addSeveraOptInHandler: APIGatewayProxyHandler = async (event) => {
   const keycloakUserId = event.pathParameters?.userId;
   if (!keycloakUserId) {

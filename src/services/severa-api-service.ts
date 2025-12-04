@@ -721,7 +721,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
         method: "POST",
         headers: {
           Authorization: `Bearer ${await getSeveraAccessToken()}`,
-          Client_Id: getSeveraClientId(),
+          Client_Id: process.env.SEVERA_CLIENT_ID,
           "Content-Type": "application/json"
         },
         body: JSON.stringify({ value: "true" })
@@ -742,7 +742,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
         method: "GET",
         headers: {
           Authorization: `Bearer ${await getSeveraAccessToken()}`,
-          Client_Id: getSeveraClientId(),
+          Client_Id: process.env.SEVERA_CLIENT_ID,
           "Content-Type": "application/json"
         }
       });

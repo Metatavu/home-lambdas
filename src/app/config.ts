@@ -15,7 +15,10 @@ const env = cleanEnv(process.env, {
   ADMIN_EMAILS: str({ default: undefined }),
   METATAVU_BOT_TOKEN: str(),
   ADMIN_SLACK_USERS: str({ default: undefined }),
-  HOME_BASE_URL: str({ default: "http://localhost:5173" })
+  HOME_BASE_URL: str({ default: "http://localhost:5173" }),
+  SEVERA_BASE_URL: str(),
+  SEVERA_CLIENT_ID: str(),
+  SEVERA_CLIENT_SECRET: str()
 });
 
 export default class Config {
@@ -48,6 +51,11 @@ export default class Config {
       botToken: env.METATAVU_BOT_TOKEN,
       adminUsers: env.ADMIN_SLACK_USERS ? env.ADMIN_SLACK_USERS.split(",") : []
     },
-    homeBaseUrl: env.HOME_BASE_URL || "http://localhost:5173"
+    homeBaseUrl: env.HOME_BASE_URL || "http://localhost:5173",
+    severa: {
+      baseUrl: env.SEVERA_BASE_URL,
+      clientId: env.SEVERA_CLIENT_ID,
+      clientSecret: env.SEVERA_CLIENT_SECRET
+    }
   });
 }

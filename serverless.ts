@@ -19,6 +19,7 @@ import getFlextimeHandler from "src/functions/severa/get-flextime-by-user";
 import getPhasesHandler from "src/functions/severa/get-phases-by-project";
 import getResourceAllocationHandler from "src/functions/severa/get-resource-allocations-by-user";
 import listWorkdaysForUserHandler from "src/functions/severa/list-workdays-for-user";
+import removeOptIn from "src/functions/severa/remove-opt-in";
 import listUsersFlextimeHandler from "src/functions/users/flextime";
 import createVacationRequestHandler from "src/functions/vacation-request/create-vacation-request";
 import deleteVacationRequestHandler from "src/functions/vacation-request/delete-vacation-request";
@@ -45,8 +46,6 @@ import deleteSoftwareHandler from "@/functions/software-registry/delete-software
 import findSoftwareHandler from "@/functions/software-registry/find-software";
 import listSoftwareHandler from "@/functions/software-registry/list-software";
 import updateSoftwareHandler from "@/functions/software-registry/update-software";
-import removeOptIn from "src/functions/severa/remove-opt-in";
-import addOptIn from "src/functions/severa/add-opt-in";
 
 const isLocal = process.env.STAGE === "local";
 const region = (env.AWS_DEFAULT_REGION as any) || "eu-north-1";
@@ -107,9 +106,9 @@ const serverlessConfiguration: AWS = {
       SPLUNK_TEAM_ONCALL_URL: env.SPLUNK_TEAM_ONCALL_URL,
       ONCALL_WEEKLY_SCHEDULE_TIMER: env.ONCALL_WEEKLY_SCHEDULE_TIMER,
       GOOGLE_MANAGEMENT_MINUTES_FOLDER_ID: env.GOOGLE_MANAGEMENT_MINUTES_FOLDER_ID,
-      SEVERA_DEMO_BASE_URL: env.SEVERA_DEMO_BASE_URL,
-      SEVERA_DEMO_CLIENT_ID: env.SEVERA_DEMO_CLIENT_ID,
-      SEVERA_DEMO_CLIENT_SECRET: env.SEVERA_DEMO_CLIENT_SECRET,
+      SEVERA_BASE_URL: env.SEVERA_BASE_URL,
+      SEVERA_CLIENT_ID: env.SEVERA_CLIENT_ID,
+      SEVERA_CLIENT_SECRET: env.SEVERA_CLIENT_SECRET,
       DYNAMODB_ENDPOINT: isLocal ? "http://localhost:8000" : undefined,
       CHANNEL_ID: env.CHANNEL_ID,
       HOME_BUCKET_NAME: "${self:custom.s3BucketName.dev}",

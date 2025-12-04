@@ -2,7 +2,11 @@ import { vacationRequestService } from "src/database/services";
 import { CreateKeycloakApiService } from "src/database/services/keycloak-api-service";
 import type { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
 import { middyfy } from "src/libs/lambda";
-import { splitVacationDaysByYear, updateRemainingVacationDays } from "src/libs/vacation-utils";
+import {
+  getContractedWeek,
+  splitVacationDaysByYear,
+  updateRemainingVacationDays
+} from "src/libs/vacation-utils";
 import { notifyAdminsVacationSubmittedAll } from "src/notifications/vacation-notifications";
 import type vacationRequestSchema from "src/schema/vacationRequest";
 import { v4 as uuidv4 } from "uuid";
@@ -79,19 +83,31 @@ export const createVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
       updatedAt: updatedAt
     });
 
-    const daysByYear = splitVacationDaysByYear(startDate, endDate);
+    const contractedWeek = await getContractedWeek(userId);
+    const daysByYear = splitVacationDaysByYear(startDate, endDate, contractedWeek);
     const currentStatus = Array.isArray(status) ? status.at(-1)?.status : "UNKNOWN";
 
-    for (const [year, daysInYear] of Object.entries(daysByYear)) {
-      const success = await updateRemainingVacationDays(userId, daysInYear, currentStatus, year);
-      if (!success) {
-        return {
-          statusCode: 400,
-          body: JSON.stringify({
-            message: `Cannot create request: user does not have enough remaining vacation days for ${year}.`
-          })
-        };
+    try {
+      for (const [year, daysInYear] of Object.entries(daysByYear)) {
+        const success = await updateRemainingVacationDays(userId, daysInYear, currentStatus, year);
+
+        if (!success) {
+          return {
+            statusCode: 400,
+            body: JSON.stringify({
+              message: `Cannot create request: user does not have enough remaining vacation days for ${year}.`
+            })
+          };
+        }
       }
+    } catch (err) {
+      console.error("Vacation update failure:", err);
+      return {
+        statusCode: 500,
+        body: JSON.stringify({
+          message: "Unexpected error while updating remaining vacation days."
+        })
+      };
     }
 
     if (draft === false) {

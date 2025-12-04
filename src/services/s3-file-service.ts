@@ -1,7 +1,17 @@
 import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
-const { HOME_BUCKET_NAME, HOME_BUCKET_REGION } = process.env;
+const HOME_BUCKET_NAME = process.env.HOME_BUCKET_NAME;
+const HOME_BUCKET_REGION = process.env.HOME_BUCKET_REGION;
+
+if (!HOME_BUCKET_NAME) {
+  throw new Error("HOME_BUCKET_NAME is not defined in environment variables");
+}
+
+if (!HOME_BUCKET_REGION) {
+  throw new Error("HOME_BUCKET_REGION is not defined in environment variables");
+}
+
 const s3Client = new S3Client({ region: HOME_BUCKET_REGION });
 
 /**
@@ -10,7 +20,7 @@ const s3Client = new S3Client({ region: HOME_BUCKET_REGION });
  * @param path  path to file in S3
  * @param operation put or get
  * @param contentType contentType of the file
- * @returns Buffer object
+ * @returns Signed URL string
  */
 export const generatePreSignedUrl = async (
   path: string,

@@ -1,21 +1,22 @@
 
 import Config from "src/app/config";
 import {CreateSeveraApiService} from "src/services/severa-api-service";
+
 /**
- * Fetches a Severa user by their email address and checks/updates the 'isSeveraOptIn' status.
+ * Fetches a Severa user by their Keycloak id and checks/updates the 'isSeveraOptIn' status.
  *
- * @param email The email address of the user to be retrieved.
+ * @param keycloakUserId The Keycloak id of the user to be retrieved.
  * @param keyword Keywords to be checked/updated for the user.
  *
  * @returns The user's Severa GUID, 'isSeveraOptIn' status, and email.
  */
-export const optInSeveraUser = async (email: string, keyword: Record<string, string[]>) => {
-
-  const userEmail = Config.get().testUser.email || email;
+export const optInSeveraUser = async (keycloakUserId: string, keyword: Record<string, string[]>) => {
+  const userEmailFallback = Config.get().testUser.email;
 
   try {
     const api = CreateSeveraApiService();
-    const user = await api.fetchUserByEmail(userEmail);
+    const user = await api.fetchUserByKeycloakId(keycloakUserId);
+    const userEmail = (user && (user.email ?? userEmailFallback)) as string | undefined;
     const isSeveraOptIn = keyword.isSeveraOptIn?.[0];
     const isSeveraOptInKeyword = await api.checkKeywordExists("isSeveraOptIn");
 

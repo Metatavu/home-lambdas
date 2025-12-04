@@ -46,7 +46,6 @@ export const getContractedWeek = async (userId: string): Promise<number[]> => {
  * @param startDate - The start date of the vacation in ISO format (YYYY-MM-DD).
  * @param endDate - The end date of the vacation in ISO format (YYYY-MM-DD).
  * @param contractedWeek - An array of numbers representing the user's contracted work week (1 = Monday, 7 = Sunday).
- * @param workDays - The number of work days in a full work week.
  *
  * @returns An object where the keys are years and the values are the number of vacation days in that year.
  */

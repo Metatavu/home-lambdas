@@ -26,7 +26,7 @@ export const getContractedWeek = async (userId: string): Promise<number[]> => {
       const hasHoliday = workWeekData.some((day) => day.isHoliday);
       if (hasHoliday) continue;
 
-      // Assign workdays based on expected hours for a work week without.
+      // Assign workdays based on expected hours for a work week without vacation days.
       const workdays = workWeekData.filter((day) => day.expectedHours > 0);
       if (workdays.length > 0) {
         return workdays.map((day) => DateTime.fromISO(day.date).weekday);

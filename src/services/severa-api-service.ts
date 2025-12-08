@@ -710,7 +710,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
     },
 
     /**
-     * Adds a keyword to a  Severa user.
+     * Adds a keyword to a Severa user.
      * 
      * @param userGuid Severa user GUID
      * @param keywordGuid Keyword GUID to add to user.

@@ -23,25 +23,21 @@ export const addSeveraOptInHandler: APIGatewayProxyHandler = async (event) => {
 
     // Get severaUserId from Keycloak
     let severaUserId: string | undefined;
-
-    // Find Severa user by Keycloak id
-    if (!severaUserId) {
-      try {
-        const severaUser = await severaApi.fetchUserByKeycloakId(keycloakUserId);
-        severaUserId = severaUser && (severaUser.guid);
-      } catch {
-        return { 
-          statusCode: 502, 
-          body: JSON.stringify({ message: "Failed to fetch Severa user by Keycloak id." }) 
-        };
-      }
+    try {
+      const severaUser = await severaApi.fetchUserByKeycloakId(keycloakUserId);
+      severaUserId = severaUser.guid;
+    } catch {
+      return { 
+        statusCode: 502, 
+        body: JSON.stringify({ message: "Failed to fetch Severa user by Keycloak id." }) 
+      };
     }
 
     await keycloakApi.updateUserAttributes(keycloakUserId, { severaUserId: [severaUserId] });
 
     // Add the isSeveraOptIn keyword to Severa user
     const keyword = await severaApi.checkKeywordExists("isSeveraOptIn");
-    const keywordGuid = keyword && (keyword.guid);
+    const keywordGuid = keyword.guid;
     if (!keywordGuid) {
       return { 
         statusCode: 502, 

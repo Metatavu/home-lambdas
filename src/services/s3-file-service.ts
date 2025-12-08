@@ -12,7 +12,11 @@ if (!HOME_BUCKET_REGION) {
   throw new Error("HOME_BUCKET_REGION is not defined in environment variables");
 }
 
-const s3Client = new S3Client({ region: HOME_BUCKET_REGION });
+const s3Client = new S3Client({
+  region: HOME_BUCKET_REGION,
+  forcePathStyle: false,
+  defaultsMode: "standard"
+});
 
 /**
  * Function generates presigned url
@@ -39,7 +43,8 @@ export const generatePreSignedUrl = async (
       : new PutObjectCommand({
           Bucket: HOME_BUCKET_NAME,
           Key: cleanPath,
-          ContentType: contentType
+          ContentType: contentType,
+          ChecksumAlgorithm: undefined
         });
 
   return await getSignedUrl(s3Client, command, { expiresIn: 3600 });

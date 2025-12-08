@@ -5,8 +5,8 @@ export default {
   events: [
     {
       httpApi: {
-        method: "get",
-        path: "/google-drive/memo-content",
+        method: "POST",
+        path: "/google-drive/memo-translate",
         authorizer: {
           name: "homeKeycloakAuthorizer"
         }

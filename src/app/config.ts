@@ -15,7 +15,12 @@ const env = cleanEnv(process.env, {
   ADMIN_EMAILS: str({ default: undefined }),
   METATAVU_BOT_TOKEN: str(),
   ADMIN_SLACK_USERS: str({ default: undefined }),
-  HOME_BASE_URL: str({ default: "http://localhost:5173" })
+  HOME_BASE_URL: str({ default: "http://localhost:5173" }),
+  GOOGLE_CLIENT_ID: str(),
+  GOOGLE_CLIENT_SECRET: str(),
+  GOOGLE_REFRESH_TOKEN: str(),
+  GOOGLE_DRIVE_FOLDER_ID: str(),
+  GOOGLE_REDIRECT_URI: str()
 });
 
 export default class Config {
@@ -43,6 +48,13 @@ export default class Config {
       mailgunSmtpUser: env.MAILGUN_SMTP_HOST_USER,
       mailgunSmtpPassword: env.MAILGUN_SMTP_PASSWORD,
       adminEmails: env.ADMIN_EMAILS ? env.ADMIN_EMAILS.split(",") : []
+    },
+    google: {
+      clientId: env.GOOGLE_CLIENT_ID,
+      clientSecret: env.GOOGLE_CLIENT_SECRET,
+      refreshToken: env.GOOGLE_REFRESH_TOKEN,
+      driveFolderId: env.GOOGLE_DRIVE_FOLDER_ID,
+      redirectUrl: env.GOOGLE_REDIRECT_URI
     },
     slack: {
       botToken: env.METATAVU_BOT_TOKEN,

@@ -6,8 +6,10 @@ dotenv.config({ path: __dirname + "/.env" });
 import sendDailyMessage from "@functions/meta-assistant/send-daily-message";
 import sendWeeklyMessage from "@functions/meta-assistant/send-weekly-message";
 import { env } from "process";
+import { listMemoPdfHandler } from "src/functions";
 import removeUserAttributeHanndler from "src/functions/keycloak/remove-user-attribute";
 import updateVacationHandler from "src/functions/keycloak/update-user-vacation";
+import getContentPdfHandler from "src/functions/memo-management/drive-memos/get-content-pdf";
 import onCallImportFromJsonHandler from "src/functions/on-call/create-on-call-data-from-json";
 import onCallListDataHandler from "src/functions/on-call/list-on-call-data";
 import deleteQuestionnaireHandler from "src/functions/questionnaire/delete-questionnaire";
@@ -19,6 +21,7 @@ import getFlextimeHandler from "src/functions/severa/get-flextime-by-user";
 import getPhasesHandler from "src/functions/severa/get-phases-by-project";
 import getResourceAllocationHandler from "src/functions/severa/get-resource-allocations-by-user";
 import listWorkdaysForUserHandler from "src/functions/severa/list-workdays-for-user";
+import removeOptIn from "src/functions/severa/remove-opt-in";
 import listUsersFlextimeHandler from "src/functions/users/flextime";
 import createVacationRequestHandler from "src/functions/vacation-request/create-vacation-request";
 import deleteVacationRequestHandler from "src/functions/vacation-request/delete-vacation-request";
@@ -36,6 +39,8 @@ import uploadFileHandler from "src/functions/wiki-documentation/upload-file";
 import findUserHandler from "@/functions/keycloak/find-user";
 import listUsersHandler from "@/functions/keycloak/list-users";
 import updateUserAttributeHandler from "@/functions/keycloak/update-user-attributes";
+import createTranslatedMemoPdf from "@/functions/memo-management/drive-memos/translated-memos/create-translated-memo-pdf";
+import getTranslatedMemoPdf from "@/functions/memo-management/drive-memos/translated-memos/get-translated-memo-pdf";
 import onCallUpdatePaidHandler from "@/functions/on-call/update-paid";
 import onCallWeeklyCheckHandler from "@/functions/on-call/weekly-check";
 import createQuestionnaireHandler from "@/functions/questionnaire/create-questionnaire";
@@ -45,7 +50,6 @@ import deleteSoftwareHandler from "@/functions/software-registry/delete-software
 import findSoftwareHandler from "@/functions/software-registry/find-software";
 import listSoftwareHandler from "@/functions/software-registry/list-software";
 import updateSoftwareHandler from "@/functions/software-registry/update-software";
-import removeOptIn from "src/functions/severa/remove-opt-in";
 
 const isLocal = process.env.STAGE === "local";
 const region = (env.AWS_DEFAULT_REGION as any) || "eu-north-1";
@@ -118,7 +122,12 @@ const serverlessConfiguration: AWS = {
       MAILGUN_PORT: env.MAILGUN_PORT || undefined,
       MAILGUN_SMTP_HOST: env.MAILGUN_SMTP_HOST || undefined,
       MAILGUN_SMTP_HOST_USER: env.MAILGUN_SMTP_HOST_USER || undefined,
-      MAILGUN_SMTP_PASSWORD: env.MAILGUN_SMTP_PASSWORD || undefined
+      MAILGUN_SMTP_PASSWORD: env.MAILGUN_SMTP_PASSWORD || undefined,
+      GOOGLE_CLIENT_ID: env.GOOGLE_CLIENT_ID || undefined,
+      GOOGLE_CLIENT_SECRET: env.GOOGLE_CLIENT_SECRET || undefined,
+      GOOGLE_REFRESH_TOKEN: env.GOOGLE_REFRESH_TOKEN || undefined,
+      GOOGLE_DRIVE_FOLDER_ID: env.GOOGLE_DRIVE_FOLDER_ID || undefined,
+      GOOGLE_REDIRECT_URI: env.GOOGLE_REDIRECT_URI || undefined
     },
     iam: {
       role: {
@@ -196,7 +205,11 @@ const serverlessConfiguration: AWS = {
     uploadFileHandler,
     getContractedWorkWeekHandler,
     removeOptIn,
-    listWorkdaysForUserHandler
+    listWorkdaysForUserHandler,
+    listMemoPdfHandler,
+    getContentPdfHandler,
+    getTranslatedMemoPdf,
+    createTranslatedMemoPdf
   },
   package: { individually: true },
   custom: {

@@ -1,7 +1,7 @@
 import type {
   APIGatewayProxyEventV2,
-  APIGatewayProxyStructuredResultV2,
   APIGatewayProxyHandlerV2,
+  APIGatewayProxyStructuredResultV2
 } from "aws-lambda";
 import { middyfy } from "src/libs/lambda";
 import { getFileContentPdf } from "src/services/google-drive-api-service";
@@ -17,7 +17,7 @@ const getContentPdfHandler: APIGatewayProxyHandlerV2 = async (
   if (!fileId) {
     return {
       statusCode: 400,
-      body: JSON.stringify({ error: "Missing required parameter: id" }),
+      body: JSON.stringify({ error: "Missing required parameter: id" })
     };
   }
 
@@ -27,7 +27,7 @@ const getContentPdfHandler: APIGatewayProxyHandlerV2 = async (
     if (!fileContent?.content) {
       return {
         statusCode: 404,
-        body: JSON.stringify({ error: "File not found" }),
+        body: JSON.stringify({ error: "File not found" })
       };
     }
 
@@ -37,15 +37,15 @@ const getContentPdfHandler: APIGatewayProxyHandlerV2 = async (
       statusCode: 200,
       headers: {
         "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename=${fileContent.name}`,
+        "Content-Disposition": `attachment; filename=${fileContent.name}`
       },
       body: base64Content,
-      isBase64Encoded: true,
+      isBase64Encoded: true
     };
   } catch (error) {
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: "Internal Server Error", details: error.message }),
+      body: JSON.stringify({ error: "Internal Server Error", details: error.message })
     };
   }
 };

@@ -16,7 +16,7 @@ export const optInSeveraUser = async (keycloakUserId: string, keyword: Record<st
   try {
     const api = CreateSeveraApiService();
     const user = await api.fetchUserByKeycloakId(keycloakUserId);
-    const userEmail = (user && (user.email ?? userEmailFallback)) as string | undefined;
+    const userEmail = (user && (user.email ?? userEmailFallback));
     const isSeveraOptIn = keyword.isSeveraOptIn?.[0];
     const isSeveraOptInKeyword = await api.checkKeywordExists("isSeveraOptIn");
 

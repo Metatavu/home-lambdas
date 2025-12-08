@@ -63,7 +63,6 @@ export interface SeveraApiService {
     isSeveraOptInKeywordGuid: string
   ) => Promise<UserKeywordModel>;
   removeKeyWordFromUser: (userGuid: string, keywordGuid: string) => Promise<void>;
-  addKeywordToUser: (userGuid: string, keywordGuid: string) => Promise<UserKeywordModel>;
   fetchUserByKeycloakId: (keycloakId: string) => Promise<UserOutputModel>;
 }
 
@@ -710,32 +709,11 @@ export const CreateSeveraApiService = (): SeveraApiService => {
     },
 
     /**
-     * Adds a keyword to a Severa user.
-     * 
-     * @param userGuid Severa user GUID
-     * @param keywordGuid Keyword GUID to add to user.
+     * Fetches a Severa user by their Keycloak id.
+     *
+     * @param keycloakId The Keycloak id of the user to be fetched.
+     * @returns The Severa user object.
      */
-    addKeywordToUser: async (userGuid: string, keywordGuid: string) => {
-      const addKeywordUrl = `${baseUrl}/v1/users/${userGuid}/keywords/${keywordGuid}`;
-      const addResponse = await fetch(addKeywordUrl, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${await getSeveraAccessToken()}`,
-          Client_Id: process.env.SEVERA_CLIENT_ID,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ value: "true" })
-      });
-
-      if (!addResponse.ok) {
-        throw new Error(
-          `Failed to add keyword to user: ${addResponse.status} - ${addResponse.statusText}`
-        );
-      }
-
-      return await addResponse.json();
-    },
-
     fetchUserByKeycloakId: async (keycloakId: string) => {
       const url = `${baseUrl}/v1/users?keycloakId=${encodeURIComponent(keycloakId)}`;
       const response = await fetch(url, {

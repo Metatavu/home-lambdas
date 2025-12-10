@@ -51,4 +51,8 @@ export interface Configuration {
     clientId: string;
     clientSecret: string;
   };
+  homeBucket: {
+    name: string;
+    region: string;
+  };
 }

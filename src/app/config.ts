@@ -18,7 +18,9 @@ const env = cleanEnv(process.env, {
   HOME_BASE_URL: str({ default: "http://localhost:5173" }),
   SEVERA_BASE_URL: str(),
   SEVERA_CLIENT_ID: str(),
-  SEVERA_CLIENT_SECRET: str()
+  SEVERA_CLIENT_SECRET: str(),
+  HOME_BUCKET_NAME: str(),
+  HOME_BUCKET_REGION: str()
 });
 
 export default class Config {
@@ -56,6 +58,10 @@ export default class Config {
       baseUrl: env.SEVERA_BASE_URL,
       clientId: env.SEVERA_CLIENT_ID,
       clientSecret: env.SEVERA_CLIENT_SECRET
+    },
+    homeBucket: {
+      name: env.HOME_BUCKET_NAME,
+      region: env.HOME_BUCKET_REGION
     }
   });
 }

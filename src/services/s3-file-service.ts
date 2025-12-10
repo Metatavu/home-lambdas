@@ -32,8 +32,7 @@ export const generatePreSignedUrl = async (
       : new PutObjectCommand({
           Bucket: HOME_BUCKET_NAME,
           Key: cleanPath,
-          ContentType: contentType,
-          ChecksumAlgorithm: undefined
+          ContentType: contentType
         });
 
   return await getSignedUrl(s3Client, command, { expiresIn: 3600 });

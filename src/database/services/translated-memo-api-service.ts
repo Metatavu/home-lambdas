@@ -8,7 +8,12 @@ class TranslatedMemoService {
   constructor(private readonly docClient: DynamoDBDocumentClient) {}
 
   /**
-   * Stores a translated PDF in DynamoDB
+   * Stores a translated PDF memo in DynamoDB.
+   *
+   * @param memo - The memo data to store, including `id`, `fileId`, `fileName`, `language`, and `translatedBase64`.
+   * @param isOriginal - Whether this memo is the original version. If `true`, a new ID is generated.
+   *
+   * @returns The stored `MemoRecord`, including `id`, `PK`, `SK`, and all memo fields.
    */
   public storeMemo = async (memo: MemoInput, isOriginal = false): Promise<MemoRecord> => {
     const id = isOriginal ? uuidv4() : memo.id;
@@ -28,7 +33,12 @@ class TranslatedMemoService {
   };
 
   /**
-   * Retrieves a translated PDF by fileId
+   * Retrieves a translated PDF memo from DynamoDB.
+   *
+   * @param id - The primary key of the memo (`MEMO#id`).
+   * @param targetLanguage - The target language of the memo (`LANG#language`).
+   *
+   * @returns The `MemoRecord` if found, or `null` if no matching memo exists.
    */
   public getTranslatedPdf = async (
     id: string,

@@ -39,8 +39,8 @@ import uploadFileHandler from "src/functions/wiki-documentation/upload-file";
 import findUserHandler from "@/functions/keycloak/find-user";
 import listUsersHandler from "@/functions/keycloak/list-users";
 import updateUserAttributeHandler from "@/functions/keycloak/update-user-attributes";
-import createTranslatedMemoPdf from "@/functions/memo-management/drive-memos/translated-memos/create-translated-memo-pdf";
-import getTranslatedMemoPdf from "@/functions/memo-management/drive-memos/translated-memos/get-translated-memo-pdf";
+import createTranslatedMemoPdfHandler from "@/functions/memo-management/drive-memos/translated-memos/create-translated-memo-pdf";
+import getTranslatedMemoPdfHandler from "@/functions/memo-management/drive-memos/translated-memos/get-translated-memo-pdf";
 import onCallUpdatePaidHandler from "@/functions/on-call/update-paid";
 import onCallWeeklyCheckHandler from "@/functions/on-call/weekly-check";
 import createQuestionnaireHandler from "@/functions/questionnaire/create-questionnaire";
@@ -207,8 +207,8 @@ const serverlessConfiguration: AWS = {
     listWorkdaysForUserHandler,
     listMemoPdfHandler,
     getContentPdfHandler,
-    getTranslatedMemoPdf,
-    createTranslatedMemoPdf
+    getTranslatedMemoPdfHandler,
+    createTranslatedMemoPdfHandler
   },
   package: { individually: true },
   custom: {

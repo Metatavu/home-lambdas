@@ -4,11 +4,8 @@ export { default as updateUserAttributeHandler } from "./keycloak/update-user-at
 export { default as getContentPdfHandler } from "./memo-management/drive-memos/get-content-pdf";
 export { default as listMemoPdfHandler } from "./memo-management/drive-memos/get-memos-pdf";
 export { default as getSummaryMemoPdfHandler } from "./memo-management/drive-memos/get-summary-memo-pdf";
-export {
-  default as getTranslatedMemoPdfHandler,
-  default as createTranslatedMemoPdfHandler
-} from "./memo-management/drive-memos/translated-memos/create-translated-memo-pdf";
-export { default as getMemoHandler } from "./memo-management/drive-memos/translated-memos/get-translated-memo-pdf";
+export { default as createTranslatedMemoPdfHandler } from "./memo-management/drive-memos/translated-memos/create-translated-memo-pdf";
+export { default as getTranslatedMemoPdfHandler } from "./memo-management/drive-memos/translated-memos/get-translated-memo-pdf";
 export { default as createCommentHandler } from "./memo-management/trello-cards/comment-trello-card";
 export { default as createTrelloCardHandler } from "./memo-management/trello-cards/create-trello-card";
 export { default as deleteTrelloCardHandler } from "./memo-management/trello-cards/delete-trello-card";

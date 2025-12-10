@@ -15,7 +15,7 @@ import { middyfy } from "src/libs/lambda";
  *   - `statusCode: 200` on success, body contains the `memoRecord` object.
  *   - Other status codes (`400`, `404`, `500`) indicate errors.
  */
-const getTranslatedMemoHandler: APIGatewayProxyHandlerV2 = async (
+const getTranslatedMemoPdfHandler: APIGatewayProxyHandlerV2 = async (
   event: APIGatewayProxyEventV2
 ): Promise<APIGatewayProxyStructuredResultV2> => {
   const memoId = event.pathParameters?.id;
@@ -57,4 +57,4 @@ const getTranslatedMemoHandler: APIGatewayProxyHandlerV2 = async (
   }
 };
 
-export const main = middyfy(getTranslatedMemoHandler);
+export const main = middyfy(getTranslatedMemoPdfHandler);

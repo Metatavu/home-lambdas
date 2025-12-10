@@ -6,7 +6,7 @@ export default {
     {
       httpApi: {
         method: "GET",
-        path: "/google-drive/memo-translate/{id}/{language}",
+        path: "/translate-memo/{id}/{language}",
         authorizer: {
           name: "homeKeycloakAuthorizer"
         }

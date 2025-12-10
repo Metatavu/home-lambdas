@@ -10,7 +10,13 @@ import { middyfy } from "src/libs/lambda";
 // import { getTranslatedPdf } from "./google-translate-service"; // Uncomment when ready
 
 /**
- * Lambda to create/store original PDF in DynamoDB and later implemented translated version.
+ * Lambda handler to create and store the original PDF content of a memo in DynamoDB.
+ *
+ * @param event - API Gateway event containing request information.
+ *   - `queryStringParameters.fileId` The ID of the Google Drive file to retrieve.
+ * @returns Response object with:
+ *   - `statusCode: 200` on success, body contains `message` and stored memo `id`.
+ *   - Other status codes (`400`, `404`, `500`) indicate errors.
  */
 const createTranslatedMemoPdfHandler: APIGatewayProxyHandlerV2 = async (
   event: APIGatewayProxyEventV2
@@ -25,7 +31,6 @@ const createTranslatedMemoPdfHandler: APIGatewayProxyHandlerV2 = async (
   }
 
   try {
-    // Fetch file metadata from Drive
     const file = await getFile(fileId);
     if (!file) {
       return {
@@ -37,7 +42,6 @@ const createTranslatedMemoPdfHandler: APIGatewayProxyHandlerV2 = async (
     // Placeholder: default original language, detection can be added later
     const originalLanguage = "fi";
 
-    // Fetch PDF binary content
     const pdfFile = await getFileContentPdf(file);
     if (!pdfFile?.content) {
       return {
@@ -58,25 +62,25 @@ const createTranslatedMemoPdfHandler: APIGatewayProxyHandlerV2 = async (
     const StoredMemo = await memoService.storeMemo(originalMemo, true);
 
     // TODO: Translate PDF and store translated version
-    // Uncomment and implement when translation service is ready
-    try {
-      // const translatedPdf = await getTranslatedPdf(pdfFile);
-      // const translatedBase64 = translatedPdf.content.toString("base64");
-      const translatedBase64 = "is this translated?";
-      const translatedMemo = {
-        id: StoredMemo.id,
-        fileId: file.id,
-        fileName: file.name,
-        language: "en", // or dynamically from translation service
-        translatedBase64: translatedBase64
-      };
-      await memoService.storeMemo(translatedMemo);
-    } catch (error) {
-      return {
-        statusCode: 500,
-        body: JSON.stringify({ error: "Failed to translate and store PDF", details: error.message })
-      };
-    }
+    // Uncomment and implement proper logic when translation service is ready
+    // try {
+    // const translatedPdf = await getTranslatedPdf(pdfFile);
+    // const translatedBase64 = translatedPdf.content.toString("base64");
+    //   const translatedBase64 = "is this translated?";
+    //   const translatedMemo = {
+    //     id: StoredMemo.id,
+    //     fileId: file.id,
+    //     fileName: file.name,
+    //     language: "en", // or dynamically from translation service
+    //     translatedBase64: translatedBase64
+    //   };
+    //   await memoService.storeMemo(translatedMemo);
+    // } catch (error) {
+    //   return {
+    //     statusCode: 500,
+    //     body: JSON.stringify({ error: "Failed to translate and store PDF", details: error.message })
+    //   };
+    // }
 
     return {
       statusCode: 200,

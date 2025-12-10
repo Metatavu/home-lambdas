@@ -4,11 +4,16 @@ import type {
   APIGatewayProxyStructuredResultV2
 } from "aws-lambda";
 import { memoService } from "src/database/services";
+import type { MemoRecord } from "src/generated/homeLambdasModels/model/memoRecord";
 import { middyfy } from "src/libs/lambda";
 
 /**
- * Lambda to retrieve a memo PDF by memo ID and targetlanguage
+ * Lambda handler to retrieve a translated memo PDF from DynamoDB.
  *
+ * @param event - API Gateway event containing path parameters.
+ * @returns Response object with:
+ *   - `statusCode: 200` on success, body contains the `memoRecord` object.
+ *   - Other status codes (`400`, `404`, `500`) indicate errors.
  */
 const getTranslatedMemoHandler: APIGatewayProxyHandlerV2 = async (
   event: APIGatewayProxyEventV2
@@ -32,15 +37,17 @@ const getTranslatedMemoHandler: APIGatewayProxyHandlerV2 = async (
       };
     }
 
+    const memoRecord: MemoRecord = {
+      id: memo.id,
+      fileId: memo.fileId,
+      fileName: memo.fileName,
+      language: memo.language,
+      translatedBase64: memo.translatedBase64
+    };
+
     return {
       statusCode: 200,
-      body: JSON.stringify({
-        id: memo.id,
-        fileId: memo.fileId,
-        fileName: memo.fileName,
-        language: memo.language,
-        translatedBase64: memo.translatedBase64
-      })
+      body: JSON.stringify({ memoRecord })
     };
   } catch (error) {
     return {

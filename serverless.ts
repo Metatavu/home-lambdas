@@ -111,7 +111,7 @@ const serverlessConfiguration: AWS = {
       SEVERA_CLIENT_SECRET: env.SEVERA_CLIENT_SECRET,
       DYNAMODB_ENDPOINT: isLocal ? "http://localhost:8000" : undefined,
       CHANNEL_ID: env.CHANNEL_ID,
-      HOME_BUCKET_NAME: env.HOME_BUCKET_NAME_DEV || "local-bucket",
+      HOME_BUCKET_NAME: env.HOME_BUCKET_NAME_DEV,
       HOME_BUCKET_REGION: region,
       ADMIN_SLACK_USERS: env.ADMIN_SLACK_USERS || undefined,
       ADMIN_EMAILS: env.ADMIN_EMAILS || undefined,

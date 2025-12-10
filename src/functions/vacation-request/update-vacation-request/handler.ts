@@ -3,7 +3,11 @@ import { middyfy } from "@libs/lambda";
 import { vacationRequestService } from "src/database/services";
 import { CreateKeycloakApiService } from "src/database/services/keycloak-api-service";
 import type { VacationRequest } from "src/generated/homeLambdasModels/model/vacationRequest";
-import { splitVacationDaysByYear, updateRemainingVacationDays } from "src/libs/vacation-utils";
+import {
+  getContractedWeek,
+  splitVacationDaysByYear,
+  updateRemainingVacationDays
+} from "src/libs/vacation-utils";
 import {
   notifyAdminsVacationSubmittedAll,
   notifyUserVacationStatusUpdatedAll
@@ -88,12 +92,13 @@ const updateVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
   const api = CreateKeycloakApiService();
   const userDetails = await api.findUser(userId);
   const currentStatus = Array.isArray(status) ? status.at(-1)?.status : "UNKNOWN";
+  const contractedWeek = await getContractedWeek(userId);
 
   try {
     const updatedVacationRequest =
       await vacationRequestService.updateVacationRequest(vacationRequestUpdates);
     if (currentStatus === "APPROVED") {
-      const daysByYear = splitVacationDaysByYear(startDate, endDate);
+      const daysByYear = splitVacationDaysByYear(startDate, endDate, contractedWeek);
       for (const [year, daysInYear] of Object.entries(daysByYear)) {
         const success = await updateRemainingVacationDays(userId, daysInYear, currentStatus, year);
         if (!success) {

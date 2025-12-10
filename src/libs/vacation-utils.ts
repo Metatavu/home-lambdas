@@ -1,41 +1,87 @@
 import { DateTime } from "luxon";
 import { CreateKeycloakApiService } from "src/database/services/keycloak-api-service";
+import { CreateSeveraApiService } from "src/services/severa-api-service";
 
 /**
- * Splits a vacation period into the number of vacation days per year.
+ * Fetches the contracted work week for a given user from Severa.
  *
- * Counts weekdays (Monday to Friday) by default, and optionally includes Saturdays
- * if the vacation period is longer than 7 days.
+ * @param userId - Employee ID to get contracted week for.
+ */
+export const getContractedWeek = async (userId: string): Promise<number[]> => {
+  const severaApi = CreateSeveraApiService();
+  const today = DateTime.now();
+
+  // Check over past 5 weeks to find a week without holidays
+  try {
+    for (let weeksBack = 0; weeksBack < 5; weeksBack++) {
+      const weekStart = today.minus({ weeks: weeksBack }).startOf("week");
+      const weekEnd = weekStart.plus({ days: 6 });
+
+      const workWeekData = await severaApi.getWorkWeek(
+        userId,
+        weekStart.toISODate(),
+        weekEnd.toISODate()
+      );
+
+      const hasHoliday = workWeekData.some((day) => day.isHoliday);
+      if (hasHoliday) continue;
+
+      // Assign workdays based on expected hours for a work week without vacation days.
+      const workdays = workWeekData.filter((day) => day.expectedHours > 0);
+      if (workdays.length > 0) {
+        return workdays.map((day) => DateTime.fromISO(day.date).weekday);
+      }
+    }
+  } catch (error) {
+    console.warn("Could not fetch contracted work week, defaulting to Mon–Fri", error);
+  }
+
+  return [1, 2, 3, 4, 5];
+};
+
+/**
+ * Splits a vacation period into the number of vacation days per year. Uses Severa as the source of truth.
+ * Calculates the number of vacation days using 6 day work week logic.
  *
  * @param startDate - The start date of the vacation in ISO format (YYYY-MM-DD).
  * @param endDate - The end date of the vacation in ISO format (YYYY-MM-DD).
+ * @param contractedWeek - An array of numbers representing the user's contracted work week (1 = Monday, 7 = Sunday).
  *
  * @returns An object where the keys are years and the values are the number of vacation days in that year.
  */
-
-// TODO: This requires updating to handle part time workers.
 export const splitVacationDaysByYear = (
   startDate: string,
-  endDate: string
+  endDate: string,
+  contractedWeek: number[]
 ): Record<string, number> => {
-  const start = DateTime.fromISO(startDate);
-  const end = DateTime.fromISO(endDate);
+  const startDateObj = DateTime.fromISO(startDate);
+  const endDateObj = DateTime.fromISO(endDate);
+  const workDays = contractedWeek.length;
 
-  const allDays = end.diff(start, "days").days + 1;
-  const includeSaturdays = allDays > 7;
+  let workDaysInRange = 0;
+  let currentDate = startDateObj;
 
-  const daysByYear: Record<string, number> = {};
-  let current = start;
-
-  while (current <= end) {
-    const weekday = current.weekday;
-    if (weekday <= 5 || (includeSaturdays && weekday === 6)) {
-      const year = current.year.toString();
-      daysByYear[year] = (daysByYear[year] || 0) + 1;
+  while (currentDate <= endDateObj) {
+    if (contractedWeek.includes(currentDate.weekday)) {
+      workDaysInRange++;
     }
-
-    current = current.plus({ days: 1 });
+    currentDate = currentDate.plus({ days: 1 });
   }
+
+  // Calculate weeks & days of request for 6 day work week logic
+  const fullWeeks = Math.floor(workDaysInRange / workDays);
+  const extraDays = workDaysInRange % workDays;
+  const totalDays = fullWeeks * 6 + extraDays;
+
+  // Assumes vacation year runs 01/04/YYYY → 31/03/(YYYY+1)
+  const getVacationYear = (date: DateTime): string => {
+    return date.month >= 4 ? String(date.year) : String(date.year - 1);
+  };
+
+  // Assign totalDays to the correct vacation year
+  const vacationYear = getVacationYear(startDateObj);
+  const daysByYear: Record<string, number> = {};
+  daysByYear[vacationYear] = totalDays;
 
   return daysByYear;
 };

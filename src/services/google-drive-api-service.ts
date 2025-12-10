@@ -125,6 +125,11 @@ export const getBaseFolderByName = async (folderName: string) => {
   try {
     const folders = await getFolders(folderId);
     const folderFound = folders.find((folder) => folder.name === folderName);
+
+    if (!folderFound) {
+      throw new Error(`Folder with name "${folderName}" not found`);
+    }
+
     return folderFound.id;
   } catch (error) {
     console.error(`Error retrieving folder ID: ${error}`);
@@ -287,16 +292,12 @@ export const getFileContentPdf = async (file: File): Promise<PdfFile> => {
       },
       { responseType: "stream" }
     );
-    if (!response) {
-      console.error(`Failed to fetch file content: ${response.status} - ${response.statusText}`);
-    }
+
     const metadata = await drive.files.get({
       fileId: file.id,
       fields: "name"
     });
-    if (!metadata) {
-      console.error(`Failed to fetch file metadata for file ID: ${file.id}`);
-    }
+
     const pdfBuffer = await streamToBuffer(response.data);
     return {
       id: file.id,

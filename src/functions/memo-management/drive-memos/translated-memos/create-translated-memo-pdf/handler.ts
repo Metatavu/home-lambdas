@@ -59,7 +59,7 @@ const createTranslatedMemoPdfHandler: APIGatewayProxyHandlerV2 = async (
       language: originalLanguage,
       translatedBase64: originalBase64
     };
-    const StoredMemo = await memoService.storeMemo(originalMemo, true);
+    const storedMemo = await memoService.storeMemo(originalMemo, true);
 
     // TODO: Translate PDF and store translated version
     // Uncomment and implement proper logic when translation service is ready
@@ -68,7 +68,7 @@ const createTranslatedMemoPdfHandler: APIGatewayProxyHandlerV2 = async (
     // const translatedBase64 = translatedPdf.content.toString("base64");
     //   const translatedBase64 = "is this translated?";
     //   const translatedMemo = {
-    //     id: StoredMemo.id,
+    //     id: storedMemo.id,
     //     fileId: file.id,
     //     fileName: file.name,
     //     language: "en", // or dynamically from translation service
@@ -86,7 +86,7 @@ const createTranslatedMemoPdfHandler: APIGatewayProxyHandlerV2 = async (
       statusCode: 200,
       body: JSON.stringify({
         message: "Translated memo content created successfully",
-        id: StoredMemo.id
+        id: storedMemo.id
       })
     };
   } catch (error) {

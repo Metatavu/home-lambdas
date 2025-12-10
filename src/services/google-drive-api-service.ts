@@ -34,8 +34,8 @@ export const getGoogleAuth = async () => {
  * @returns Google Authentication
  */
 export const getPersonalGoogleAuth = async () => {
-  const { clientId, clientSecret, refreshToken, redirectUrl } = config.get().google;
-  const oAuth2Client = new google.auth.OAuth2(clientId, clientSecret, redirectUrl);
+  const { clientId, clientSecret, refreshToken } = config.get().google;
+  const oAuth2Client = new google.auth.OAuth2(clientId, clientSecret);
 
   oAuth2Client.setCredentials({ refresh_token: refreshToken });
 

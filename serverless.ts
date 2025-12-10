@@ -126,8 +126,7 @@ const serverlessConfiguration: AWS = {
       GOOGLE_CLIENT_ID: env.GOOGLE_CLIENT_ID || undefined,
       GOOGLE_CLIENT_SECRET: env.GOOGLE_CLIENT_SECRET || undefined,
       GOOGLE_REFRESH_TOKEN: env.GOOGLE_REFRESH_TOKEN || undefined,
-      GOOGLE_DRIVE_FOLDER_ID: env.GOOGLE_DRIVE_FOLDER_ID || undefined,
-      GOOGLE_REDIRECT_URI: env.GOOGLE_REDIRECT_URI || undefined
+      GOOGLE_DRIVE_FOLDER_ID: env.GOOGLE_DRIVE_FOLDER_ID || undefined
     },
     iam: {
       role: {

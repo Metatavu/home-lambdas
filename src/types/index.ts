@@ -45,7 +45,6 @@ export interface Configuration {
     clientSecret: string;
     refreshToken: string;
     driveFolderId: string;
-    redirectUrl: string;
   };
   slack: {
     botToken: string;

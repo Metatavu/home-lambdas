@@ -22,8 +22,7 @@ const env = cleanEnv(process.env, {
   GOOGLE_CLIENT_ID: str(),
   GOOGLE_CLIENT_SECRET: str(),
   GOOGLE_REFRESH_TOKEN: str(),
-  GOOGLE_DRIVE_FOLDER_ID: str(),
-  GOOGLE_REDIRECT_URI: str()
+  GOOGLE_DRIVE_FOLDER_ID: str()
 });
 
 export default class Config {
@@ -56,8 +55,7 @@ export default class Config {
       clientId: env.GOOGLE_CLIENT_ID,
       clientSecret: env.GOOGLE_CLIENT_SECRET,
       refreshToken: env.GOOGLE_REFRESH_TOKEN,
-      driveFolderId: env.GOOGLE_DRIVE_FOLDER_ID,
-      redirectUrl: env.GOOGLE_REDIRECT_URI
+      driveFolderId: env.GOOGLE_DRIVE_FOLDER_ID
     },
     slack: {
       botToken: env.METATAVU_BOT_TOKEN,

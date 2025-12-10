@@ -1,22 +1,11 @@
 import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import Config from "src/app/config";
 
-const HOME_BUCKET_NAME = process.env.HOME_BUCKET_NAME;
-const HOME_BUCKET_REGION = process.env.HOME_BUCKET_REGION;
+const config = Config.get();
 
-if (!HOME_BUCKET_NAME) {
-  throw new Error("HOME_BUCKET_NAME is not defined in environment variables");
-}
-
-if (!HOME_BUCKET_REGION) {
-  throw new Error("HOME_BUCKET_REGION is not defined in environment variables");
-}
-
-const s3Client = new S3Client({
-  region: HOME_BUCKET_REGION,
-  forcePathStyle: false,
-  defaultsMode: "standard"
-});
+const { name: HOME_BUCKET_NAME, region: HOME_BUCKET_REGION } = config.homeBucket;
+const s3Client = new S3Client({ region: HOME_BUCKET_REGION });
 
 /**
  * Function generates presigned url

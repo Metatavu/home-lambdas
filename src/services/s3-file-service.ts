@@ -1,7 +1,10 @@
 import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import Config from "src/app/config";
 
-const { HOME_BUCKET_NAME, HOME_BUCKET_REGION } = process.env;
+const config = Config.get();
+
+const { name: HOME_BUCKET_NAME, region: HOME_BUCKET_REGION } = config.homeBucket;
 const s3Client = new S3Client({ region: HOME_BUCKET_REGION });
 
 /**
@@ -10,7 +13,7 @@ const s3Client = new S3Client({ region: HOME_BUCKET_REGION });
  * @param path  path to file in S3
  * @param operation put or get
  * @param contentType contentType of the file
- * @returns Buffer object
+ * @returns Signed URL string
  */
 export const generatePreSignedUrl = async (
   path: string,

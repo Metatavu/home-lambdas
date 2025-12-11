@@ -111,7 +111,7 @@ const serverlessConfiguration: AWS = {
       SEVERA_CLIENT_SECRET: env.SEVERA_CLIENT_SECRET,
       DYNAMODB_ENDPOINT: isLocal ? "http://localhost:8000" : undefined,
       CHANNEL_ID: env.CHANNEL_ID,
-      HOME_BUCKET_NAME: "${self:custom.s3BucketName.dev}",
+      HOME_BUCKET_NAME: "${self:custom.s3BucketName}",
       HOME_BUCKET_REGION: region,
       ADMIN_SLACK_USERS: env.ADMIN_SLACK_USERS || undefined,
       ADMIN_EMAILS: env.ADMIN_EMAILS || undefined,
@@ -126,7 +126,7 @@ const serverlessConfiguration: AWS = {
           {
             Effect: "Allow",
             Action: ["s3:GetObject", "s3:PutObject"],
-            Resource: isLocal ? "*" : "arn:aws:s3:::${self:custom.s3BucketName.dev}/*"
+            Resource: isLocal ? "*" : "arn:aws:s3:::${self:custom.s3BucketName}/*"
           },
           {
             Effect: "Allow",
@@ -200,10 +200,9 @@ const serverlessConfiguration: AWS = {
   },
   package: { individually: true },
   custom: {
-    s3BucketName: {
-      dev: env.HOME_BUCKET_NAME_DEV,
-      production: env.HOME_BUCKET_NAME_PROD
-    },
+    s3BucketName:
+      process.env.STAGE === "production" ? env.HOME_BUCKET_NAME_PROD : env.HOME_BUCKET_NAME_DEV,
+
     esbuild: {
       bundle: true,
       minify: false,

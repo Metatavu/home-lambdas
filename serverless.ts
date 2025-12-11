@@ -200,8 +200,7 @@ const serverlessConfiguration: AWS = {
   },
   package: { individually: true },
   custom: {
-    s3BucketName:
-      process.env.STAGE === "production" ? env.HOME_BUCKET_NAME_PROD : env.HOME_BUCKET_NAME_DEV,
+    s3BucketName: env.HOME_BUCKET_NAME,
 
     esbuild: {
       bundle: true,

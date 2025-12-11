@@ -15,6 +15,7 @@ interface QuestionnaireModel {
  * DynamoDB model for Question
  */
 interface Question {
+  id: string;
   questionText: string;
   answerOptions: AnswerOption[];
 }
@@ -23,6 +24,7 @@ interface Question {
  * DynamoDB model for Option
  */
 interface AnswerOption {
+  id: string;
   label: string;
   isCorrect: boolean;
 }

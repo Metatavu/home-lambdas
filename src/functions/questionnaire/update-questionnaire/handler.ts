@@ -3,6 +3,7 @@ import { middyfy } from "@libs/lambda";
 import type QuestionnaireModel from "src/database/models/questionnaire";
 import { questionnaireService } from "src/database/services";
 import type questionnaireSchema from "src/schema/questionnaire";
+import { v4 as uuidv4 } from "uuid";
 
 /**
  * Lambda function to update a questionnaire
@@ -30,11 +31,21 @@ const updateQuestionnaireHandler: ValidatedEventAPIGatewayProxyEvent<
     };
   }
 
+  const questionsWithIds = questions.map((question) => ({
+    id: question.id ?? uuidv4(),
+    questionText: question.questionText,
+    answerOptions: question.answerOptions.map((option) => ({
+      id: option.id ?? uuidv4(),
+      label: option.label,
+      isCorrect: option.isCorrect
+    }))
+  }));
+
   const questionnaireUpdates: QuestionnaireModel = {
     id: existingQuestionnaire.id,
     title,
     description,
-    questions,
+    questions: questionsWithIds,
     tags,
     passedUsers,
     passScore

@@ -6,6 +6,7 @@ dotenv.config({ path: __dirname + "/.env" });
 import sendDailyMessage from "@functions/meta-assistant/send-daily-message";
 import sendWeeklyMessage from "@functions/meta-assistant/send-weekly-message";
 import { env } from "process";
+import { getSlackUserAvatarHandler } from "src/functions";
 import removeUserAttributeHanndler from "src/functions/keycloak/remove-user-attribute";
 import updateVacationHandler from "src/functions/keycloak/update-user-vacation";
 import onCallImportFromJsonHandler from "src/functions/on-call/create-on-call-data-from-json";
@@ -196,7 +197,8 @@ const serverlessConfiguration: AWS = {
     uploadFileHandler,
     getContractedWorkWeekHandler,
     removeOptIn,
-    listWorkdaysForUserHandler
+    listWorkdaysForUserHandler,
+    getSlackUserAvatarHandler
   },
   package: { individually: true },
   custom: {

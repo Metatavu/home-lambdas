@@ -1,5 +1,6 @@
 import { DateTime } from "luxon";
 import { CreateKeycloakApiService } from "src/database/services/keycloak-api-service";
+import type { VacationRequestStatus } from "src/generated/homeLambdasModels/model/vacationRequestStatus";
 import { CreateSeveraApiService } from "src/services/severa-api-service";
 
 /**
@@ -129,4 +130,39 @@ export const updateRemainingVacationDays = async (
     await keycloakApiService.updateUserAttributes(userId, user);
   }
   return true;
+};
+
+/**
+ * Gets the latest status from a vacation request status array
+ */
+export const getLatestStatus = (statusArray: VacationRequestStatus[] | undefined) => {
+  if (!Array.isArray(statusArray) || statusArray.length === 0) return undefined;
+  return statusArray[statusArray.length - 1]?.status;
+};
+
+/**
+ * Validates and processes vacation approval
+ */
+export const processVacationApproval = async (
+  userId: string,
+  startDate: string,
+  endDate: string,
+  contractedWeek: number[],
+  currentStatus: string
+) => {
+  if (currentStatus !== "APPROVED") return null;
+
+  const daysByYear = splitVacationDaysByYear(startDate, endDate, contractedWeek);
+  for (const [year, daysInYear] of Object.entries(daysByYear)) {
+    const success = await updateRemainingVacationDays(userId, daysInYear, currentStatus, year);
+    if (!success) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({
+          message: `Cannot approve request: user does not have enough remaining vacation days for ${year}.`
+        })
+      };
+    }
+  }
+  return null;
 };

@@ -1,4 +1,4 @@
-import type { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway";
+import type { APIGatewayProxyEvent, APIGatewayProxyHandler } from "aws-lambda";
 import Auth from "src/meta-assistant/auth/auth-provider";
 import SlackUtilities from "src/meta-assistant/slack/slack-utils";
 
@@ -8,7 +8,7 @@ import SlackUtilities from "src/meta-assistant/slack/slack-utils";
  * @param event event containing path parameter 'email'
  * @return A response object with statuscode and avatar URL
  */
-const getSlackUserAvatarHandler: ValidatedEventAPIGatewayProxyEvent<any> = async (event) => {
+const getSlackUserAvatarHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
   try {
     const { accessToken } = await Auth.getAccessToken();
     if (!accessToken) {

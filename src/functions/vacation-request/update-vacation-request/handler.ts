@@ -99,9 +99,6 @@ const updateVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
   const contractedWeek = await getContractedWeek(userId);
 
   try {
-    const updatedVacationRequest =
-      await vacationRequestService.updateVacationRequest(vacationRequestUpdates);
-
     const approvalError = await processVacationApproval(
       userId,
       startDate,
@@ -110,6 +107,9 @@ const updateVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
       currentStatus
     );
     if (approvalError) return approvalError;
+
+    const updatedVacationRequest =
+      await vacationRequestService.updateVacationRequest(vacationRequestUpdates);
 
     if (statusChanged) {
       await notifyUserVacationStatusUpdatedAll({

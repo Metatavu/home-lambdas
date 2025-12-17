@@ -137,7 +137,7 @@ export const updateRemainingVacationDays = async (
  */
 export const getLatestStatus = (statusArray: VacationRequestStatus[] | undefined) => {
   if (!Array.isArray(statusArray) || statusArray.length === 0) return undefined;
-  return statusArray[statusArray.length - 1]?.status;
+  return statusArray.at(-1)?.status;
 };
 
 /**

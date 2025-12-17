@@ -71,7 +71,13 @@ const updateVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
       body: `Vacation request ${id} not found`
     };
   }
-  const statusChanged = existingVacationRequest.status !== status;
+
+  const existingLatestStatus = Array.isArray(existingVacationRequest.status)
+    ? existingVacationRequest.status.at(-1)?.status
+    : "UNKNOWN";
+  const newLatestStatus = Array.isArray(status) ? status.at(-1)?.status : "UNKNOWN";
+
+  const statusChanged = existingLatestStatus !== newLatestStatus;
   const draftStatusChanged = existingVacationRequest.draft !== draft;
 
   const vacationRequestUpdates = {

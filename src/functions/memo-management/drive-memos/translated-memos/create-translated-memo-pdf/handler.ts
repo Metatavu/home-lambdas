@@ -59,7 +59,7 @@ const createTranslatedMemoPdfHandler: APIGatewayProxyHandlerV2 = async (
       language: originalLanguage,
       translatedBase64: originalBase64
     };
-    const storedMemo = await memoService.storeMemo(originalMemo, true);
+    const storedMemo = await memoService.storeMemoRecord(originalMemo, true);
 
     // TODO: Translate PDF and store translated version
     // Uncomment and implement proper logic when translation service is ready
@@ -74,7 +74,7 @@ const createTranslatedMemoPdfHandler: APIGatewayProxyHandlerV2 = async (
     //     language: "en", // or dynamically from translation service
     //     translatedBase64: translatedBase64
     //   };
-    //   await memoService.storeMemo(translatedMemo);
+    //   await memoService.storeMemoRecord(translatedMemo);
     // } catch (error) {
     //   return {
     //     statusCode: 500,

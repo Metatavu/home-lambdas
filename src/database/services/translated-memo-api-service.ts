@@ -4,6 +4,11 @@ import { v4 as uuidv4 } from "uuid";
 
 const TABLE_NAME = "TranslatedMemos";
 
+/**
+ * Service for managing translated memo PDFs in DynamoDB.
+ *
+ * Provides methods to store and retrieve memo records.
+ */
 class TranslatedMemoService {
   constructor(private readonly docClient: DynamoDBDocumentClient) {}
 
@@ -15,7 +20,7 @@ class TranslatedMemoService {
    *
    * @returns The stored `MemoRecord`, including `id`, `PK`, `SK`, and all memo fields.
    */
-  public storeMemo = async (memo: MemoInput, isOriginal = false): Promise<MemoRecord> => {
+  public storeMemoRecord = async (memo: MemoInput, isOriginal = false): Promise<MemoRecord> => {
     const id = isOriginal ? uuidv4() : memo.id;
     const newMemo: MemoRecord = {
       id,
@@ -40,7 +45,7 @@ class TranslatedMemoService {
    *
    * @returns The `MemoRecord` if found, or `null` if no matching memo exists.
    */
-  public getTranslatedPdf = async (
+  public getTranslatedMemoRecord = async (
     id: string,
     targetLanguage: string
   ): Promise<MemoRecord | null> => {

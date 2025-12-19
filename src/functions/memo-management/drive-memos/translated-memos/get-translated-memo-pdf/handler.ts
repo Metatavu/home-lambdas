@@ -29,7 +29,7 @@ const getTranslatedMemoPdfHandler: APIGatewayProxyHandlerV2 = async (
   }
 
   try {
-    const memo = await memoService.getTranslatedPdf(`MEMO#${memoId}`, `LANG#${language}`);
+    const memo = await memoService.getTranslatedMemoRecord(`MEMO#${memoId}`, `LANG#${language}`);
     if (!memo) {
       return {
         statusCode: 404,
@@ -47,7 +47,12 @@ const getTranslatedMemoPdfHandler: APIGatewayProxyHandlerV2 = async (
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ memoRecord })
+      headers: {
+        "Content-Type": "application/pdf",
+        "Content-Disposition": `inline; filename="${memoRecord.fileName || "memo.pdf"}"`
+      },
+      body: memoRecord.translatedBase64,
+      isBase64Encoded: true
     };
   } catch (error) {
     return {

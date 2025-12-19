@@ -28,8 +28,9 @@ export const getGoogleAuth = async () => {
   }
 };
 
+// TODO: Remove this function when service account is set up
 /**
- * Personal Google authentication service (!!for testing the drive API!!)
+ * Personal Google authentication service
  *
  * @returns Google Authentication
  */
@@ -306,32 +307,5 @@ export const getFileContentPdf = async (file: File): Promise<PdfFile> => {
     };
   } catch (error) {
     console.error("Error loading the PDF:", error);
-  }
-};
-
-/**
- * Creates a new PDF file from binary content and stores it in a specified folder
- *
- * @param pdfFile PDF file object
- * @param folderId folder ID
- * @returns ID of files
- */
-export const createPdfFile = async (pdfFile: PdfFile, folderId: string) => {
-  try {
-    const drive = await getDriveService();
-    const response = await drive.files.create({
-      requestBody: {
-        name: pdfFile.name,
-        mimeType: "application/pdf",
-        parents: [folderId]
-      },
-      media: {
-        mimeType: "application/pdf",
-        body: Readable.from(pdfFile.content)
-      }
-    });
-    return response.data.id;
-  } catch (error) {
-    console.error(`Failed to create PDF file: ${pdfFile.name} in folder ID: ${folderId}`, error);
   }
 };

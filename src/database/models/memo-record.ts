@@ -11,6 +11,9 @@ export interface MemoRecord {
   translatedBase64: string;
 }
 
+/**
+ * Input type for creating a memo record.
+ */
 export interface MemoInput {
   id?: string;
   fileId: string;

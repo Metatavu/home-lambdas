@@ -52,6 +52,7 @@ export default class Config {
       adminEmails: env.ADMIN_EMAILS ? env.ADMIN_EMAILS.split(",") : []
     },
     google: {
+      // TODO: Change to service account credentials when they are set up
       clientId: env.GOOGLE_CLIENT_ID,
       clientSecret: env.GOOGLE_CLIENT_SECRET,
       refreshToken: env.GOOGLE_REFRESH_TOKEN,

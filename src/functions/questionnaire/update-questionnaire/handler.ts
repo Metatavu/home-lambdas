@@ -32,10 +32,10 @@ const updateQuestionnaireHandler: ValidatedEventAPIGatewayProxyEvent<
   }
 
   const questionsWithIds = questions.map((question) => ({
-    id: question.id ?? uuidv4(),
+    id: question.id,
     questionText: question.questionText,
     answerOptions: question.answerOptions.map((option) => ({
-      id: option.id ?? uuidv4(),
+      id: option.id,
       label: option.label,
       isCorrect: option.isCorrect
     }))

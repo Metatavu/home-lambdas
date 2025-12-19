@@ -3,7 +3,6 @@ import { middyfy } from "@libs/lambda";
 import type QuestionnaireModel from "src/database/models/questionnaire";
 import { questionnaireService } from "src/database/services";
 import type questionnaireSchema from "src/schema/questionnaire";
-import { v4 as uuidv4 } from "uuid";
 
 /**
  * Lambda function to update a questionnaire

@@ -4,7 +4,8 @@ export { default as updateUserAttributeHandler } from "./keycloak/update-user-at
 export { default as getContentPdfHandler } from "./memo-management/drive-memos/get-content-pdf";
 export { default as listMemoPdfHandler } from "./memo-management/drive-memos/get-memos-pdf";
 export { default as getSummaryMemoPdfHandler } from "./memo-management/drive-memos/get-summary-memo-pdf";
-export { default as getTranslatedMemoPdfHandler } from "./memo-management/drive-memos/get-translated-memo-pdf";
+export { default as createTranslatedMemoPdfHandler } from "./memo-management/drive-memos/translated-memos/create-translated-memo-pdf";
+export { default as getTranslatedMemoPdfHandler } from "./memo-management/drive-memos/translated-memos/get-translated-memo-pdf";
 export { default as createCommentHandler } from "./memo-management/trello-cards/comment-trello-card";
 export { default as createTrelloCardHandler } from "./memo-management/trello-cards/create-trello-card";
 export { default as deleteTrelloCardHandler } from "./memo-management/trello-cards/delete-trello-card";
@@ -34,6 +35,7 @@ export { default as getFlextimeHandler } from "./severa/get-flextime-by-user";
 export { default as getPhasesHandler } from "./severa/get-phases-by-project";
 export { default as getResourceAllocationHandler } from "./severa/get-resource-allocations-by-user";
 export { default as listWorkdaysForUserHandler } from "./severa/list-workdays-for-user";
+export { default as removeSeveraOptInHandler } from "./severa/remove-opt-in";
 export { default as createSoftwareHandler } from "./software-registry/create-software";
 export { default as deleteSoftwareHandler } from "./software-registry/delete-software";
 export { default as findSoftwareHandler } from "./software-registry/find-software";
@@ -47,4 +49,3 @@ export { default as listArticlesHandler } from "./wiki-documentation/list-articl
 export { default as readArticleHandler } from "./wiki-documentation/read-article";
 export { default as updateArticleHandler } from "./wiki-documentation/update-article";
 export { default as uploadFileHandler } from "./wiki-documentation/upload-file";
-export { default as removeSeveraOptInHandler } from "./severa/remove-opt-in";

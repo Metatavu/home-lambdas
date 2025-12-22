@@ -12,7 +12,7 @@ import { middyfy } from "src/libs/lambda";
  *
  * @param event - API Gateway event containing path parameters.
  * @returns Response object with:
- *   - `statusCode: 200` on success, body contains the `memoRecord` object.
+ *   - `statusCode: 200` on success, body contains the PDF content in base64.
  *   - Other status codes (`400`, `404`, `500`) indicate errors.
  */
 const getTranslatedMemoPdfHandler: APIGatewayProxyHandlerV2 = async (

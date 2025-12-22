@@ -155,7 +155,8 @@ const serverlessConfiguration: AWS = {
                   "arn:aws:dynamodb:${self:provider.region}:*:table/VacationRequests",
                   "arn:aws:dynamodb:${self:provider.region}:*:table/Articles",
                   "arn:aws:dynamodb:${self:provider.region}:*:table/Articles/index/GSI_Path",
-                  "arn:aws:dynamodb:${self:provider.region}:*:table/OnCallSchedule"
+                  "arn:aws:dynamodb:${self:provider.region}:*:table/OnCallSchedule",
+                  "arn:aws:dynamodb:${self:provider.region}:*:table/TranslatedMemos"
                 ]
           }
         ]
@@ -318,6 +319,25 @@ const serverlessConfiguration: AWS = {
           KeySchema: [
             { AttributeName: "Year", KeyType: "HASH" },
             { AttributeName: "Week", KeyType: "RANGE" }
+          ],
+          ProvisionedThroughput: {
+            ReadCapacityUnits: 1,
+            WriteCapacityUnits: 1
+          }
+        }
+      },
+      TranslatedMemos: {
+        Type: "AWS::DynamoDB::Table",
+        DeletionPolicy: "Delete",
+        Properties: {
+          TableName: "TranslatedMemos",
+          AttributeDefinitions: [
+            { AttributeName: "PK", AttributeType: "S" },
+            { AttributeName: "SK", AttributeType: "S" }
+          ],
+          KeySchema: [
+            { AttributeName: "PK", KeyType: "HASH" },
+            { AttributeName: "SK", KeyType: "RANGE" }
           ],
           ProvisionedThroughput: {
             ReadCapacityUnits: 1,

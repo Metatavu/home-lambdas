@@ -19,6 +19,8 @@ const env = cleanEnv(process.env, {
   SEVERA_BASE_URL: str(),
   SEVERA_CLIENT_ID: str(),
   SEVERA_CLIENT_SECRET: str(),
+  HOME_BUCKET_NAME: str(),
+  HOME_BUCKET_REGION: str(),
   GOOGLE_CLIENT_ID: str(),
   GOOGLE_CLIENT_SECRET: str(),
   GOOGLE_REFRESH_TOKEN: str(),
@@ -67,6 +69,10 @@ export default class Config {
       baseUrl: env.SEVERA_BASE_URL,
       clientId: env.SEVERA_CLIENT_ID,
       clientSecret: env.SEVERA_CLIENT_SECRET
+    },
+    homeBucket: {
+      name: env.HOME_BUCKET_NAME,
+      region: env.HOME_BUCKET_REGION
     }
   });
 }

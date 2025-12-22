@@ -40,12 +40,6 @@ export interface Configuration {
     mailgunSmtpPassword: string;
     adminEmails: string[];
   };
-  google: {
-    clientId: string;
-    clientSecret: string;
-    refreshToken: string;
-    driveFolderId: string;
-  };
   slack: {
     botToken: string;
     adminUsers: string[];

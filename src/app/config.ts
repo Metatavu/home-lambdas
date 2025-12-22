@@ -20,11 +20,7 @@ const env = cleanEnv(process.env, {
   SEVERA_CLIENT_ID: str(),
   SEVERA_CLIENT_SECRET: str(),
   HOME_BUCKET_NAME: str(),
-  HOME_BUCKET_REGION: str(),
-  GOOGLE_CLIENT_ID: str(),
-  GOOGLE_CLIENT_SECRET: str(),
-  GOOGLE_REFRESH_TOKEN: str(),
-  GOOGLE_DRIVE_FOLDER_ID: str()
+  HOME_BUCKET_REGION: str()
 });
 
 export default class Config {
@@ -52,13 +48,6 @@ export default class Config {
       mailgunSmtpUser: env.MAILGUN_SMTP_HOST_USER,
       mailgunSmtpPassword: env.MAILGUN_SMTP_PASSWORD,
       adminEmails: env.ADMIN_EMAILS ? env.ADMIN_EMAILS.split(",") : []
-    },
-    google: {
-      // TODO: Change to service account credentials when they are set up
-      clientId: env.GOOGLE_CLIENT_ID,
-      clientSecret: env.GOOGLE_CLIENT_SECRET,
-      refreshToken: env.GOOGLE_REFRESH_TOKEN,
-      driveFolderId: env.GOOGLE_DRIVE_FOLDER_ID
     },
     slack: {
       botToken: env.METATAVU_BOT_TOKEN,

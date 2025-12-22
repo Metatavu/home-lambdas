@@ -1,8 +1,8 @@
-import { softwareService } from "src/database/services";
 import type { SoftwareRegistry } from "src/generated/homeLambdasModels/model/softwareRegistry";
 import type { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
 import { getAuthDataFromToken } from "src/libs/auth-utils";
 import { middyfy } from "src/libs/lambda";
+import { softwareService } from "src/database/services";
 
 /**
  * Handler for creating a new software entry in DynamoDB.

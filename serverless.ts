@@ -156,7 +156,7 @@ const serverlessConfiguration: AWS = {
                   "arn:aws:dynamodb:${self:provider.region}:*:table/Articles",
                   "arn:aws:dynamodb:${self:provider.region}:*:table/Articles/index/GSI_Path",
                   "arn:aws:dynamodb:${self:provider.region}:*:table/OnCallSchedule",
-                  "arn:aws:dynamodb:${self:provider.region}:*:table/TranslatedMemos"
+                  "arn:aws:dynamodb:${self:provider.region}:*:table/Memos"
                 ]
           }
         ]
@@ -322,11 +322,11 @@ const serverlessConfiguration: AWS = {
           }
         }
       },
-      TranslatedMemos: {
+      Memos: {
         Type: "AWS::DynamoDB::Table",
         DeletionPolicy: "Delete",
         Properties: {
-          TableName: "TranslatedMemos",
+          TableName: "Memos",
           AttributeDefinitions: [
             { AttributeName: "PK", AttributeType: "S" },
             { AttributeName: "SK", AttributeType: "S" }

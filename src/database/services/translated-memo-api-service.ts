@@ -2,7 +2,7 @@ import { type DynamoDBDocumentClient, GetCommand, PutCommand } from "@aws-sdk/li
 import type { MemoInput, MemoRecord } from "src/database/models/memo-record";
 import { v4 as uuidv4 } from "uuid";
 
-const TABLE_NAME = "TranslatedMemos";
+const TABLE_NAME = "Memos";
 
 /**
  * Service for managing translated memo PDFs in DynamoDB.

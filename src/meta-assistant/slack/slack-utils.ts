@@ -57,6 +57,7 @@ namespace SlackUtilities {
       return result.user as Member;
     } catch (error) {
       console.error(`Error fetching Slack user by email (${email}):`, error);
+      return undefined;
     }
   };
 

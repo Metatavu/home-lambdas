@@ -43,11 +43,11 @@ const getSlackUserAvatarHandler: APIGatewayProxyHandler = async (event: APIGatew
       body: JSON.stringify(response)
     };
   } catch (error) {
+    console.error("getSlackUserAvatarHandler failed", error);
     return {
       statusCode: 500,
       body: JSON.stringify({
-        error: "Internal server error",
-        details: error.message
+        error: "Internal server error"
       })
     };
   }

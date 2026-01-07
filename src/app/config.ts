@@ -21,6 +21,8 @@ const env = cleanEnv(process.env, {
   SEVERA_CLIENT_SECRET: str(),
   HOME_BUCKET_NAME: str(),
   HOME_BUCKET_REGION: str(),
+  SLACK_USER_OVERRIDE: str(),
+  CHANNEL_ID: str(),
   GOOGLE_CLIENT_ID: str(),
   GOOGLE_CLIENT_SECRET: str(),
   GOOGLE_REFRESH_TOKEN: str(),
@@ -62,7 +64,9 @@ export default class Config {
     },
     slack: {
       botToken: env.METATAVU_BOT_TOKEN,
-      adminUsers: env.ADMIN_SLACK_USERS ? env.ADMIN_SLACK_USERS.split(",") : []
+      adminUsers: env.ADMIN_SLACK_USERS ? env.ADMIN_SLACK_USERS.split(",") : [],
+      userOverride: env.SLACK_USER_OVERRIDE,
+      channelId: env.CHANNEL_ID
     },
     homeBaseUrl: env.HOME_BASE_URL || "http://localhost:5173",
     severa: {

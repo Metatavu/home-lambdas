@@ -6,7 +6,7 @@ dotenv.config({ path: __dirname + "/.env" });
 import sendDailyMessage from "@functions/meta-assistant/send-daily-message";
 import sendWeeklyMessage from "@functions/meta-assistant/send-weekly-message";
 import { env } from "process";
-import { listMemoPdfHandler } from "src/functions";
+import { getSlackUserAvatarHandler, listMemoPdfHandler } from "src/functions";
 import removeUserAttributeHanndler from "src/functions/keycloak/remove-user-attribute";
 import updateVacationHandler from "src/functions/keycloak/update-user-vacation";
 import getContentPdfHandler from "src/functions/memo-management/drive-memos/get-content-pdf";
@@ -206,6 +206,7 @@ const serverlessConfiguration: AWS = {
     getContractedWorkWeekHandler,
     removeOptIn,
     listWorkdaysForUserHandler,
+    getSlackUserAvatarHandler,
     listMemoPdfHandler,
     getContentPdfHandler,
     getTranslatedMemoPdfHandler,

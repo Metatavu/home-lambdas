@@ -1,21 +1,30 @@
-import type { DailyCombinedData, WeeklyCombinedData, PreviousWorkdayDates, DailyMessageData, DailyMessageResult, WeeklyMessageData, WeeklyMessageResult } from "src/types/meta-assistant/index";
 import { type ChatPostMessageResponse, LogLevel, WebClient } from "@slack/web-api";
 import type { Member } from "@slack/web-api/dist/response/UsersListResponse";
 import { DateTime } from "luxon";
-import TimeUtilities from "../generic/time-utils";
-import MessageUtilities from "../generic/message-utils";
+import Config from "src/app/config";
+import type {
+  DailyCombinedData,
+  DailyMessageData,
+  DailyMessageResult,
+  PreviousWorkdayDates,
+  WeeklyCombinedData,
+  WeeklyMessageData,
+  WeeklyMessageResult
+} from "src/types/meta-assistant/index";
 import type { NotificationMessageResult } from "src/types/trello-notification";
+import MessageUtilities from "../generic/message-utils";
+import TimeUtilities from "../generic/time-utils";
 
 /**
  * Namespace for Slack utilities
  */
 namespace SlackUtilities {
-  export const client = new WebClient(process.env.METATAVU_BOT_TOKEN, {
+  const { botToken, userOverride, channelId } = Config.get().slack;
+  export const client = new WebClient(botToken, {
     logLevel: LogLevel.WARN
   });
 
-  const slackOverride = process.env.SLACK_USER_OVERRIDE ? process.env.SLACK_USER_OVERRIDE.split(",") : undefined;
-  const slackChannelId = process.env.CHANNEL_ID;
+  const slackOverride = userOverride ? userOverride.split(",") : undefined;
 
   /**
    * Get list of slack users
@@ -31,6 +40,27 @@ namespace SlackUtilities {
   };
 
   /**
+   * Get Slack user by email
+   *
+   * @param email user's email
+   * @returns Promise of Slack user data or undefined if not found
+   */
+  export const getSlackUserByEmail = async (email: string): Promise<Member | undefined> => {
+    try {
+      const result = await client.users.lookupByEmail({ email });
+
+      if (!result.ok) {
+        console.error(`Slack API error: ${result.error}`);
+        return undefined;
+      }
+      return result.user as Member;
+    } catch (error) {
+      console.error(`Error fetching Slack user by email (${email}):`, error);
+      return undefined;
+    }
+  };
+
+  /**
    * Gets Slack ID of card creator
    *
    * @param createdBy card creator full name
@@ -39,28 +69,31 @@ namespace SlackUtilities {
   const getSlackUserId = async (createdBy: string): Promise<string> => {
     try {
       const users = await getSlackUsers();
-      const matchedUser = users.find(user => user.real_name === createdBy);
-    
+      const matchedUser = users.find((user) => user.real_name === createdBy);
+
       if (!matchedUser) throw new Error(`User with name ${createdBy} not found in Slack`);
       return matchedUser.id;
     } catch (error) {
       console.error(`Error finding user ID for ${createdBy}:`, error);
-      return 
+      return;
     }
   };
 
   /**
-  * Find the corresponding Slack user
-  * @param firstName user first name
-  * @param lastName user last name
-  */
+   * Find the corresponding Slack user
+   * @param firstName user first name
+   * @param lastName user last name
+   */
   export const findSlackUser = async (firstName: string, lastName: string) => {
     try {
       const users = await getSlackUsers();
-      return users.find(slackUser => slackUser.profile.first_name === firstName && slackUser.profile.last_name === lastName);
+      return users.find(
+        (slackUser) =>
+          slackUser.profile.first_name === firstName && slackUser.profile.last_name === lastName
+      );
     } catch (error) {
       console.error(`Error finding user ID for ${firstName} ${lastName}:`, error);
-      return 
+      return;
     }
   };
 
@@ -71,39 +104,35 @@ namespace SlackUtilities {
    * @param numberOfToday Todays number
    * @returns string message if id match
    */
-  const constructDailyMessage = (user: DailyCombinedData, numberOfToday: number): DailyMessageData => {
+  const constructDailyMessage = (
+    user: DailyCombinedData,
+    numberOfToday: number
+  ): DailyMessageData => {
     const { firstName, date, minimumBillableRate } = user;
 
-    const { 
-      totalLoggedTime, 
-      expectedHours, 
-      projectTime,
-      totalBillableTime,
-      nonBillableProject,
-    } = TimeUtilities.handleTimeFormatting(user);
+    const { totalLoggedTime, expectedHours, projectTime, totalBillableTime, nonBillableProject } =
+      TimeUtilities.handleTimeFormatting(user);
 
-    const {
-      message,
-      billableHoursPercentage
-    } = MessageUtilities.calculateWorkedTimeAndBillableHours(user);
+    const { message, billableHoursPercentage } =
+      MessageUtilities.calculateWorkedTimeAndBillableHours(user);
 
     const displayDate = DateTime.fromISO(date).toFormat("dd.MM.yyyy");
-    
+
     const customMessage = `
       Hi ${firstName},
-      ${numberOfToday === 1 ? "Last friday" :"Yesterday"} (${displayDate}) you worked ${totalLoggedTime} with an expected time of ${expectedHours}.
+      ${numberOfToday === 1 ? "Last friday" : "Yesterday"} (${displayDate}) you worked ${totalLoggedTime} with an expected time of ${expectedHours}.
       ${message}
       Logged project time: ${projectTime}, Billable project time: ${totalBillableTime}, Non billable project time: ${nonBillableProject}.
       Your percentage of billable hours was: ${billableHoursPercentage}% ${Number.parseInt(billableHoursPercentage) >= minimumBillableRate ? ":+1:" : ":-1:"}
       Have a great rest of the day!
       `;
-  
+
     return {
       message: customMessage,
       name: firstName,
       displayDate: displayDate,
       displayTotalLoggedTime: totalLoggedTime,
-      displayExpected: expectedHours,
+      displayExpected: expectedHours
     };
   };
 
@@ -115,7 +144,11 @@ namespace SlackUtilities {
    * @param weekEnd date for data
    * @returns message
    */
-  const constructWeeklySummaryMessage = (user: WeeklyCombinedData, weekStart: string, weekEnd: string): WeeklyMessageData => {
+  const constructWeeklySummaryMessage = (
+    user: WeeklyCombinedData,
+    weekStart: string,
+    weekEnd: string
+  ): WeeklyMessageData => {
     const { firstName } = user;
     const week = Number(user.week);
     // TODO: minimumBillableRate should come from the user but this needs to be updated on the back end for most users, so using this for now
@@ -124,16 +157,11 @@ namespace SlackUtilities {
     const startDate = DateTime.fromISO(weekStart).toFormat("dd.MM.yyyy");
     const endDate = DateTime.fromISO(weekEnd).toFormat("dd.MM.yyyy");
 
-    const {
-      totalEnteredHours,
-      projectTime,
-      totalExpectedHours,
-    } = TimeUtilities.handleTimeFormattingWeekly(user);
-    
-    const {
-      message,
-      billableHoursPercentage
-    } = MessageUtilities.calculateWorkedTimeAndBillableHoursWeekly(user);
+    const { totalEnteredHours, projectTime, totalExpectedHours } =
+      TimeUtilities.handleTimeFormattingWeekly(user);
+
+    const { message, billableHoursPercentage } =
+      MessageUtilities.calculateWorkedTimeAndBillableHoursWeekly(user);
 
     const customMessage = `
       Hi ${firstName},
@@ -145,7 +173,7 @@ namespace SlackUtilities {
 
       Have a great week!
     `;
-    
+
     return {
       message: customMessage,
       name: firstName,
@@ -155,13 +183,13 @@ namespace SlackUtilities {
       displayLogged: totalEnteredHours,
       displayLoggedProject: projectTime,
       displayExpected: totalExpectedHours,
-      billableHoursPercentage: billableHoursPercentage,
+      billableHoursPercentage: billableHoursPercentage
     };
   };
 
   /**
    * Create notification message about summary creation
-   * 
+   *
    * @param summary text summary
    * @param name file name
    * @returns message
@@ -170,7 +198,7 @@ namespace SlackUtilities {
     const cleanName = name.slice(0, -4);
     const message = `
 :checkered_flag: New summary *${cleanName}* is available: \n\`${summary.split("|")[0]}\`
-    `;  
+    `;
     return message;
   };
 
@@ -181,12 +209,11 @@ namespace SlackUtilities {
    * @param message message to be send
    * @returns Promise of ChatPostMessageResponse
    */
-  const sendMessage = (channelId: string, message: string): Promise<ChatPostMessageResponse> => (
+  const sendMessage = (channelId: string, message: string): Promise<ChatPostMessageResponse> =>
     client.chat.postMessage({
       channel: channelId,
       text: message
-    })
-  );
+    });
 
   /**
    * Post a daily slack message to users
@@ -198,7 +225,7 @@ namespace SlackUtilities {
    */
   export const postDailyMessageToUsers = async (
     dailyCombinedData: DailyCombinedData[],
-    previousWorkDays: PreviousWorkdayDates,
+    previousWorkDays: PreviousWorkdayDates
   ): Promise<DailyMessageResult[]> => {
     const { numberOfToday } = previousWorkDays;
 
@@ -207,23 +234,22 @@ namespace SlackUtilities {
       const { slackId } = userData;
       const message = constructDailyMessage(userData, numberOfToday);
 
-        if (!slackOverride) {
+      if (!slackOverride) {
+        messageResults.push({
+          message: message,
+          response: await sendMessage(slackId, message.message)
+        });
+      } else {
+        for (const stagingid of slackOverride) {
           messageResults.push({
             message: message,
             response: await sendMessage(slackId, message.message)
           });
         }
-        else {
-          for (const stagingid of slackOverride) {
-            messageResults.push({
-              message: message,
-              response: await sendMessage(stagingid, message.message)
-            });
-          }
-        }
       }
-      return messageResults;
-    };
+    }
+    return messageResults;
+  };
 
   /**
    * Post a weekly summary slack message to users
@@ -234,14 +260,18 @@ namespace SlackUtilities {
    * @param previousWorkDays dates and the number of today
    */
   export const postWeeklyMessageToUsers = async (
-    weeklyCombinedData: WeeklyCombinedData[],
+    weeklyCombinedData: WeeklyCombinedData[]
   ): Promise<WeeklyMessageResult[]> => {
     const { weekStartDate, weekEndDate } = TimeUtilities.getlastWeeksDates();
     const messageResults: WeeklyMessageResult[] = [];
 
     for (const userData of weeklyCombinedData) {
       const { userId } = userData;
-      const message = constructWeeklySummaryMessage(userData, weekStartDate.toISODate(), weekEndDate.toISODate());
+      const message = constructWeeklySummaryMessage(
+        userData,
+        weekStartDate.toISODate(),
+        weekEndDate.toISODate()
+      );
 
       if (!slackOverride) {
         messageResults.push({
@@ -266,16 +296,19 @@ namespace SlackUtilities {
    * @param summary text summary
    * @param name file name
    */
-  export const postSummaryToChannel = async (summary: string, name: string): Promise<NotificationMessageResult> => {
+  export const postSummaryToChannel = async (
+    summary: string,
+    name: string
+  ): Promise<NotificationMessageResult> => {
     let message;
-      message = await constructMemoDocCreatedMessage(summary, name);
-  
+    message = await constructMemoDocCreatedMessage(summary, name);
+
     const messageResults: NotificationMessageResult = {
       message: message,
-      response: await sendMessage(slackChannelId, message)
+      response: await sendMessage(channelId, message)
     };
     return messageResults;
-  }
+  };
 }
 
 export default SlackUtilities;

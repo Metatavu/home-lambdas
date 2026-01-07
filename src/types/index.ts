@@ -49,6 +49,8 @@ export interface Configuration {
   slack: {
     botToken: string;
     adminUsers: string[];
+    userOverride: string;
+    channelId: string;
   };
   vacationDetails?: VacationDetails;
   homeBaseUrl: string;

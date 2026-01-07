@@ -1,6 +1,7 @@
 import { type ChatPostMessageResponse, LogLevel, WebClient } from "@slack/web-api";
 import type { Member } from "@slack/web-api/dist/response/UsersListResponse";
 import { DateTime } from "luxon";
+import Config from "src/app/config";
 import type {
   DailyCombinedData,
   DailyMessageData,
@@ -18,14 +19,12 @@ import TimeUtilities from "../generic/time-utils";
  * Namespace for Slack utilities
  */
 namespace SlackUtilities {
-  export const client = new WebClient(process.env.METATAVU_BOT_TOKEN, {
+  const { botToken, userOverride, channelId } = Config.get().slack;
+  export const client = new WebClient(botToken, {
     logLevel: LogLevel.WARN
   });
 
-  const slackOverride = process.env.SLACK_USER_OVERRIDE
-    ? process.env.SLACK_USER_OVERRIDE.split(",")
-    : undefined;
-  const slackChannelId = process.env.CHANNEL_ID;
+  const slackOverride = userOverride ? userOverride.split(",") : undefined;
 
   /**
    * Get list of slack users
@@ -306,7 +305,7 @@ namespace SlackUtilities {
 
     const messageResults: NotificationMessageResult = {
       message: message,
-      response: await sendMessage(slackChannelId, message)
+      response: await sendMessage(channelId, message)
     };
     return messageResults;
   };

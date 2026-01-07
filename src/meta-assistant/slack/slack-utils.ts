@@ -243,7 +243,7 @@ namespace SlackUtilities {
         for (const stagingid of slackOverride) {
           messageResults.push({
             message: message,
-            response: await sendMessage(stagingid, message.message)
+            response: await sendMessage(slackId, message.message)
           });
         }
       }

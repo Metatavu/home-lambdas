@@ -6,7 +6,7 @@ export default {
     {
       httpApi: {
         method: "get",
-        path: "/slack-avatar/{email}",
+        path: "/slack-avatar",
         authorizer: {
           name: "homeKeycloakAuthorizer"
         }

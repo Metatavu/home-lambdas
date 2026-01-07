@@ -1,26 +1,20 @@
 import type { APIGatewayProxyEvent, APIGatewayProxyHandler } from "aws-lambda";
-import Auth from "src/meta-assistant/auth/auth-provider";
 import SlackUtilities from "src/meta-assistant/slack/slack-utils";
 
 /**
  * Lambda to receive user's slack avatar by email
  *
- * @param event event containing path parameter 'email'
+ * @param event event with query parameter email
  * @return A response object with statuscode and avatar URL
  */
 const getSlackUserAvatarHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
   try {
-    const { accessToken } = await Auth.getAccessToken();
-    if (!accessToken) {
-      throw new Error("User authentication failed");
-    }
-
-    const rawEmail = event.pathParameters?.email;
+    const rawEmail = event.queryStringParameters?.email;
 
     if (!rawEmail) {
       return {
         statusCode: 400,
-        body: JSON.stringify({ message: "Path parameter 'email' is required" })
+        body: JSON.stringify({ message: "Query parameter 'email' is required" })
       };
     }
 

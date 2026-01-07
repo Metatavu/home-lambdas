@@ -43,6 +43,7 @@ const createTranslatedMemoPdfHandler: APIGatewayProxyHandlerV2 = async (
 
     const existingFi = await memoService.getByFileIdAndLanguage(fileId, originalLanguage);
 
+    //TODO: After translation service is ready, implement the duplicate check for target language as well
     const storedMemo: MemoInput = !existingFi
       ? await (async () => {
           const pdfFile = await getFileContentPdf(file);
@@ -66,24 +67,24 @@ const createTranslatedMemoPdfHandler: APIGatewayProxyHandlerV2 = async (
 
     // TODO: Translate PDF and store translated version
     // Uncomment and implement proper logic when translation service is ready
-    // try {
     // const translatedPdf = await getTranslatedPdf(pdfFile);
     // const translatedBase64 = translatedPdf.content.toString("base64");
-    //   const translatedBase64 = "is this translated?";
-    //   const translatedMemo = {
-    //     id: storedMemo.id,
-    //     fileId: file.id,
-    //     fileName: file.name,
-    //     language: "en", // or dynamically from translation service
-    //     translatedBase64: translatedBase64
-    //   };
+    // const translatedBase64 = "is this not translated?";
+    // const translatedMemo = {
+    //   id: storedMemo.id,
+    //   fileId: file.id,
+    //   fileName: file.name,
+    //   language: "en", // or dynamically from translation service
+    //   translatedBase64: translatedBase64
+    // };
+    // const existingTranslated = await memoService.getByFileIdAndLanguage(
+    //   file.id,
+    //   translatedMemo.language
+    // );
+    // if (!existingTranslated) {
     //   await memoService.storeMemoRecord(translatedMemo);
-    // } catch (error) {
-    //   return {
-    //     statusCode: 500,
-    //     body: JSON.stringify({ error: "Failed to translate and store PDF", details: error.message })
-    //   };
     // }
+
     return {
       statusCode: 200,
       body: JSON.stringify({

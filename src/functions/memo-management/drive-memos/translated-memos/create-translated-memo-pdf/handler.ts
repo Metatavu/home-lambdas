@@ -4,10 +4,9 @@ import type {
   APIGatewayProxyHandlerV2,
   APIGatewayProxyStructuredResultV2
 } from "aws-lambda";
+import type { MemoInput } from "src/database/models/memo-record";
 import { memoService } from "src/database/services";
 import { middyfy } from "src/libs/lambda";
-
-// import { getTranslatedPdf } from "./google-translate-service"; // Uncomment when ready
 
 /**
  * Lambda handler to create and store the original PDF content of a memo in DynamoDB.
@@ -42,24 +41,28 @@ const createTranslatedMemoPdfHandler: APIGatewayProxyHandlerV2 = async (
     // Placeholder: default original language, detection can be added later
     const originalLanguage = "fi";
 
-    const pdfFile = await getFileContentPdf(file);
-    if (!pdfFile?.content) {
-      return {
-        statusCode: 404,
-        body: JSON.stringify({ error: "Failed to fetch PDF content" })
-      };
-    }
+    const existingFi = await memoService.getByFileIdAndLanguage(fileId, originalLanguage);
 
-    const originalBase64 = pdfFile.content.toString("base64");
+    const storedMemo: MemoInput = !existingFi
+      ? await (async () => {
+          const pdfFile = await getFileContentPdf(file);
+          if (!pdfFile?.content) {
+            throw new Error("Failed to fetch PDF content");
+          }
 
-    // Store original PDF in DynamoDB
-    const originalMemo = {
-      fileId: file.id,
-      fileName: file.name,
-      language: originalLanguage,
-      translatedBase64: originalBase64
-    };
-    const storedMemo = await memoService.storeMemoRecord(originalMemo, true);
+          const originalBase64 = pdfFile.content.toString("base64");
+
+          // Store original PDF in DynamoDB
+          const originalMemo = {
+            fileId: file.id,
+            fileName: file.name,
+            language: originalLanguage,
+            translatedBase64: originalBase64
+          };
+
+          return await memoService.storeMemoRecord(originalMemo, true);
+        })()
+      : existingFi;
 
     // TODO: Translate PDF and store translated version
     // Uncomment and implement proper logic when translation service is ready
@@ -81,11 +84,12 @@ const createTranslatedMemoPdfHandler: APIGatewayProxyHandlerV2 = async (
     //     body: JSON.stringify({ error: "Failed to translate and store PDF", details: error.message })
     //   };
     // }
-
     return {
       statusCode: 200,
       body: JSON.stringify({
-        message: "Translated memo content created successfully",
+        message: !existingFi
+          ? "Translated memo record created successfully"
+          : "Translated memo record already exists",
         id: storedMemo.id
       })
     };

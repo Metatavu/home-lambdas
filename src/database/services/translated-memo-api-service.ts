@@ -1,4 +1,9 @@
-import { type DynamoDBDocumentClient, GetCommand, PutCommand } from "@aws-sdk/lib-dynamodb";
+import {
+  type DynamoDBDocumentClient,
+  GetCommand,
+  PutCommand,
+  QueryCommand
+} from "@aws-sdk/lib-dynamodb";
 import type { MemoInput, MemoRecord } from "src/database/models/memo-record";
 import { v4 as uuidv4 } from "uuid";
 
@@ -59,6 +64,41 @@ class TranslatedMemoService {
       })
     );
     return (result.Item as MemoRecord) || null;
+  };
+
+  /**
+   * Retrieves a memo by its file ID and language.
+   *
+   * Queries the "FileIdIndex" GSI to check if a memo already exists for
+   * the given file and language. This is used to avoid creating duplicate
+   * records for the same memo in different languages.
+   *
+   * @param fileId - The Google Drive file ID associated with the memo.
+   * @param language - The language of the memo.
+   *
+   * @returns The `MemoRecord` if found, or `null` if no matching memo exists.
+   */
+  public getByFileIdAndLanguage = async (
+    fileId: string,
+    language: string
+  ): Promise<MemoRecord | null> => {
+    const result = await this.docClient.send(
+      new QueryCommand({
+        TableName: TABLE_NAME,
+        IndexName: "FileIdIndex",
+        KeyConditionExpression: "#fileId = :fileId AND #lang = :language",
+        ExpressionAttributeNames: {
+          "#fileId": "fileId",
+          "#lang": "language"
+        },
+        ExpressionAttributeValues: {
+          ":fileId": fileId,
+          ":language": language
+        }
+      })
+    );
+
+    return (result.Items?.[0] as MemoRecord) || null;
   };
 }
 

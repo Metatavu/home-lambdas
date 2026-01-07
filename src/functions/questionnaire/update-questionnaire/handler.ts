@@ -30,11 +30,21 @@ const updateQuestionnaireHandler: ValidatedEventAPIGatewayProxyEvent<
     };
   }
 
+  const questionsWithIds = questions.map((question) => ({
+    id: question.id,
+    questionText: question.questionText,
+    answerOptions: question.answerOptions.map((option) => ({
+      id: option.id,
+      label: option.label,
+      isCorrect: option.isCorrect
+    }))
+  }));
+
   const questionnaireUpdates: QuestionnaireModel = {
     id: existingQuestionnaire.id,
     title,
     description,
-    questions,
+    questions: questionsWithIds,
     tags,
     passedUsers,
     passScore

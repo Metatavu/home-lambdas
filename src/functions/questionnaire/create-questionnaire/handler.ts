@@ -34,11 +34,21 @@ export const createQuestionnaireHandler: ValidatedEventAPIGatewayProxyEvent<
   let questionnaireResponse: Questionnaire | undefined;
 
   try {
+    const questionsWithIds = questions.map((question) => ({
+      id: uuidv4(),
+      questionText: question.questionText,
+      answerOptions: question.answerOptions.map((option) => ({
+        id: uuidv4(),
+        label: option.label,
+        isCorrect: option.isCorrect
+      }))
+    }));
+
     const createdQuestionnaire = await questionnaireService.createQuestionnaire({
       id: newQuestionnaireId,
       title: title,
       description: description,
-      questions: questions,
+      questions: questionsWithIds,
       tags: tags,
       passedUsers: passedUsers,
       passScore: passScore

@@ -40,10 +40,7 @@ const createTranslatedMemoPdfHandler: APIGatewayProxyHandlerV2 = async (
 
     // Placeholder: default original language, detection can be added later
     const originalLanguage = "fi";
-
     const existingFi = await memoService.getByFileIdAndLanguage(fileId, originalLanguage);
-
-    //TODO: After translation service is ready, implement the duplicate check for target language as well
     const storedMemo: MemoInput = !existingFi
       ? await (async () => {
           const pdfFile = await getFileContentPdf(file);

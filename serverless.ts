@@ -211,7 +211,8 @@ const serverlessConfiguration: AWS = {
     listMemoPdfHandler,
     getContentPdfHandler,
     getTranslatedMemoPdfHandler,
-    createTranslatedMemoPdfHandler
+    createTranslatedMemoPdfHandler,
+    addOptIn
   },
   package: { individually: true },
   custom: {

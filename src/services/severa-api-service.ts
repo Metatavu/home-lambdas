@@ -64,6 +64,7 @@ export interface SeveraApiService {
   ) => Promise<UserKeywordModel>;
   removeKeyWordFromUser: (userGuid: string, keywordGuid: string) => Promise<void>;
   fetchUserByKeycloakId: (keycloakId: string) => Promise<UserOutputModel>;
+  addKeywordToUser: (userGuid: string, keywordGuid: string) => Promise<void>;
 }
 
 /**
@@ -738,6 +739,27 @@ export const CreateSeveraApiService = (): SeveraApiService => {
 
       return users[0];
     },
+
+    addKeywordToUser: async (userGuid: string, keywordGuid: string) => {
+      const addKeywordUrl = `${baseUrl}/v1/users/${userGuid}/keywords/${keywordGuid}`;
+      const addResponse = await fetch(addKeywordUrl, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${await getSeveraAccessToken()}`,
+          Client_Id: process.env.SEVERA_CLIENT_ID,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          keywordGuid
+        })
+      });
+
+      if (!addResponse.ok) {
+        throw new Error(
+          `Failed to add keyword to user: ${addResponse.status} - ${addResponse.statusText}`
+        );
+      }
+    }
   };
 };
 

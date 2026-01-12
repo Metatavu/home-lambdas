@@ -5,15 +5,15 @@ import { middyfy } from "src/libs/lambda";
 
 /**
  * Lambda handler for adding a user's Severa opt-in (keyword and Keycloak attribute).
- *
- * @param event API Gateway event containing the userId path parameter.
+ * 
+ * @param event API Gateway event containing the userId path parameter 
  */
 export const addSeveraOptInHandler: APIGatewayProxyHandler = async (event) => {
   const keycloakUserId = event.pathParameters?.userId;
   if (!keycloakUserId) {
     return { 
       statusCode: 400, 
-      body: JSON.stringify({ message: "Keycloak user id is required" }) 
+      body: JSON.stringify({ error: "Keycloak userId is required" }) 
     };
   }
 
@@ -21,40 +21,97 @@ export const addSeveraOptInHandler: APIGatewayProxyHandler = async (event) => {
     const severaApi = CreateSeveraApiService();
     const keycloakApi = CreateKeycloakApiService();
 
-    // Get severaUserId from Keycloak
-    let severaUserId: string | undefined;
+    // Fetch Keycloak user and email
+    let chosenEmail: string | undefined;
     try {
-      const severaUser = await severaApi.fetchUserByKeycloakId(keycloakUserId);
-      severaUserId = severaUser.guid;
-    } catch {
-      return { 
-        statusCode: 502, 
-        body: JSON.stringify({ message: "Failed to fetch Severa user by Keycloak id." }) 
-      };
-    }
-
-    await keycloakApi.updateUserAttributes(keycloakUserId, { severaUserId: [severaUserId] });
-
-    // Add the isSeveraOptIn keyword to Severa user
-    const keyword = await severaApi.checkKeywordExists("isSeveraOptIn");
-    const keywordGuid = keyword.guid;
-    if (!keywordGuid) {
-      return { 
-        statusCode: 502, 
-          body: JSON.stringify({ message: "Failed to add the isSeveraOptIn keyword." }) 
+      const keycloakUser = await keycloakApi.findUser(keycloakUserId);
+      if (!keycloakUser) {
+        return { 
+          statusCode: 404, 
+          body: JSON.stringify({ message: "Keycloak user not found." }) 
         };
       }
 
-    await severaApi.updateSeveraOptInKeyword(severaUserId, "true", keywordGuid);
+      // Use email from Keycloak user for Severa lookup
+      chosenEmail = keycloakUser.email;
+    } catch {
+      return { 
+        statusCode: 502, 
+        body: JSON.stringify({ message: "Failed to fetch Keycloak user." }) 
+      };
+    }
+
+    if (!chosenEmail) {
+      return { 
+        statusCode: 502, 
+        body: JSON.stringify({ message: "No email available for Severa lookup." }) 
+      };
+    }
+
+    // Resolve Severa user by email
+    let severaUserId: string;
+    try {
+      const severaUser = await severaApi.fetchUserByEmail(chosenEmail);
+      if (!severaUser || !severaUser.guid) {
+        return {
+          statusCode: 502,
+          body: JSON.stringify({ message: "Severa user missing guid." })
+        };
+      }
+      severaUserId = severaUser.guid;
+    } catch {
+      return {
+        statusCode: 502,
+        body: JSON.stringify({ message: "Failed to fetch Severa user." })
+      };
+    }
+
+    // Ensure global keyword exists
+    let globalGuid: string;
+    try {
+      const globalKeyword = await severaApi.checkKeywordExists("isSeveraOptIn");
+      globalGuid = globalKeyword?.guid;
+      if (!globalGuid) {
+        return { 
+          statusCode: 502, 
+          body: JSON.stringify({ message: "Global keyword missing." }) 
+        };
+      }
+    } catch {
+      return { 
+        statusCode: 502, 
+        body: JSON.stringify({ message: "Failed to check global keyword." }) 
+      };
+    }
+
+    // Add isSeveraOptIn keyword to user
+    try {
+      await severaApi.addKeywordToUser(severaUserId, globalGuid);
+    } catch {
+      return { 
+        statusCode: 502, 
+        body: JSON.stringify({ message: "Failed to add isSeveraOptIn keyword to Severa user." }) 
+      };
+    }
+
+    // Persist severaUserId attribute to Keycloak
+    try {
+      await keycloakApi.updateUserAttributes(keycloakUserId, { severaUserId: [severaUserId] });
+    } catch {
+      return { 
+        statusCode: 502, 
+        body: JSON.stringify({ message: "Failed to persist severaUserId to Keycloak." }) 
+      };
+    }
 
     return { 
       statusCode: 200, 
       body: JSON.stringify({ message: "Opt-in completed." }) 
     };
-  } catch {
+  } catch (e) {
     return { 
       statusCode: 500, 
-      body: JSON.stringify({ message: "Opt-in failed." }) 
+      body: JSON.stringify({ message: "Opt-in failed.", error: String(e) }) 
     };
   }
 };

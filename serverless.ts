@@ -6,8 +6,10 @@ dotenv.config({ path: __dirname + "/.env" });
 import sendDailyMessage from "@functions/meta-assistant/send-daily-message";
 import sendWeeklyMessage from "@functions/meta-assistant/send-weekly-message";
 import { env } from "process";
+import { getSlackUserAvatarHandler, listMemoPdfHandler } from "src/functions";
 import removeUserAttributeHanndler from "src/functions/keycloak/remove-user-attribute";
 import updateVacationHandler from "src/functions/keycloak/update-user-vacation";
+import getContentPdfHandler from "src/functions/memo-management/drive-memos/get-content-pdf";
 import onCallImportFromJsonHandler from "src/functions/on-call/create-on-call-data-from-json";
 import onCallListDataHandler from "src/functions/on-call/list-on-call-data";
 import deleteQuestionnaireHandler from "src/functions/questionnaire/delete-questionnaire";
@@ -37,6 +39,8 @@ import uploadFileHandler from "src/functions/wiki-documentation/upload-file";
 import findUserHandler from "@/functions/keycloak/find-user";
 import listUsersHandler from "@/functions/keycloak/list-users";
 import updateUserAttributeHandler from "@/functions/keycloak/update-user-attributes";
+import createTranslatedMemoPdfHandler from "@/functions/memo-management/drive-memos/translated-memos/create-translated-memo-pdf";
+import getTranslatedMemoPdfHandler from "@/functions/memo-management/drive-memos/translated-memos/get-translated-memo-pdf";
 import onCallUpdatePaidHandler from "@/functions/on-call/update-paid";
 import onCallWeeklyCheckHandler from "@/functions/on-call/weekly-check";
 import createQuestionnaireHandler from "@/functions/questionnaire/create-questionnaire";
@@ -112,14 +116,18 @@ const serverlessConfiguration: AWS = {
       SEVERA_CLIENT_SECRET: env.SEVERA_CLIENT_SECRET,
       DYNAMODB_ENDPOINT: isLocal ? "http://localhost:8000" : undefined,
       CHANNEL_ID: env.CHANNEL_ID,
-      HOME_BUCKET_NAME: "${self:custom.s3BucketName.dev}",
+      HOME_BUCKET_NAME: env.HOME_BUCKET_NAME,
       HOME_BUCKET_REGION: region,
       ADMIN_SLACK_USERS: env.ADMIN_SLACK_USERS || undefined,
       ADMIN_EMAILS: env.ADMIN_EMAILS || undefined,
       MAILGUN_PORT: env.MAILGUN_PORT || undefined,
       MAILGUN_SMTP_HOST: env.MAILGUN_SMTP_HOST || undefined,
       MAILGUN_SMTP_HOST_USER: env.MAILGUN_SMTP_HOST_USER || undefined,
-      MAILGUN_SMTP_PASSWORD: env.MAILGUN_SMTP_PASSWORD || undefined
+      MAILGUN_SMTP_PASSWORD: env.MAILGUN_SMTP_PASSWORD || undefined,
+      GOOGLE_CLIENT_ID: env.GOOGLE_CLIENT_ID || undefined,
+      GOOGLE_CLIENT_SECRET: env.GOOGLE_CLIENT_SECRET || undefined,
+      GOOGLE_REFRESH_TOKEN: env.GOOGLE_REFRESH_TOKEN || undefined,
+      GOOGLE_DRIVE_FOLDER_ID: env.GOOGLE_DRIVE_FOLDER_ID || undefined
     },
     iam: {
       role: {
@@ -127,7 +135,7 @@ const serverlessConfiguration: AWS = {
           {
             Effect: "Allow",
             Action: ["s3:GetObject", "s3:PutObject"],
-            Resource: isLocal ? "*" : "arn:aws:s3:::${self:custom.s3BucketName.dev}/*"
+            Resource: isLocal ? "*" : `arn:aws:s3:::${env.HOME_BUCKET_NAME}/*`
           },
           {
             Effect: "Allow",
@@ -148,7 +156,8 @@ const serverlessConfiguration: AWS = {
                   "arn:aws:dynamodb:${self:provider.region}:*:table/VacationRequests",
                   "arn:aws:dynamodb:${self:provider.region}:*:table/Articles",
                   "arn:aws:dynamodb:${self:provider.region}:*:table/Articles/index/GSI_Path",
-                  "arn:aws:dynamodb:${self:provider.region}:*:table/OnCallSchedule"
+                  "arn:aws:dynamodb:${self:provider.region}:*:table/OnCallSchedule",
+                  "arn:aws:dynamodb:${self:provider.region}:*:table/Memos"
                 ]
           }
         ]
@@ -198,14 +207,14 @@ const serverlessConfiguration: AWS = {
     getContractedWorkWeekHandler,
     removeOptIn,
     listWorkdaysForUserHandler,
-    addOptIn
+    getSlackUserAvatarHandler,
+    listMemoPdfHandler,
+    getContentPdfHandler,
+    getTranslatedMemoPdfHandler,
+    createTranslatedMemoPdfHandler
   },
   package: { individually: true },
   custom: {
-    s3BucketName: {
-      dev: env.HOME_BUCKET_NAME_DEV,
-      production: env.HOME_BUCKET_NAME_PROD
-    },
     esbuild: {
       bundle: true,
       minify: false,
@@ -308,6 +317,25 @@ const serverlessConfiguration: AWS = {
           KeySchema: [
             { AttributeName: "Year", KeyType: "HASH" },
             { AttributeName: "Week", KeyType: "RANGE" }
+          ],
+          ProvisionedThroughput: {
+            ReadCapacityUnits: 1,
+            WriteCapacityUnits: 1
+          }
+        }
+      },
+      Memos: {
+        Type: "AWS::DynamoDB::Table",
+        DeletionPolicy: "Delete",
+        Properties: {
+          TableName: "Memos",
+          AttributeDefinitions: [
+            { AttributeName: "PK", AttributeType: "S" },
+            { AttributeName: "SK", AttributeType: "S" }
+          ],
+          KeySchema: [
+            { AttributeName: "PK", KeyType: "HASH" },
+            { AttributeName: "SK", KeyType: "RANGE" }
           ],
           ProvisionedThroughput: {
             ReadCapacityUnits: 1,

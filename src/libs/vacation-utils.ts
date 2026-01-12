@@ -71,24 +71,17 @@ export const splitVacationDaysByYear = (
   // Calculate weeks & days of request for 6 day work week logic
   const fullWeeks = Math.floor(workDaysInRange / workDays);
   const extraDays = workDaysInRange % workDays;
-
   const totalDays = fullWeeks * 6 + extraDays;
 
+  // Assumes vacation year runs 01/04/YYYY → 31/03/(YYYY+1)
+  const getVacationYear = (date: DateTime): string => {
+    return date.month >= 4 ? String(date.year) : String(date.year - 1);
+  };
+
+  // Assign totalDays to the correct vacation year
+  const vacationYear = getVacationYear(startDateObj);
   const daysByYear: Record<string, number> = {};
-  currentDate = startDateObj;
-  let daysLeft = totalDays;
-
-  while (currentDate <= endDateObj && daysLeft > 0) {
-    const year = currentDate.year.toString();
-    if (!daysByYear[year]) daysByYear[year] = 0;
-
-    if (contractedWeek.includes(currentDate.weekday)) {
-      daysByYear[year] += 1;
-      daysLeft -= 1;
-    }
-
-    currentDate = currentDate.plus({ days: 1 });
-  }
+  daysByYear[vacationYear] = totalDays;
 
   return daysByYear;
 };

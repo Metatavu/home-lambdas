@@ -40,9 +40,17 @@ export interface Configuration {
     mailgunSmtpPassword: string;
     adminEmails: string[];
   };
+  google: {
+    clientId: string;
+    clientSecret: string;
+    refreshToken: string;
+    driveFolderId: string;
+  };
   slack: {
     botToken: string;
     adminUsers: string[];
+    userOverride: string;
+    channelId: string;
   };
   vacationDetails?: VacationDetails;
   homeBaseUrl: string;
@@ -50,5 +58,9 @@ export interface Configuration {
     baseUrl: string;
     clientId: string;
     clientSecret: string;
+  };
+  homeBucket: {
+    name: string;
+    region: string;
   };
 }

@@ -18,7 +18,15 @@ const env = cleanEnv(process.env, {
   HOME_BASE_URL: str({ default: "http://localhost:5173" }),
   SEVERA_BASE_URL: str(),
   SEVERA_CLIENT_ID: str(),
-  SEVERA_CLIENT_SECRET: str()
+  SEVERA_CLIENT_SECRET: str(),
+  HOME_BUCKET_NAME: str(),
+  HOME_BUCKET_REGION: str(),
+  SLACK_USER_OVERRIDE: str(),
+  CHANNEL_ID: str(),
+  GOOGLE_CLIENT_ID: str(),
+  GOOGLE_CLIENT_SECRET: str(),
+  GOOGLE_REFRESH_TOKEN: str(),
+  GOOGLE_DRIVE_FOLDER_ID: str()
 });
 
 export default class Config {
@@ -47,15 +55,28 @@ export default class Config {
       mailgunSmtpPassword: env.MAILGUN_SMTP_PASSWORD,
       adminEmails: env.ADMIN_EMAILS ? env.ADMIN_EMAILS.split(",") : []
     },
+    google: {
+      // TODO: Change to service account credentials when they are set up
+      clientId: env.GOOGLE_CLIENT_ID,
+      clientSecret: env.GOOGLE_CLIENT_SECRET,
+      refreshToken: env.GOOGLE_REFRESH_TOKEN,
+      driveFolderId: env.GOOGLE_DRIVE_FOLDER_ID
+    },
     slack: {
       botToken: env.METATAVU_BOT_TOKEN,
-      adminUsers: env.ADMIN_SLACK_USERS ? env.ADMIN_SLACK_USERS.split(",") : []
+      adminUsers: env.ADMIN_SLACK_USERS ? env.ADMIN_SLACK_USERS.split(",") : [],
+      userOverride: env.SLACK_USER_OVERRIDE,
+      channelId: env.CHANNEL_ID
     },
     homeBaseUrl: env.HOME_BASE_URL || "http://localhost:5173",
     severa: {
       baseUrl: env.SEVERA_BASE_URL,
       clientId: env.SEVERA_CLIENT_ID,
       clientSecret: env.SEVERA_CLIENT_SECRET
+    },
+    homeBucket: {
+      name: env.HOME_BUCKET_NAME,
+      region: env.HOME_BUCKET_REGION
     }
   });
 }

@@ -11,11 +11,11 @@ import {CreateSeveraApiService} from "src/services/severa-api-service";
  * @returns The user's Severa GUID, 'isSeveraOptIn' status, and email.
  */
 export const optInSeveraUser = async (email: string, keyword: Record<string, string[]>) => {
-  const userEmail = Config.get().testUser.email;
+  const userEmail = Config.get().testUser.email || email;
 
   try {
     const api = CreateSeveraApiService();
-    const user = await api.fetchUserByEmail(email);
+    const user = await api.fetchUserByEmail(userEmail);
     const isSeveraOptIn = keyword.isSeveraOptIn?.[0];
     const isSeveraOptInKeyword = await api.checkKeywordExists("isSeveraOptIn");
 

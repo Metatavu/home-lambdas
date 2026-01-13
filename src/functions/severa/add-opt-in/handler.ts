@@ -22,7 +22,7 @@ export const addSeveraOptInHandler: APIGatewayProxyHandler = async (event) => {
     const keycloakApi = CreateKeycloakApiService();
 
     // Fetch Keycloak user and email
-    let chosenEmail: string | undefined;
+    let userEmail: string | undefined;
     try {
       const keycloakUser = await keycloakApi.findUser(keycloakUserId);
       if (!keycloakUser) {
@@ -33,7 +33,7 @@ export const addSeveraOptInHandler: APIGatewayProxyHandler = async (event) => {
       }
 
       // Use email from Keycloak user for Severa lookup
-      chosenEmail = keycloakUser.email;
+      userEmail = keycloakUser.email;
     } catch {
       return { 
         statusCode: 502, 
@@ -41,7 +41,7 @@ export const addSeveraOptInHandler: APIGatewayProxyHandler = async (event) => {
       };
     }
 
-    if (!chosenEmail) {
+    if (!userEmail) {
       return { 
         statusCode: 502, 
         body: JSON.stringify({ message: "No email available for Severa lookup." }) 
@@ -51,7 +51,7 @@ export const addSeveraOptInHandler: APIGatewayProxyHandler = async (event) => {
     // Resolve Severa user by email
     let severaUserId: string;
     try {
-      const severaUser = await severaApi.fetchUserByEmail(chosenEmail);
+      const severaUser = await severaApi.fetchUserByEmail(userEmail);
       if (!severaUser || !severaUser.guid) {
         return {
           statusCode: 502,
@@ -59,10 +59,11 @@ export const addSeveraOptInHandler: APIGatewayProxyHandler = async (event) => {
         };
       }
       severaUserId = severaUser.guid;
-    } catch {
+    } catch (error) {
+      console.error("Failed to fetch Severa user by Keycloak id:", userEmail, "error:", String(error));
       return {
         statusCode: 502,
-        body: JSON.stringify({ message: "Failed to fetch Severa user." })
+        body: JSON.stringify({ message: "Failed to fetch Severa user.", error: String(error) })
       };
     }
 
@@ -108,10 +109,10 @@ export const addSeveraOptInHandler: APIGatewayProxyHandler = async (event) => {
       statusCode: 200, 
       body: JSON.stringify({ message: "Opt-in completed." }) 
     };
-  } catch (e) {
+  } catch (error) {
     return { 
       statusCode: 500, 
-      body: JSON.stringify({ message: "Opt-in failed.", error: String(e) }) 
+      body: JSON.stringify({ message: "Opt-in failed.", error: String(error) }) 
     };
   }
 };

@@ -4,9 +4,9 @@ import { vacationRequestService } from "src/database/services";
 import { CreateKeycloakApiService } from "src/database/services/keycloak-api-service";
 import type { VacationRequest } from "src/generated/homeLambdasModels/model/vacationRequest";
 import {
+  deductVacationDaysFromUser,
   getContractedWeek,
-  splitVacationDaysByYear,
-  updateRemainingVacationDays
+  getLatestStatus
 } from "src/libs/vacation-utils";
 import {
   notifyAdminsVacationSubmittedAll,
@@ -71,7 +71,11 @@ const updateVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
       body: `Vacation request ${id} not found`
     };
   }
-  const statusChanged = existingVacationRequest.status !== status;
+
+  const existingLatestStatus = getLatestStatus(existingVacationRequest.status);
+  const newLatestStatus = getLatestStatus(status);
+
+  const statusChanged = existingLatestStatus !== newLatestStatus;
   const draftStatusChanged = existingVacationRequest.draft !== draft;
 
   const vacationRequestUpdates = {
@@ -95,22 +99,18 @@ const updateVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
   const contractedWeek = await getContractedWeek(userId);
 
   try {
+    const approvalError = await deductVacationDaysFromUser(
+      userId,
+      startDate,
+      endDate,
+      contractedWeek,
+      currentStatus
+    );
+    if (approvalError) return approvalError;
+
     const updatedVacationRequest =
       await vacationRequestService.updateVacationRequest(vacationRequestUpdates);
-    if (currentStatus === "APPROVED") {
-      const daysByYear = splitVacationDaysByYear(startDate, endDate, contractedWeek);
-      for (const [year, daysInYear] of Object.entries(daysByYear)) {
-        const success = await updateRemainingVacationDays(userId, daysInYear, currentStatus, year);
-        if (!success) {
-          return {
-            statusCode: 400,
-            body: JSON.stringify({
-              message: `Cannot approve request: user does not have enough remaining vacation days for ${year}.`
-            })
-          };
-        }
-      }
-    }
+
     if (statusChanged) {
       await notifyUserVacationStatusUpdatedAll({
         email: userDetails.email,

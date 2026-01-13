@@ -4,9 +4,9 @@ import { vacationRequestService } from "src/database/services";
 import { CreateKeycloakApiService } from "src/database/services/keycloak-api-service";
 import type { VacationRequest } from "src/generated/homeLambdasModels/model/vacationRequest";
 import {
+  deductVacationDaysFromUser,
   getContractedWeek,
-  getLatestStatus,
-  processVacationApproval
+  getLatestStatus
 } from "src/libs/vacation-utils";
 import {
   notifyAdminsVacationSubmittedAll,
@@ -99,7 +99,7 @@ const updateVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
   const contractedWeek = await getContractedWeek(userId);
 
   try {
-    const approvalError = await processVacationApproval(
+    const approvalError = await deductVacationDaysFromUser(
       userId,
       startDate,
       endDate,

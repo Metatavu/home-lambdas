@@ -141,9 +141,9 @@ export const getLatestStatus = (statusArray: VacationRequestStatus[] | undefined
 };
 
 /**
- * Validates and processes vacation approval
+ * Validates and deducts vacation days up on approval
  */
-export const processVacationApproval = async (
+export const deductVacationDaysFromUser = async (
   userId: string,
   startDate: string,
   endDate: string,

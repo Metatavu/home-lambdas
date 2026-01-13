@@ -6,10 +6,10 @@ export default {
     {
       httpApi: {
         method: "put",
-        path: "/users/{id}/attributes/{attributeName}",
+        path: "/users/{userId}/severa-opt-in",
         authorizer: {
-          name: "homeKeycloakAuthorizer",
-        },
+          name: "homeKeycloakAuthorizer"
+        }
       },
     },
   ],

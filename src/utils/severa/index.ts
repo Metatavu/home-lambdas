@@ -1,6 +1,7 @@
 
 import Config from "src/app/config";
 import {CreateSeveraApiService} from "src/services/severa-api-service";
+
 /**
  * Fetches a Severa user by their email address and checks/updates the 'isSeveraOptIn' status.
  *
@@ -10,7 +11,6 @@ import {CreateSeveraApiService} from "src/services/severa-api-service";
  * @returns The user's Severa GUID, 'isSeveraOptIn' status, and email.
  */
 export const optInSeveraUser = async (email: string, keyword: Record<string, string[]>) => {
-
   const userEmail = Config.get().testUser.email || email;
 
   try {

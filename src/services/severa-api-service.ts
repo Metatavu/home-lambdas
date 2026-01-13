@@ -63,6 +63,7 @@ export interface SeveraApiService {
     isSeveraOptInKeywordGuid: string
   ) => Promise<UserKeywordModel>;
   removeKeyWordFromUser: (userGuid: string, keywordGuid: string) => Promise<void>;
+  addKeywordToUser: (userGuid: string, keywordGuid: string) => Promise<void>;
 }
 
 /**
@@ -703,6 +704,33 @@ export const CreateSeveraApiService = (): SeveraApiService => {
       if (!removeResponse.ok) {
         throw new Error(
           `Failed to remove keyword from user: ${removeResponse.status} - ${removeResponse.statusText}`
+        );
+      }
+    },
+
+    /**
+     * Adds a keyword to a Severa user.
+     *
+     * @param userGuid The GUID of the user to whom the keyword is being added.
+     * @param keywordGuid The GUID of the keyword to add.
+     */
+    addKeywordToUser: async (userGuid: string, keywordGuid: string) => {
+      const addKeywordUrl = `${baseUrl}/v1/users/${userGuid}/keywords/${keywordGuid}`;
+      const addResponse = await fetch(addKeywordUrl, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${await getSeveraAccessToken()}`,
+          Client_Id: process.env.SEVERA_CLIENT_ID,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          keywordGuid
+        })
+      });
+
+      if (!addResponse.ok) {
+        throw new Error(
+          `Failed to add keyword to user: ${addResponse.status} - ${addResponse.statusText}`
         );
       }
     }

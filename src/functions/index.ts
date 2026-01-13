@@ -1,6 +1,5 @@
 export { default as findUserHandler } from "./keycloak/find-user";
 export { default as listUsersHandler } from "./keycloak/list-users";
-export { default as updateUserAttributeHandler } from "./keycloak/update-user-attributes";
 export { default as getContentPdfHandler } from "./memo-management/drive-memos/get-content-pdf";
 export { default as listMemoPdfHandler } from "./memo-management/drive-memos/get-memos-pdf";
 export { default as getSummaryMemoPdfHandler } from "./memo-management/drive-memos/get-summary-memo-pdf";
@@ -50,3 +49,4 @@ export { default as listArticlesHandler } from "./wiki-documentation/list-articl
 export { default as readArticleHandler } from "./wiki-documentation/read-article";
 export { default as updateArticleHandler } from "./wiki-documentation/update-article";
 export { default as uploadFileHandler } from "./wiki-documentation/upload-file";
+export { default as addSeveraOptInHandler } from "./severa/add-opt-in";

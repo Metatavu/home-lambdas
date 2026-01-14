@@ -88,32 +88,47 @@ export const splitVacationDaysByYear = (
 };
 
 /**
- * Updates the remaining vacation days for a specific user and year.
+ * Validates if a user has enough vacation days WITHOUT modifying Keycloak.
+ * @param userId - The ID of the user whose vacation days are being validated.
+ * @param daysNeeded - The number of vacation days needed.
+ * @param year - The year for which the vacation days are being validated.
  *
- * @param userId - The ID of the user whose vacation days are being updated.
- * @param daysToSubtract - The number of vacation days to subtract from the user's remaining days.
- * @param year - The year for which the vacation days are being updated.
- *
- * @returns A promise that resolves when the user's vacation days have been updated.
+ * @returns True if user has enough days, false otherwise.
  */
-export const updateRemainingVacationDays = async (
+export const validateVacationDays = async (
   userId: string,
-  daysToSubtract: number,
-  status: string,
+  daysNeeded: number,
   year: string
 ): Promise<boolean> => {
   const keycloakApiService = CreateKeycloakApiService();
   const user = await keycloakApiService.getUserAttributes(userId);
 
   const unspentVacationDaysByYear = user.unspentVacationDaysByYear || [];
-
   const currentEntry = unspentVacationDaysByYear.find((s) => s.startsWith(`${year}:`));
   const currentValue = currentEntry ? Number(currentEntry.split(":")[1]) : 0;
 
-  if (currentValue < daysToSubtract) {
-    return false;
-  }
-  const remainingDays = Math.max(currentValue - daysToSubtract, 0);
+  return currentValue >= daysNeeded;
+};
+
+/**
+ * Helper function to deductVacationDays - modifies Keycloak to deduct vacation days.
+ * @param userId - The ID of the user whose vacation days are being deducted.
+ * @param daysToDeduct - The number of vacation days to deduct.
+ * @param year - The year for which the vacation days are being deducted.
+ */
+export const deductVacationDays = async (
+  userId: string,
+  daysToDeduct: number,
+  year: string
+): Promise<void> => {
+  const keycloakApiService = CreateKeycloakApiService();
+  const user = await keycloakApiService.getUserAttributes(userId);
+
+  const unspentVacationDaysByYear = user.unspentVacationDaysByYear || [];
+  const currentEntry = unspentVacationDaysByYear.find((s) => s.startsWith(`${year}:`));
+  const currentValue = currentEntry ? Number(currentEntry.split(":")[1]) : 0;
+
+  const remainingDays = Math.max(currentValue - daysToDeduct, 0);
   const formattedValue = `${year}:${String(remainingDays).padStart(3, "0")}`;
 
   const updatedUnspent = [...unspentVacationDaysByYear];
@@ -126,10 +141,41 @@ export const updateRemainingVacationDays = async (
   }
 
   user.unspentVacationDaysByYear = [...new Set(updatedUnspent)];
-  if (status === "APPROVED") {
-    await keycloakApiService.updateUserAttributes(userId, user);
+  await keycloakApiService.updateUserAttributes(userId, user);
+};
+
+/**
+ * Returns vacation days to Keycloak (adds them back).
+ * @param userId - The ID of the user whose vacation days are being returned.
+ * @param daysToReturn - The number of vacation days to return.
+ * @param year - The year for which the vacation days are being returned.
+ */
+export const returnVacationDays = async (
+  userId: string,
+  daysToReturn: number,
+  year: string
+): Promise<void> => {
+  const keycloakApiService = CreateKeycloakApiService();
+  const user = await keycloakApiService.getUserAttributes(userId);
+
+  const unspentVacationDaysByYear = user.unspentVacationDaysByYear || [];
+  const currentEntry = unspentVacationDaysByYear.find((s) => s.startsWith(`${year}:`));
+  const currentValue = currentEntry ? Number(currentEntry.split(":")[1]) : 0;
+
+  const newRemainingDays = currentValue + daysToReturn;
+  const formattedValue = `${year}:${String(newRemainingDays).padStart(3, "0")}`;
+
+  const updatedUnspent = [...unspentVacationDaysByYear];
+  const existingIndex = updatedUnspent.findIndex((s) => s.startsWith(`${year}:`));
+
+  if (existingIndex >= 0) {
+    updatedUnspent[existingIndex] = formattedValue;
+  } else {
+    updatedUnspent.push(formattedValue);
   }
-  return true;
+
+  user.unspentVacationDaysByYear = [...new Set(updatedUnspent)];
+  await keycloakApiService.updateUserAttributes(userId, user);
 };
 
 /**
@@ -141,21 +187,27 @@ export const getLatestStatus = (statusArray: VacationRequestStatus[] | undefined
 };
 
 /**
- * Validates and deducts vacation days up on approval
+ * Validates vacation approval WITHOUT updating Keycloak.
+ * Returns validation result for use before database update.
+ *
+ * @param userId - The ID of the user.
+ * @param startDate - The start date of the vacation.
+ * @param endDate - The end date of the vacation.
+ * @param contractedWeek - The user's contracted work week.
+ *
+ * @returns Error object if validation fails, null if passes.
  */
-export const deductVacationDaysFromUser = async (
+export const validateVacationApproval = async (
   userId: string,
   startDate: string,
   endDate: string,
-  contractedWeek: number[],
-  currentStatus: string
-) => {
-  if (currentStatus !== "APPROVED") return null;
-
+  contractedWeek: number[]
+): Promise<{ statusCode: number; body: string } | null> => {
   const daysByYear = splitVacationDaysByYear(startDate, endDate, contractedWeek);
+
   for (const [year, daysInYear] of Object.entries(daysByYear)) {
-    const success = await updateRemainingVacationDays(userId, daysInYear, currentStatus, year);
-    if (!success) {
+    const hasEnoughDays = await validateVacationDays(userId, daysInYear, year);
+    if (!hasEnoughDays) {
       return {
         statusCode: 400,
         body: JSON.stringify({
@@ -164,5 +216,48 @@ export const deductVacationDaysFromUser = async (
       };
     }
   }
+
   return null;
+};
+
+/**
+ * Deducts vacation days for an approval.
+ * Should ONLY be called AFTER database update succeeds.
+ *
+ * @param userId - The ID of the user.
+ * @param startDate - The start date of the vacation.
+ * @param endDate - The end date of the vacation.
+ * @param contractedWeek - The user's contracted work week.
+ */
+export const deductVacationDaysForApproval = async (
+  userId: string,
+  startDate: string,
+  endDate: string,
+  contractedWeek: number[]
+): Promise<void> => {
+  const daysByYear = splitVacationDaysByYear(startDate, endDate, contractedWeek);
+  for (const [year, daysInYear] of Object.entries(daysByYear)) {
+    await deductVacationDays(userId, daysInYear, year);
+  }
+};
+
+/**
+ * Returns vacation days for a rejection.
+ * Should ONLY be called AFTER database update succeeds.
+ *
+ * @param userId - The ID of the user.
+ * @param startDate - The start date of the vacation.
+ * @param endDate - The end date of the vacation.
+ * @param contractedWeek - The user's contracted work week.
+ */
+export const returnVacationDaysForRejection = async (
+  userId: string,
+  startDate: string,
+  endDate: string,
+  contractedWeek: number[]
+): Promise<void> => {
+  const daysByYear = splitVacationDaysByYear(startDate, endDate, contractedWeek);
+  for (const [year, daysInYear] of Object.entries(daysByYear)) {
+    await returnVacationDays(userId, daysInYear, year);
+  }
 };

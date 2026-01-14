@@ -156,7 +156,8 @@ const serverlessConfiguration: AWS = {
                   "arn:aws:dynamodb:${self:provider.region}:*:table/Articles",
                   "arn:aws:dynamodb:${self:provider.region}:*:table/Articles/index/GSI_Path",
                   "arn:aws:dynamodb:${self:provider.region}:*:table/OnCallSchedule",
-                  "arn:aws:dynamodb:${self:provider.region}:*:table/Memos"
+                  "arn:aws:dynamodb:${self:provider.region}:*:table/Memos",
+                  "arn:aws:dynamodb:${self:provider.region}:*:table/Memos/index/FileIdIndex"
                 ]
           }
         ]

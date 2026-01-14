@@ -41,27 +41,28 @@ const createTranslatedMemoPdfHandler: APIGatewayProxyHandlerV2 = async (
     // Placeholder: default original language, detection can be added later
     const originalLanguage = "fi";
     const existingFi = await memoService.getByFileIdAndLanguage(fileId, originalLanguage);
-    const storedMemo: MemoInput = existingFi
-      ? existingFi
-      : await (async () => {
-          const pdfFile = await getFileContentPdf(file);
-          if (!pdfFile?.content) {
-            throw new Error("Failed to fetch PDF content");
-          }
+    let storedMemo: MemoInput;
 
-          const originalBase64 = pdfFile.content.toString("base64");
+    if (existingFi) {
+      storedMemo = existingFi;
+    } else {
+      const pdfFile = await getFileContentPdf(file);
+      if (!pdfFile?.content) {
+        throw new Error("Failed to fetch PDF content");
+      }
 
-          // Store original PDF in DynamoDB
-          const originalMemo = {
-            fileId: file.id,
-            fileName: file.name,
-            language: originalLanguage,
-            translatedBase64: originalBase64
-          };
+      const originalBase64 = pdfFile.content.toString("base64");
 
-          return await memoService.storeMemoRecord(originalMemo, true);
-        })();
-
+      storedMemo = await memoService.storeMemoRecord(
+        {
+          fileId: file.id,
+          fileName: file.name,
+          language: originalLanguage,
+          translatedBase64: originalBase64
+        },
+        true
+      );
+    }
     // TODO: Translate PDF and store translated version
     // Uncomment and implement proper logic when translation service is ready
     // const translatedPdf = await getTranslatedPdf(pdfFile);

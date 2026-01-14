@@ -41,8 +41,9 @@ const createTranslatedMemoPdfHandler: APIGatewayProxyHandlerV2 = async (
     // Placeholder: default original language, detection can be added later
     const originalLanguage = "fi";
     const existingFi = await memoService.getByFileIdAndLanguage(fileId, originalLanguage);
-    const storedMemo: MemoInput = !existingFi
-      ? await (async () => {
+    const storedMemo: MemoInput = existingFi
+      ? existingFi
+      : await (async () => {
           const pdfFile = await getFileContentPdf(file);
           if (!pdfFile?.content) {
             throw new Error("Failed to fetch PDF content");
@@ -59,8 +60,7 @@ const createTranslatedMemoPdfHandler: APIGatewayProxyHandlerV2 = async (
           };
 
           return await memoService.storeMemoRecord(originalMemo, true);
-        })()
-      : existingFi;
+        })();
 
     // TODO: Translate PDF and store translated version
     // Uncomment and implement proper logic when translation service is ready
@@ -85,9 +85,9 @@ const createTranslatedMemoPdfHandler: APIGatewayProxyHandlerV2 = async (
     return {
       statusCode: 200,
       body: JSON.stringify({
-        message: !existingFi
-          ? "Translated memo record created successfully"
-          : "Translated memo record already exists",
+        message: existingFi
+          ? "Translated memo record already exists"
+          : "Translated memo record created successfully",
         id: storedMemo.id
       })
     };

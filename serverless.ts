@@ -345,7 +345,7 @@ const serverlessConfiguration: AWS = {
                 { AttributeName: "fileId", KeyType: "HASH" },
                 { AttributeName: "language", KeyType: "RANGE" }
               ],
-              Projection: { ProjectionType: "ALL" },
+              Projection: { ProjectionType: "KEYS_ONLY" },
               ProvisionedThroughput: {
                 ReadCapacityUnits: 1,
                 WriteCapacityUnits: 1

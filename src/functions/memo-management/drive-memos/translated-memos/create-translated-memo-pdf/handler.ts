@@ -4,10 +4,9 @@ import type {
   APIGatewayProxyHandlerV2,
   APIGatewayProxyStructuredResultV2
 } from "aws-lambda";
+import type { MemoInput } from "src/database/models/memo-record";
 import { memoService } from "src/database/services";
 import { middyfy } from "src/libs/lambda";
-
-// import { getTranslatedPdf } from "./google-translate-service"; // Uncomment when ready
 
 /**
  * Lambda handler to create and store the original PDF content of a memo in DynamoDB.
@@ -41,51 +40,55 @@ const createTranslatedMemoPdfHandler: APIGatewayProxyHandlerV2 = async (
 
     // Placeholder: default original language, detection can be added later
     const originalLanguage = "fi";
+    const existingFi = await memoService.getByFileIdAndLanguage(fileId, originalLanguage);
+    let storedMemo: MemoInput;
 
-    const pdfFile = await getFileContentPdf(file);
-    if (!pdfFile?.content) {
-      return {
-        statusCode: 404,
-        body: JSON.stringify({ error: "Failed to fetch PDF content" })
-      };
+    if (existingFi) {
+      storedMemo = existingFi;
+    } else {
+      const pdfFile = await getFileContentPdf(file);
+      if (!pdfFile?.content) {
+        throw new Error("Failed to fetch PDF content");
+      }
+
+      const originalBase64 = pdfFile.content.toString("base64");
+
+      storedMemo = await memoService.storeMemoRecord(
+        {
+          fileId: file.id,
+          fileName: file.name,
+          language: originalLanguage,
+          translatedBase64: originalBase64
+        },
+        true
+      );
     }
-
-    const originalBase64 = pdfFile.content.toString("base64");
-
-    // Store original PDF in DynamoDB
-    const originalMemo = {
-      fileId: file.id,
-      fileName: file.name,
-      language: originalLanguage,
-      translatedBase64: originalBase64
-    };
-    const storedMemo = await memoService.storeMemoRecord(originalMemo, true);
-
     // TODO: Translate PDF and store translated version
     // Uncomment and implement proper logic when translation service is ready
-    // try {
     // const translatedPdf = await getTranslatedPdf(pdfFile);
     // const translatedBase64 = translatedPdf.content.toString("base64");
-    //   const translatedBase64 = "is this translated?";
-    //   const translatedMemo = {
-    //     id: storedMemo.id,
-    //     fileId: file.id,
-    //     fileName: file.name,
-    //     language: "en", // or dynamically from translation service
-    //     translatedBase64: translatedBase64
-    //   };
+    // const translatedBase64 = "is this not translated?";
+    // const translatedMemo = {
+    //   id: storedMemo.id,
+    //   fileId: file.id,
+    //   fileName: file.name,
+    //   language: "en", // or dynamically from translation service
+    //   translatedBase64: translatedBase64
+    // };
+    // const existingTranslated = await memoService.getByFileIdAndLanguage(
+    //   file.id,
+    //   translatedMemo.language
+    // );
+    // if (!existingTranslated) {
     //   await memoService.storeMemoRecord(translatedMemo);
-    // } catch (error) {
-    //   return {
-    //     statusCode: 500,
-    //     body: JSON.stringify({ error: "Failed to translate and store PDF", details: error.message })
-    //   };
     // }
 
     return {
       statusCode: 200,
       body: JSON.stringify({
-        message: "Translated memo content created successfully",
+        message: existingFi
+          ? "Translated memo record already exists"
+          : "Translated memo record created successfully",
         id: storedMemo.id
       })
     };

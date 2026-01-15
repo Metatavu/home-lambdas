@@ -156,7 +156,8 @@ const serverlessConfiguration: AWS = {
                   "arn:aws:dynamodb:${self:provider.region}:*:table/Articles",
                   "arn:aws:dynamodb:${self:provider.region}:*:table/Articles/index/GSI_Path",
                   "arn:aws:dynamodb:${self:provider.region}:*:table/OnCallSchedule",
-                  "arn:aws:dynamodb:${self:provider.region}:*:table/Memos"
+                  "arn:aws:dynamodb:${self:provider.region}:*:table/Memos",
+                  "arn:aws:dynamodb:${self:provider.region}:*:table/Memos/index/FileIdIndex"
                 ]
           }
         ]
@@ -330,11 +331,27 @@ const serverlessConfiguration: AWS = {
           TableName: "Memos",
           AttributeDefinitions: [
             { AttributeName: "PK", AttributeType: "S" },
-            { AttributeName: "SK", AttributeType: "S" }
+            { AttributeName: "SK", AttributeType: "S" },
+            { AttributeName: "fileId", AttributeType: "S" },
+            { AttributeName: "language", AttributeType: "S" }
           ],
           KeySchema: [
             { AttributeName: "PK", KeyType: "HASH" },
             { AttributeName: "SK", KeyType: "RANGE" }
+          ],
+          GlobalSecondaryIndexes: [
+            {
+              IndexName: "FileIdIndex",
+              KeySchema: [
+                { AttributeName: "fileId", KeyType: "HASH" },
+                { AttributeName: "language", KeyType: "RANGE" }
+              ],
+              Projection: { ProjectionType: "KEYS_ONLY" },
+              ProvisionedThroughput: {
+                ReadCapacityUnits: 1,
+                WriteCapacityUnits: 1
+              }
+            }
           ],
           ProvisionedThroughput: {
             ReadCapacityUnits: 1,

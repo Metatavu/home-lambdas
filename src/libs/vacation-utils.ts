@@ -111,7 +111,7 @@ export const validateVacationDays = async (
 };
 
 /**
- * Helper function to deductVacationDays - modifies Keycloak to deduct vacation days.
+ * Low-level helper that directly modifies Keycloak vacation day balances.
  * @param userId - The ID of the user whose vacation days are being deducted.
  * @param daysToDeduct - The number of vacation days to deduct.
  * @param year - The year for which the vacation days are being deducted.
@@ -222,7 +222,7 @@ export const validateVacationApproval = async (
 
 /**
  * Deducts vacation days for an approval.
- * Should ONLY be called AFTER database update succeeds.
+ * Should be called BEFORE database update. If the database update fails, use returnVacationDaysForRejection to rollback.
  *
  * @param userId - The ID of the user.
  * @param startDate - The start date of the vacation.
@@ -242,8 +242,9 @@ export const deductVacationDaysForApproval = async (
 };
 
 /**
- * Returns vacation days for a rejection.
- * Should ONLY be called AFTER database update succeeds.
+ * Returns vacation days for a rejection or as a compensating transaction for failed approval.
+ * For rejections: called AFTER database status update.
+ * For rollback: called to compensate when approval database update fails.
  *
  * @param userId - The ID of the user.
  * @param startDate - The start date of the vacation.

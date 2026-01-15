@@ -120,6 +120,11 @@ const updateVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
   };
 
   try {
+    /**
+     * Handles vacation request approval flow.
+     * Deducts vacation days from user's balance before updating the database.
+     * Implements compensating transaction: if database update fails, vacation days are returned.
+     */
     if (currentStatus === VacationRequestStatuses.Approved && statusChanged) {
       const validationError = await validateVacationApproval(
         userId,
@@ -129,18 +134,30 @@ const updateVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
       );
       if (validationError) return validationError;
 
-      const updatedVacationRequest =
-        await vacationRequestService.updateVacationRequest(vacationRequestUpdates);
-
       await deductVacationDaysForApproval(userId, startDate, endDate, contractedWeek);
-      await sendNotifications();
 
-      return {
-        statusCode: 200,
-        body: JSON.stringify(updatedVacationRequest as unknown as VacationRequest)
-      };
+      try {
+        const updatedVacationRequest =
+          await vacationRequestService.updateVacationRequest(vacationRequestUpdates);
+
+        await sendNotifications();
+
+        return {
+          statusCode: 200,
+          body: JSON.stringify(updatedVacationRequest as unknown as VacationRequest)
+        };
+      } catch (dbError) {
+        console.error("Database update failed, rolling back vacation day deduction", dbError);
+        await returnVacationDaysForRejection(userId, startDate, endDate, contractedWeek);
+        throw dbError;
+      }
     }
 
+    /**
+     * Handles vacation request rejection/cancellation flow.
+     * Updates database status before returning vacation days to user's balance.
+     * If returning days fails, logs error but considers operation successful as status change takes priority.
+     */
     if (
       existingLatestStatus === VacationRequestStatuses.Approved &&
       statusChanged &&
@@ -149,18 +166,28 @@ const updateVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
       const updatedVacationRequest =
         await vacationRequestService.updateVacationRequest(vacationRequestUpdates);
 
-      await returnVacationDaysForRejection(
-        userId,
-        existingVacationRequest.startDate,
-        existingVacationRequest.endDate,
-        contractedWeek
-      );
-      await sendNotifications();
+      try {
+        await returnVacationDaysForRejection(
+          userId,
+          existingVacationRequest.startDate,
+          existingVacationRequest.endDate,
+          contractedWeek
+        );
 
-      return {
-        statusCode: 200,
-        body: JSON.stringify(updatedVacationRequest as unknown as VacationRequest)
-      };
+        await sendNotifications();
+
+        return {
+          statusCode: 200,
+          body: JSON.stringify(updatedVacationRequest as unknown as VacationRequest)
+        };
+      } catch (keycloakError) {
+        console.error("Failed to return vacation days after status change.", keycloakError);
+
+        return {
+          statusCode: 200,
+          body: JSON.stringify(updatedVacationRequest as unknown as VacationRequest)
+        };
+      }
     }
 
     const updatedVacationRequest =

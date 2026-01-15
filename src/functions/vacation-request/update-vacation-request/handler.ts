@@ -18,6 +18,80 @@ import {
 import type vacationRequestSchema from "src/schema/vacationRequest";
 
 /**
+ * Handles vacation request approval with compensating transaction.
+ */
+const handleApproval = async (
+  userId: string,
+  startDate: string,
+  endDate: string,
+  contractedWeek: number[],
+  vacationRequestUpdates: any,
+  sendNotifications: () => Promise<void>
+) => {
+  const validationError = await validateVacationApproval(
+    userId,
+    startDate,
+    endDate,
+    contractedWeek
+  );
+  if (validationError) return validationError;
+
+  await deductVacationDaysForApproval(userId, startDate, endDate, contractedWeek);
+
+  try {
+    const updatedVacationRequest =
+      await vacationRequestService.updateVacationRequest(vacationRequestUpdates);
+    await sendNotifications();
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify(updatedVacationRequest as unknown as VacationRequest)
+    };
+  } catch (dbError) {
+    console.error("Database update failed, rolling back vacation day deduction", dbError);
+    await returnVacationDaysForRejection(userId, startDate, endDate, contractedWeek);
+    throw dbError;
+  }
+};
+
+/**
+ * Handles vacation request rejection/cancellation.
+ */
+const handleRejection = async (
+  userId: string,
+  existingStartDate: string,
+  existingEndDate: string,
+  contractedWeek: number[],
+  vacationRequestUpdates: any,
+  sendNotifications: () => Promise<void>
+) => {
+  const updatedVacationRequest =
+    await vacationRequestService.updateVacationRequest(vacationRequestUpdates);
+
+  try {
+    await returnVacationDaysForRejection(
+      userId,
+      existingStartDate,
+      existingEndDate,
+      contractedWeek
+    );
+    await sendNotifications();
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify(updatedVacationRequest as unknown as VacationRequest)
+    };
+  } catch (keycloakError) {
+    console.error("Failed to return vacation days after status change.", keycloakError);
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify(updatedVacationRequest as unknown as VacationRequest)
+    };
+  }
+};
+
+/**
  * Lambda function to update a vacation request
  *
  * @param event event containing path parameters and a JSON body that matches 'vacationRequestSchema'
@@ -120,74 +194,30 @@ const updateVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
   };
 
   try {
-    /**
-     * Handles vacation request approval flow.
-     * Deducts vacation days from user's balance before updating the database.
-     * Implements compensating transaction: if database update fails, vacation days are returned.
-     */
     if (currentStatus === VacationRequestStatuses.Approved && statusChanged) {
-      const validationError = await validateVacationApproval(
+      return await handleApproval(
         userId,
         startDate,
         endDate,
-        contractedWeek
+        contractedWeek,
+        vacationRequestUpdates,
+        sendNotifications
       );
-      if (validationError) return validationError;
-
-      await deductVacationDaysForApproval(userId, startDate, endDate, contractedWeek);
-
-      try {
-        const updatedVacationRequest =
-          await vacationRequestService.updateVacationRequest(vacationRequestUpdates);
-
-        await sendNotifications();
-
-        return {
-          statusCode: 200,
-          body: JSON.stringify(updatedVacationRequest as unknown as VacationRequest)
-        };
-      } catch (dbError) {
-        console.error("Database update failed, rolling back vacation day deduction", dbError);
-        await returnVacationDaysForRejection(userId, startDate, endDate, contractedWeek);
-        throw dbError;
-      }
     }
 
-    /**
-     * Handles vacation request rejection/cancellation flow.
-     * Updates database status before returning vacation days to user's balance.
-     * If returning days fails, logs error but considers operation successful as status change takes priority.
-     */
     if (
       existingLatestStatus === VacationRequestStatuses.Approved &&
       statusChanged &&
       currentStatus !== VacationRequestStatuses.Approved
     ) {
-      const updatedVacationRequest =
-        await vacationRequestService.updateVacationRequest(vacationRequestUpdates);
-
-      try {
-        await returnVacationDaysForRejection(
-          userId,
-          existingVacationRequest.startDate,
-          existingVacationRequest.endDate,
-          contractedWeek
-        );
-
-        await sendNotifications();
-
-        return {
-          statusCode: 200,
-          body: JSON.stringify(updatedVacationRequest as unknown as VacationRequest)
-        };
-      } catch (keycloakError) {
-        console.error("Failed to return vacation days after status change.", keycloakError);
-
-        return {
-          statusCode: 200,
-          body: JSON.stringify(updatedVacationRequest as unknown as VacationRequest)
-        };
-      }
+      return await handleRejection(
+        userId,
+        existingVacationRequest.startDate,
+        existingVacationRequest.endDate,
+        contractedWeek,
+        vacationRequestUpdates,
+        sendNotifications
+      );
     }
 
     const updatedVacationRequest =

@@ -21,17 +21,16 @@ const getSlackUserAvatarHandler: APIGatewayProxyHandler = async (event: APIGatew
 
     const email = decodeURIComponent(rawEmail.trim().toLowerCase());
     const slackUser = await SlackUtilities.getSlackUserByEmail(email);
-    const image_original = slackUser?.profile?.image_original ?? null;
-    let reason: SlackAvatarResponse.ReasonEnum;
 
-    if (!image_original) {
-      reason = slackUser
+    const responseBody = new SlackAvatarResponse();
+
+    if (slackUser?.profile?.image_original) {
+      responseBody.imageOriginal = slackUser.profile.image_original;
+    } else {
+      responseBody.reason = slackUser
         ? SlackAvatarResponse.ReasonEnum.NoAvatar
         : SlackAvatarResponse.ReasonEnum.EmailMismatch;
     }
-
-    const responseBody: SlackAvatarResponse = { imageOriginal: image_original };
-    if (reason) responseBody.reason = reason;
 
     return {
       statusCode: 200,

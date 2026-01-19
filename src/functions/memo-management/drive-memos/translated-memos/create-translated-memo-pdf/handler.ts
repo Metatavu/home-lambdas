@@ -4,7 +4,7 @@ import type {
   APIGatewayProxyHandlerV2,
   APIGatewayProxyStructuredResultV2
 } from "aws-lambda";
-import type { MemoInput, MemoRecord } from "src/database/models/memo-record";
+import type { MemoRecord } from "src/database/models/memo-record";
 import { memoService } from "src/database/services";
 import { middyfy } from "src/libs/lambda";
 

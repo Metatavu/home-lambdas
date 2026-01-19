@@ -6,6 +6,8 @@ import { getLookupEmail } from "src/utils/severa";
 
 /**
  * Lambda handler for removing a user's Severa opt-in (keyword and Keycloak attribute).
+ *
+ * @param event API Gateway event containing the userId path parameter.
  */
 export const removeSeveraOptInHandler: APIGatewayProxyHandler = async (event) => {
   const keycloakUserId = event.pathParameters?.userId;

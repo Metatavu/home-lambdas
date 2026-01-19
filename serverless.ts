@@ -15,6 +15,7 @@ import onCallListDataHandler from "src/functions/on-call/list-on-call-data";
 import deleteQuestionnaireHandler from "src/functions/questionnaire/delete-questionnaire";
 import listQuestionnaireHandler from "src/functions/questionnaire/list-questionnaire";
 import updateQuestionnaireHandler from "src/functions/questionnaire/update-questionnaire";
+import addOptIn from "src/functions/severa/add-opt-in";
 import getContractedWorkWeekHandler from "src/functions/severa/get-filtered-workdays";
 import getWorkHoursHandler from "src/functions/severa/get-filtered-workhours";
 import getFlextimeHandler from "src/functions/severa/get-flextime-by-user";
@@ -49,7 +50,6 @@ import deleteSoftwareHandler from "@/functions/software-registry/delete-software
 import findSoftwareHandler from "@/functions/software-registry/find-software";
 import listSoftwareHandler from "@/functions/software-registry/list-software";
 import updateSoftwareHandler from "@/functions/software-registry/update-software";
-import addOptIn from "src/functions/severa/add-opt-in";
 
 const isLocal = process.env.STAGE === "local";
 const region = (env.AWS_DEFAULT_REGION as any) || "eu-north-1";
@@ -346,7 +346,7 @@ const serverlessConfiguration: AWS = {
                 { AttributeName: "fileId", KeyType: "HASH" },
                 { AttributeName: "language", KeyType: "RANGE" }
               ],
-              Projection: { ProjectionType: "KEYS_ONLY" },
+              Projection: { ProjectionType: "INCLUDE", NonKeyAttributes: ["id"] },
               ProvisionedThroughput: {
                 ReadCapacityUnits: 1,
                 WriteCapacityUnits: 1

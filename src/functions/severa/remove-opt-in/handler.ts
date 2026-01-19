@@ -2,10 +2,11 @@ import type { APIGatewayProxyHandler } from "aws-lambda";
 import { CreateSeveraApiService } from "src/services/severa-api-service";
 import { CreateKeycloakApiService } from "src/database/services/keycloak-api-service";
 import { middyfy } from "src/libs/lambda";
+import { getLookupEmail } from "src/utils/severa";
 
 /**
  * Lambda handler for removing a user's Severa opt-in (keyword and Keycloak attribute).
- * 
+ *
  * @param event API Gateway event containing the userId path parameter.
  */
 export const removeSeveraOptInHandler: APIGatewayProxyHandler = async (event) => {
@@ -14,7 +15,7 @@ export const removeSeveraOptInHandler: APIGatewayProxyHandler = async (event) =>
   if (!keycloakUserId) {
     return {
       statusCode: 400,
-      body: JSON.stringify({ error: "KeycloakUserId is required" }),
+      body: JSON.stringify({ message: "KeycloakUserId is required" }),
     };
   }
 
@@ -24,25 +25,36 @@ export const removeSeveraOptInHandler: APIGatewayProxyHandler = async (event) =>
 
     // Fetch Keycloak user and severaUserId attribute
     let severaUserId: string | undefined;
-    try {
+    let keycloakUserEmail: string | undefined;
       const keycloakUser = await keycloakApi.findUser(keycloakUserId);
-    
       if (!keycloakUser) {
-      return {
-        statusCode: 404,
-        body: JSON.stringify({ message: "Keycloak user not found." }),
-      };
-    }
+        return {
+          statusCode: 404,
+          body: JSON.stringify({ message: "Keycloak user not found." }),
+        };
+      }
 
-    const attr = keycloakUser?.attributes || {};
-    severaUserId = attr.severaUserId?.[0];
+      const attr = keycloakUser?.attributes || {};
+      severaUserId = attr.severaUserId?.[0];
+      keycloakUserEmail = keycloakUser.email;
 
-    } catch {
-      return {
-        statusCode: 502,
-        body: JSON.stringify({ message: "Failed to fetch Keycloak user." }),
-      };
-    }
+      // If severaUserId missing, try resolving by email using shared util
+      if (!severaUserId) {
+        const lookupEmail = getLookupEmail(keycloakUserEmail);
+        if (lookupEmail) {
+          try {
+            const found = await severaApi.fetchUserByEmail(lookupEmail);
+            if (found?.guid) {
+              severaUserId = found.guid;
+            }
+          } catch {
+            return {
+              statusCode: 502,
+              body: JSON.stringify({ message: "Failed to fetch Severa user by email." }),
+            };
+          }
+        }
+      }
 
     // If we have Severa user id, try to remove the opt-in keyword from Severa
     if (severaUserId) {
@@ -84,11 +96,14 @@ export const removeSeveraOptInHandler: APIGatewayProxyHandler = async (event) =>
       };
     }
 
-    return { statusCode: 200, body: JSON.stringify({ message: "Opt-out completed" }) };
-  } catch {
+    return { 
+      statusCode: 200, 
+      body: JSON.stringify({ message: "Opt-out completed" }) 
+    };
+  } catch (error) {
     return {
       statusCode: 500,
-      body: JSON.stringify({ message: "Severa opt-out failed." }),
+      body: JSON.stringify({ message: "Severa opt-out failed.", error: String(error) }),
     };
   }
 };

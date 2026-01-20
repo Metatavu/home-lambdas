@@ -11,7 +11,7 @@ import {CreateSeveraApiService} from "src/services/severa-api-service";
  * @returns The user's Severa GUID, 'isSeveraOptIn' status, and email.
  */
 export const getLookupEmail = (keycloakEmail: string): string | undefined => {
-  return process.env.SEVERA_TEST_USER_EMAIL ?? Config.get().testUser?.email ?? keycloakEmail;
+  return Config.get().testUser?.email ?? keycloakEmail;
 };
 
 export const optInSeveraUser = async (email: string, keyword: Record<string, string[]>) => {

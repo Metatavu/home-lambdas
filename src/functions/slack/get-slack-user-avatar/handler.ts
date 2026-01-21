@@ -1,11 +1,12 @@
 import type { APIGatewayProxyEvent, APIGatewayProxyHandler } from "aws-lambda";
+import { SlackAvatarResponse } from "src/generated/homeLambdasModels/model/slackAvatarResponse";
 import SlackUtilities from "src/meta-assistant/slack/slack-utils";
 
 /**
  * Lambda to receive user's slack avatar by email
  *
  * @param event event with query parameter email
- * @return A response object with statuscode and avatar URL
+ * @return SlackAvatarResponse object with image URL or reason for failure
  */
 const getSlackUserAvatarHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
   try {
@@ -21,20 +22,19 @@ const getSlackUserAvatarHandler: APIGatewayProxyHandler = async (event: APIGatew
     const email = decodeURIComponent(rawEmail.trim().toLowerCase());
     const slackUser = await SlackUtilities.getSlackUserByEmail(email);
 
-    if (!slackUser?.profile?.image_original) {
-      return {
-        statusCode: 204,
-        body: ""
-      };
-    }
+    const responseBody = new SlackAvatarResponse();
 
-    const response = {
-      image_original: slackUser.profile.image_original
-    };
+    if (slackUser?.profile?.image_original) {
+      responseBody.imageOriginal = slackUser.profile.image_original;
+    } else {
+      responseBody.reason = slackUser
+        ? SlackAvatarResponse.ReasonEnum.NoAvatar
+        : SlackAvatarResponse.ReasonEnum.EmailMismatch;
+    }
 
     return {
       statusCode: 200,
-      body: JSON.stringify(response)
+      body: JSON.stringify(responseBody)
     };
   } catch (error) {
     console.error("getSlackUserAvatarHandler failed", error);

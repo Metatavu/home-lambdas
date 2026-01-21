@@ -21,7 +21,7 @@ import getFlextimeHandler from "src/functions/severa/get-flextime-by-user";
 import getPhasesHandler from "src/functions/severa/get-phases-by-project";
 import getResourceAllocationHandler from "src/functions/severa/get-resource-allocations-by-user";
 import listWorkdaysForUserHandler from "src/functions/severa/list-workdays-for-user";
-import removeOptIn from "src/functions/severa/remove-opt-in";
+import removeOptInHandler from "src/functions/severa/remove-opt-in";
 import listUsersFlextimeHandler from "src/functions/users/flextime";
 import createVacationRequestHandler from "src/functions/vacation-request/create-vacation-request";
 import deleteVacationRequestHandler from "src/functions/vacation-request/delete-vacation-request";
@@ -49,7 +49,7 @@ import deleteSoftwareHandler from "@/functions/software-registry/delete-software
 import findSoftwareHandler from "@/functions/software-registry/find-software";
 import listSoftwareHandler from "@/functions/software-registry/list-software";
 import updateSoftwareHandler from "@/functions/software-registry/update-software";
-import addOptIn from "src/functions/severa/add-opt-in";
+import addOptInHandler from "src/functions/severa/add-opt-in";
 
 const isLocal = process.env.STAGE === "local";
 const region = (env.AWS_DEFAULT_REGION as any) || "eu-north-1";
@@ -204,14 +204,14 @@ const serverlessConfiguration: AWS = {
     readArticleHandler,
     uploadFileHandler,
     getContractedWorkWeekHandler,
-    removeOptIn,
+    removeOptInHandler,
     listWorkdaysForUserHandler,
     getSlackUserAvatarHandler,
     listMemoPdfHandler,
     getContentPdfHandler,
     getTranslatedMemoPdfHandler,
     createTranslatedMemoPdfHandler,
-    addOptIn
+    addOptInHandler
   },
   package: { individually: true },
   custom: {

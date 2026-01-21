@@ -111,7 +111,7 @@ export const validateVacationDays = async (
 };
 
 /**
- * Low-level helper that directly modifies Keycloak vacation day balances.
+ * Deducts vacation days from Keycloak user.
  * @param userId - The ID of the user whose vacation days are being deducted.
  * @param daysToDeduct - The number of vacation days to deduct.
  * @param year - The year for which the vacation days are being deducted.
@@ -132,10 +132,10 @@ export const deductVacationDays = async (
   const formattedValue = `${year}:${String(remainingDays).padStart(3, "0")}`;
 
   const updatedUnspent = [...unspentVacationDaysByYear];
-  const existingIndex = updatedUnspent.findIndex((s) => s.startsWith(`${year}:`));
+  const yearUnspentVacationIndex = updatedUnspent.findIndex((s) => s.startsWith(`${year}:`));
 
-  if (existingIndex >= 0) {
-    updatedUnspent[existingIndex] = formattedValue;
+  if (yearUnspentVacationIndex >= 0) {
+    updatedUnspent[yearUnspentVacationIndex] = formattedValue;
   } else {
     updatedUnspent.push(formattedValue);
   }
@@ -145,7 +145,7 @@ export const deductVacationDays = async (
 };
 
 /**
- * Returns vacation days to Keycloak (adds them back).
+ * Returns vacation days to Keycloak user(adds them back).
  * @param userId - The ID of the user whose vacation days are being returned.
  * @param daysToReturn - The number of vacation days to return.
  * @param year - The year for which the vacation days are being returned.
@@ -166,10 +166,10 @@ export const returnVacationDays = async (
   const formattedValue = `${year}:${String(newRemainingDays).padStart(3, "0")}`;
 
   const updatedUnspent = [...unspentVacationDaysByYear];
-  const existingIndex = updatedUnspent.findIndex((s) => s.startsWith(`${year}:`));
+  const yearUnspentVacationIndex = updatedUnspent.findIndex((s) => s.startsWith(`${year}:`));
 
-  if (existingIndex >= 0) {
-    updatedUnspent[existingIndex] = formattedValue;
+  if (yearUnspentVacationIndex >= 0) {
+    updatedUnspent[yearUnspentVacationIndex] = formattedValue;
   } else {
     updatedUnspent.push(formattedValue);
   }

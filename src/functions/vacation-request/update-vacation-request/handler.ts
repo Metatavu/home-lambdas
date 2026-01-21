@@ -18,7 +18,14 @@ import {
 import type vacationRequestSchema from "src/schema/vacationRequest";
 
 /**
- * Handles vacation request approval with compensating transaction.
+ * Verifies user has enough vacation days and deducts them upon approval of a vacation request.
+ *
+ * @param userId - The ID of the user requesting vacation.
+ * @param startDate - The start date of the vacation
+ * @param endDate - The end date of the vacation
+ * @param contractedWeek - Array of contracted work days
+ * @param vacationRequestUpdates - The vacation request object to update in the database.
+ * @param sendNotifications - Callback function to send notifications after successful update.
  */
 const handleApproval = async (
   userId: string,
@@ -81,8 +88,8 @@ const handleRejection = async (
       statusCode: 200,
       body: JSON.stringify(updatedVacationRequest as unknown as VacationRequest)
     };
-  } catch (keycloakError) {
-    console.error("Failed to return vacation days after status change.", keycloakError);
+  } catch (error) {
+    console.error("Failed to return vacation days after status change.", error);
 
     return {
       statusCode: 200,

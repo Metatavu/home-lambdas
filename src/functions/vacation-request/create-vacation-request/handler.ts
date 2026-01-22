@@ -5,7 +5,7 @@ import { middyfy } from "src/libs/lambda";
 import {
   getContractedWeek,
   splitVacationDaysByYear,
-  updateRemainingVacationDays
+  validateVacationDays
 } from "src/libs/vacation-utils";
 import { notifyAdminsVacationSubmittedAll } from "src/notifications/vacation-notifications";
 import type vacationRequestSchema from "src/schema/vacationRequest";
@@ -68,6 +68,21 @@ export const createVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
   const userDetails = await api.findUser(userId);
 
   try {
+    const contractedWeek = await getContractedWeek(userId);
+    const daysByYear = splitVacationDaysByYear(startDate, endDate, contractedWeek);
+
+    for (const [year, daysInYear] of Object.entries(daysByYear)) {
+      const hasEnoughDays = await validateVacationDays(userId, daysInYear, year);
+      if (!hasEnoughDays) {
+        return {
+          statusCode: 409,
+          body: JSON.stringify({
+            message: `Cannot create request: you do not have enough remaining vacation days for ${year}.`
+          })
+        };
+      }
+    }
+
     const createdVacationRequest = await vacationRequestService.createVacationRequest({
       id: newVacationRequestId,
       userId: userId,
@@ -82,33 +97,6 @@ export const createVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
       createdAt: createdAt,
       updatedAt: updatedAt
     });
-
-    const contractedWeek = await getContractedWeek(userId);
-    const daysByYear = splitVacationDaysByYear(startDate, endDate, contractedWeek);
-    const currentStatus = Array.isArray(status) ? status.at(-1)?.status : "UNKNOWN";
-
-    try {
-      for (const [year, daysInYear] of Object.entries(daysByYear)) {
-        const success = await updateRemainingVacationDays(userId, daysInYear, currentStatus, year);
-
-        if (!success) {
-          return {
-            statusCode: 400,
-            body: JSON.stringify({
-              message: `Cannot create request: user does not have enough remaining vacation days for ${year}.`
-            })
-          };
-        }
-      }
-    } catch (err) {
-      console.error("Vacation update failure:", err);
-      return {
-        statusCode: 500,
-        body: JSON.stringify({
-          message: "Unexpected error while updating remaining vacation days."
-        })
-      };
-    }
 
     if (draft === false) {
       await notifyAdminsVacationSubmittedAll({

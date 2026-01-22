@@ -3,16 +3,100 @@ import { middyfy } from "@libs/lambda";
 import { vacationRequestService } from "src/database/services";
 import { CreateKeycloakApiService } from "src/database/services/keycloak-api-service";
 import type { VacationRequest } from "src/generated/homeLambdasModels/model/vacationRequest";
+import { VacationRequestStatuses } from "src/generated/homeLambdasModels/model/vacationRequestStatuses";
 import {
-  deductVacationDaysFromUser,
+  deductVacationDaysForApproval,
   getContractedWeek,
-  getLatestStatus
+  getLatestStatus,
+  returnVacationDaysForRejection,
+  validateVacationApproval
 } from "src/libs/vacation-utils";
 import {
   notifyAdminsVacationSubmittedAll,
   notifyUserVacationStatusUpdatedAll
 } from "src/notifications/vacation-notifications";
 import type vacationRequestSchema from "src/schema/vacationRequest";
+
+/**
+ * Verifies user has enough vacation days and deducts them upon approval of a vacation request.
+ *
+ * @param userId - The ID of the user requesting vacation.
+ * @param startDate - The start date of the vacation
+ * @param endDate - The end date of the vacation
+ * @param contractedWeek - Array of contracted work days
+ * @param vacationRequestUpdates - The vacation request object to update in the database.
+ * @param sendNotifications - Callback function to send notifications after successful update.
+ */
+const handleApproval = async (
+  userId: string,
+  startDate: string,
+  endDate: string,
+  contractedWeek: number[],
+  vacationRequestUpdates: any,
+  sendNotifications: () => Promise<void>
+) => {
+  const validationError = await validateVacationApproval(
+    userId,
+    startDate,
+    endDate,
+    contractedWeek
+  );
+  if (validationError) return validationError;
+
+  await deductVacationDaysForApproval(userId, startDate, endDate, contractedWeek);
+
+  try {
+    const updatedVacationRequest =
+      await vacationRequestService.updateVacationRequest(vacationRequestUpdates);
+    await sendNotifications();
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify(updatedVacationRequest as unknown as VacationRequest)
+    };
+  } catch (dbError) {
+    console.error("Database update failed, rolling back vacation day deduction", dbError);
+    await returnVacationDaysForRejection(userId, startDate, endDate, contractedWeek);
+    throw dbError;
+  }
+};
+
+/**
+ * Handles vacation request rejection/cancellation.
+ */
+const handleRejection = async (
+  userId: string,
+  existingStartDate: string,
+  existingEndDate: string,
+  contractedWeek: number[],
+  vacationRequestUpdates: any,
+  sendNotifications: () => Promise<void>
+) => {
+  const updatedVacationRequest =
+    await vacationRequestService.updateVacationRequest(vacationRequestUpdates);
+
+  try {
+    await returnVacationDaysForRejection(
+      userId,
+      existingStartDate,
+      existingEndDate,
+      contractedWeek
+    );
+    await sendNotifications();
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify(updatedVacationRequest as unknown as VacationRequest)
+    };
+  } catch (error) {
+    console.error("Failed to return vacation days after status change.", error);
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify(updatedVacationRequest as unknown as VacationRequest)
+    };
+  }
+};
 
 /**
  * Lambda function to update a vacation request
@@ -98,19 +182,7 @@ const updateVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
   const currentStatus = Array.isArray(status) ? status.at(-1)?.status : "UNKNOWN";
   const contractedWeek = await getContractedWeek(userId);
 
-  try {
-    const approvalError = await deductVacationDaysFromUser(
-      userId,
-      startDate,
-      endDate,
-      contractedWeek,
-      currentStatus
-    );
-    if (approvalError) return approvalError;
-
-    const updatedVacationRequest =
-      await vacationRequestService.updateVacationRequest(vacationRequestUpdates);
-
+  const sendNotifications = async () => {
     if (statusChanged) {
       await notifyUserVacationStatusUpdatedAll({
         email: userDetails.email,
@@ -126,6 +198,40 @@ const updateVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
         type
       });
     }
+  };
+
+  try {
+    if (currentStatus === VacationRequestStatuses.Approved && statusChanged) {
+      return await handleApproval(
+        userId,
+        startDate,
+        endDate,
+        contractedWeek,
+        vacationRequestUpdates,
+        sendNotifications
+      );
+    }
+
+    if (
+      existingLatestStatus === VacationRequestStatuses.Approved &&
+      statusChanged &&
+      currentStatus !== VacationRequestStatuses.Approved
+    ) {
+      return await handleRejection(
+        userId,
+        existingVacationRequest.startDate,
+        existingVacationRequest.endDate,
+        contractedWeek,
+        vacationRequestUpdates,
+        sendNotifications
+      );
+    }
+
+    const updatedVacationRequest =
+      await vacationRequestService.updateVacationRequest(vacationRequestUpdates);
+
+    await sendNotifications();
+
     return {
       statusCode: 200,
       body: JSON.stringify(updatedVacationRequest as unknown as VacationRequest)

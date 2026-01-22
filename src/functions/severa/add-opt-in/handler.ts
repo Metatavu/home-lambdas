@@ -14,7 +14,7 @@ export const addSeveraOptInHandler: APIGatewayProxyHandler = async (event) => {
   if (!keycloakUserId) {
     return {
       statusCode: 400,
-      body: JSON.stringify({ error: "Keycloak userId is required" })
+      body: JSON.stringify({ message: "Keycloak userId is required" })
     };
   }
 
@@ -22,8 +22,9 @@ export const addSeveraOptInHandler: APIGatewayProxyHandler = async (event) => {
     const severaApi = CreateSeveraApiService();
     const keycloakApi = CreateKeycloakApiService();
 
-    // Fetch Keycloak user and email
-    let userEmail: string | undefined;
+    // Resolve Severa user by email
+    let severaUserId: string;
+
     try {
       const keycloakUser = await keycloakApi.findUser(keycloakUserId);
       if (!keycloakUser) {
@@ -33,34 +34,22 @@ export const addSeveraOptInHandler: APIGatewayProxyHandler = async (event) => {
         };
       }
 
-      // Use util to decide lookup email
-      const lookupEmail = getLookupEmail(keycloakUser.email);
-      userEmail = lookupEmail;
+      const userEmail = getLookupEmail(keycloakUser.email);
+      if (!userEmail) {
+        return {
+          statusCode: 502,
+          body: JSON.stringify({ message: "Failed to lookup email." })
+        };
+      }
 
-    } catch {
-      return {
-        statusCode: 502,
-        body: JSON.stringify({ message: "Failed to fetch Keycloak user." })
-      };
-    }
-
-    if (!userEmail) {
-      return {
-        statusCode: 502,
-        body: JSON.stringify({ message: "No email available for Severa lookup." })
-      };
-    }
-
-    // Resolve Severa user by email
-    let severaUserId: string;
-    try {
       const severaUser = await severaApi.fetchUserByEmail(userEmail);
-      if (!severaUser || !severaUser.guid) {
+      if (!severaUser.guid) {
         return {
           statusCode: 502,
           body: JSON.stringify({ message: "Severa user missing guid." })
         };
       }
+
       severaUserId = severaUser.guid;
     } catch {
       return {

@@ -5,10 +5,9 @@ import {CreateSeveraApiService} from "src/services/severa-api-service";
 /**
  * Fetches a Severa user by their email address and checks/updates the 'isSeveraOptIn' status.
  *
- * @param email The email address of the user to be retrieved.
- * @param keyword Keywords to be checked/updated for the user.
+ * @param keycloakEmail The Keycloak user's email address.
  *
- * @returns The user's Severa GUID, 'isSeveraOptIn' status, and email.
+ * @returns The email to user for Severa lookup
  */
 export const getLookupEmail = (keycloakEmail: string): string | undefined => {
   return Config.get().testUser?.email ?? keycloakEmail;

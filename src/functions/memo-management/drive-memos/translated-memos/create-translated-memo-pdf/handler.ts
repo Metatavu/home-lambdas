@@ -4,7 +4,7 @@ import type {
   APIGatewayProxyHandlerV2,
   APIGatewayProxyStructuredResultV2
 } from "aws-lambda";
-import type { MemoInput } from "src/database/models/memo-record";
+import type { MemoRecord } from "src/database/models/memo-record";
 import { memoService } from "src/database/services";
 import { middyfy } from "src/libs/lambda";
 
@@ -41,7 +41,7 @@ const createTranslatedMemoPdfHandler: APIGatewayProxyHandlerV2 = async (
     // Placeholder: default original language, detection can be added later
     const originalLanguage = "fi";
     const existingFi = await memoService.getByFileIdAndLanguage(fileId, originalLanguage);
-    let storedMemo: MemoInput;
+    let storedMemo: MemoRecord;
 
     if (existingFi) {
       storedMemo = existingFi;

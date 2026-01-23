@@ -76,12 +76,12 @@ class TranslatedMemoService {
    * @param fileId - The Google Drive file ID associated with the memo.
    * @param language - The language of the memo.
    *
-   * @returns The `MemoRecord` if found, or `null` if no matching memo exists.
+   * @returns The `item.id` if found, or `null` if no matching memo exists.
    */
   public getByFileIdAndLanguage = async (
     fileId: string,
     language: string
-  ): Promise<MemoRecord | null> => {
+  ): Promise<string | null> => {
     const result = await this.docClient.send(
       new QueryCommand({
         TableName: TABLE_NAME,
@@ -97,8 +97,8 @@ class TranslatedMemoService {
         }
       })
     );
-
-    return (result.Items?.[0] as MemoRecord) || null;
+    const item = result.Items?.[0];
+    return item?.id || null;
   };
 }
 

@@ -98,7 +98,7 @@ class TranslatedMemoService {
       })
     );
     const item = result.Items?.[0];
-    return item?.id || null;
+    return item?.id ?? null;
   };
 }
 

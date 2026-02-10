@@ -1,77 +1,96 @@
+import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { middyfy } from "@libs/lambda";
-import type { APIGatewayProxyEvent, APIGatewayProxyHandler } from "aws-lambda";
-import { generatePreSignedUrl } from "src/services/s3-file-service";
+import type { APIGatewayProxyHandler } from "aws-lambda";
+
+type CreatePresignedUrlWithClientParams = {
+  region: string;
+  bucket: string;
+  key: string;
+  contentType: string;
+};
 
 /**
- * Handler for creating a presigned url for the following file upload.
+ * Create a presigned URL for a PUT request to upload a file to the specified Amazon S3 bucket
  *
- * @param event - API Gateway event.
- * @returns Response object with status code.
+ * @param params {CreatePresignedUrlWithClientParams}
+ * @returns A promise that resolves to the presigned URL
  */
-const uploadFileHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
-  console.log("=== uploadFileHandler invoked ===");
-  console.log("Raw event:", JSON.stringify(event, null, 2));
-  console.log("Raw body:", event.body);
+const createPresignedUrlWithClient = ({
+  region,
+  bucket,
+  key,
+  contentType
+}: CreatePresignedUrlWithClientParams) => {
+  const client = new S3Client({ region: region });
+  const command = new PutObjectCommand({
+    Bucket: bucket,
+    Key: key,
+    ContentType: contentType
+  });
 
-  const { body } = event;
-  let path: string | undefined;
-  let contentType: string | undefined;
+  return getSignedUrl(client, command, { expiresIn: 3600 });
+};
+
+/**
+ * We need to respond with adequate CORS headers.
+ */
+const headers = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Credentials": true
+};
+
+/**
+ * Lambda function that returns a presigned URL for a PUT request to upload a file to the specified Amazon S3 bucket
+ */
+const uploadFileHandler: APIGatewayProxyHandler = async ({ body }) => {
   try {
-    const parsed = typeof body === "string" ? JSON.parse(body) : body;
-    path = parsed?.path;
-    contentType = parsed?.contentType;
-    console.log("Parsed body:", parsed);
-    console.log("path:", path);
-    console.log("contentType:", contentType);
-  } catch (Error_) {
-    console.error("JSON parsing failed:", Error_);
-    return {
-      statusCode: 400,
-      body: JSON.stringify({
-        code: 400,
-        message: "Invalid JSON body."
-      })
-    };
-  }
+    const { path, contentType } = JSON.parse(body || "{}");
+    const { HOME_BUCKET_NAME, HOME_BUCKET_REGION } = process.env;
 
-  if (!path) {
-    console.warn("Missing path");
-    return {
-      statusCode: 400,
-      body: JSON.stringify({
-        code: 400,
-        message: "Invalid request body."
-      })
-    };
-  }
+    if (!path) {
+      throw {
+        statusCode: 400,
+        message: "Invalid request body"
+      };
+    }
 
-  if (!contentType?.startsWith("image/")) {
-    console.warn("Invalid contentType:", contentType);
-    return {
-      statusCode: 400,
-      body: JSON.stringify({
-        code: 400,
-        message: "Invalid file type."
-      })
-    };
-  }
+    if (!contentType || !contentType.startsWith("image/")) {
+      throw {
+        statusCode: 400,
+        message: "Invalid file type. Only images are allowed"
+      };
+    }
 
-  try {
-    console.log("Calling generatePreSignedUrl:", { path, method: "put", contentType });
-    const presignedUrl = await generatePreSignedUrl(path, "put", contentType);
-    console.log("Presigned URL generated:", presignedUrl);
+    if (!HOME_BUCKET_NAME || !HOME_BUCKET_REGION) {
+      throw {
+        statusCode: 500,
+        message: "Invalid lambda environment variables"
+      };
+    }
+
+    const presignedUrl = await createPresignedUrlWithClient({
+      region: HOME_BUCKET_REGION,
+      bucket: HOME_BUCKET_NAME,
+      key: path,
+      contentType: contentType
+    });
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ data: presignedUrl })
-    };
-  } catch (error) {
-    console.error("Error generating presigned URL:", error);
-    return {
-      statusCode: 500,
+      headers: headers,
       body: JSON.stringify({
-        code: 500,
-        message: `Error uploading file: ${error.message}`
+        error: false,
+        data: presignedUrl
+      })
+    };
+  } catch (error: any) {
+    return {
+      statusCode: error.statusCode ?? 500,
+      headers: headers,
+      body: JSON.stringify({
+        error: true,
+        message: error.message
       })
     };
   }

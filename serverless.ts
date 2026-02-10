@@ -139,6 +139,11 @@ const serverlessConfiguration: AWS = {
           },
           {
             Effect: "Allow",
+            Action: ["s3:ListBucket"],
+            Resource: isLocal ? "*" : `arn:aws:s3:::${env.HOME_BUCKET_NAME}`
+          },
+          {
+            Effect: "Allow",
             Action: [
               "dynamodb:DescribeTable",
               "dynamodb:Query",

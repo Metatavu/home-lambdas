@@ -35,9 +35,9 @@ const listMediaHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyEv
     };
   } catch (error) {
     return {
-      statusCode: 500,
+      statusCode: error.statusCode ?? 500,
       body: JSON.stringify({
-        code: 500,
+        code: error.statusCode ?? 500,
         message: `Failed to list media files: ${error.message}`
       })
     };

@@ -28,6 +28,7 @@ export { default as deleteQuestionnaireHandler } from "./questionnaire/delete-qu
 export { default as findQuestionnaireHandler } from "./questionnaire/find-questionnaire";
 export { default as listQuestionnaireHandler } from "./questionnaire/list-questionnaire";
 export { default as updateQuestionnaireHandler } from "./questionnaire/update-questionnaire";
+export { default as addSeveraOptInHandler } from "./severa/add-opt-in";
 export { default as getContractedWorkWeekHandler } from "./severa/get-filtered-workdays";
 export { default as getWorkHoursHandler } from "./severa/get-filtered-workhours";
 export { default as getFlextimeHandler } from "./severa/get-flextime-by-user";
@@ -46,7 +47,7 @@ export { default as deleteArticleHandler } from "./wiki-documentation/delete-art
 export { default as findArticleHandler } from "./wiki-documentation/find-article";
 export { default as findArticleByPathHandler } from "./wiki-documentation/find-article-by-path";
 export { default as listArticlesHandler } from "./wiki-documentation/list-articles";
+export { default as listMediaHandler } from "./wiki-documentation/list-media";
 export { default as readArticleHandler } from "./wiki-documentation/read-article";
 export { default as updateArticleHandler } from "./wiki-documentation/update-article";
 export { default as uploadFileHandler } from "./wiki-documentation/upload-file";
-export { default as addSeveraOptInHandler } from "./severa/add-opt-in";

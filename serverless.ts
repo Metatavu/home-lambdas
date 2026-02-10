@@ -15,6 +15,7 @@ import onCallListDataHandler from "src/functions/on-call/list-on-call-data";
 import deleteQuestionnaireHandler from "src/functions/questionnaire/delete-questionnaire";
 import listQuestionnaireHandler from "src/functions/questionnaire/list-questionnaire";
 import updateQuestionnaireHandler from "src/functions/questionnaire/update-questionnaire";
+import addOptInHandler from "src/functions/severa/add-opt-in";
 import getContractedWorkWeekHandler from "src/functions/severa/get-filtered-workdays";
 import getWorkHoursHandler from "src/functions/severa/get-filtered-workhours";
 import getFlextimeHandler from "src/functions/severa/get-flextime-by-user";
@@ -33,6 +34,7 @@ import deleteArticleHandler from "src/functions/wiki-documentation/delete-articl
 import findArticleHandler from "src/functions/wiki-documentation/find-article";
 import findArticleByPathHandler from "src/functions/wiki-documentation/find-article-by-path";
 import listArticlesHandler from "src/functions/wiki-documentation/list-articles";
+import listMediaHandler from "src/functions/wiki-documentation/list-media";
 import readArticleHandler from "src/functions/wiki-documentation/read-article";
 import updateArticleHandler from "src/functions/wiki-documentation/update-article";
 import uploadFileHandler from "src/functions/wiki-documentation/upload-file";
@@ -49,7 +51,6 @@ import deleteSoftwareHandler from "@/functions/software-registry/delete-software
 import findSoftwareHandler from "@/functions/software-registry/find-software";
 import listSoftwareHandler from "@/functions/software-registry/list-software";
 import updateSoftwareHandler from "@/functions/software-registry/update-software";
-import addOptInHandler from "src/functions/severa/add-opt-in";
 
 const isLocal = process.env.STAGE === "local";
 const region = (env.AWS_DEFAULT_REGION as any) || "eu-north-1";
@@ -196,6 +197,7 @@ const serverlessConfiguration: AWS = {
     getPhasesHandler,
     getWorkHoursHandler,
     listArticlesHandler,
+    listMediaHandler,
     findArticleHandler,
     findArticleByPathHandler,
     createArticleHandler,

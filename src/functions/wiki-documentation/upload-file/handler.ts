@@ -77,7 +77,7 @@ const uploadFileHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyE
   /**NOTE: LIMITED TO ONLY IMAGES FOR NOW. FUTURE TASK CAN BE IMPORT PLAYBOOK,PDFS IN WIKI AND BREAK THEM DOWN TO
    * TEXT/MARKDOWN WHERE POSSIBLE LIKE OTHER ARTICLES.
    */
-  if (!contentType || !contentType.startsWith("image/")) {
+  if (!contentType?.startsWith("image/")) {
     return {
       statusCode: 400,
       body: JSON.stringify({

@@ -33,19 +33,18 @@ const createPresignedUrlWithClient = ({
 };
 
 /**
- * We need to respond with adequate CORS headers.
- */
-const headers = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Credentials": true
-};
-
-/**
  * Lambda function that returns a presigned URL for a PUT request to upload a file to the specified Amazon S3 bucket
  */
 const uploadFileHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
   const { HOME_BUCKET_NAME, HOME_BUCKET_REGION } = process.env;
-  const { body } = event;
+  const { body, headers: requestHeaders } = event;
+
+  // Echo the origin for CORS so it only responds to the requesting origin.
+  const origin = requestHeaders?.origin || requestHeaders?.Origin;
+  const responseHeaders = {
+    "Access-Control-Allow-Origin": origin,
+    "Access-Control-Allow-Credentials": "true"
+  };
   let path: string | undefined;
   let contentType: string | undefined;
   try {
@@ -106,7 +105,7 @@ const uploadFileHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyE
 
     return {
       statusCode: 200,
-      headers: headers,
+      headers: responseHeaders,
       body: JSON.stringify({
         error: false,
         data: presignedUrl
@@ -115,7 +114,7 @@ const uploadFileHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyE
   } catch (error) {
     return {
       statusCode: error.statusCode ?? 500,
-      headers: headers,
+      headers: responseHeaders,
       body: JSON.stringify({
         error: true,
         message: error.message

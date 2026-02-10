@@ -1,7 +1,7 @@
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { middyfy } from "@libs/lambda";
-import type { APIGatewayProxyHandler } from "aws-lambda";
+import type { APIGatewayProxyEvent, APIGatewayProxyHandler } from "aws-lambda";
 
 type CreatePresignedUrlWithClientParams = {
   region: string;
@@ -43,35 +43,60 @@ const headers = {
 /**
  * Lambda function that returns a presigned URL for a PUT request to upload a file to the specified Amazon S3 bucket
  */
-const uploadFileHandler: APIGatewayProxyHandler = async ({ body }) => {
+const uploadFileHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
+  const { HOME_BUCKET_NAME, HOME_BUCKET_REGION } = process.env;
+  const { body } = event;
+  let path: string | undefined;
+  let contentType: string | undefined;
   try {
-    const { path, contentType } = JSON.parse(body || "{}");
-    const { HOME_BUCKET_NAME, HOME_BUCKET_REGION } = process.env;
+    const parsed = typeof body === "string" ? JSON.parse(body) : body;
+    path = parsed?.path;
+    contentType = parsed?.contentType;
+  } catch (Error_) {
+    console.error("JSON parsing failed:", Error_);
+    return {
+      statusCode: 400,
+      body: JSON.stringify({
+        code: 400,
+        message: "Invalid JSON body."
+      })
+    };
+  }
 
-    if (!path) {
-      throw {
-        statusCode: 400,
-        message: "Invalid request body"
-      };
-    }
+  if (!path) {
+    console.warn("Missing path");
+    return {
+      statusCode: 400,
+      body: JSON.stringify({
+        code: 400,
+        message: "Invalid request body."
+      })
+    };
+  }
 
-    /**NOTE: LIMITED TO ONLY IMAGES FOR NOW. FUTURE TASK CAN BE IMPORT PLAYBOOK,PDFS IN WIKI AND BREAK THEM DOWN TO
-     * TEXT/MARKDOWN WHERE POSSIBLE LIKE OTHER ARTICLES.
-     */
-    if (!contentType || !contentType.startsWith("image/")) {
-      throw {
-        statusCode: 400,
-        message: "Invalid file type. Only images are allowed"
-      };
-    }
+  /**NOTE: LIMITED TO ONLY IMAGES FOR NOW. FUTURE TASK CAN BE IMPORT PLAYBOOK,PDFS IN WIKI AND BREAK THEM DOWN TO
+   * TEXT/MARKDOWN WHERE POSSIBLE LIKE OTHER ARTICLES.
+   */
+  if (!contentType || !contentType.startsWith("image/")) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({
+        code: 400,
+        message: "Invalid file type."
+      })
+    };
+  }
 
-    if (!HOME_BUCKET_NAME || !HOME_BUCKET_REGION) {
-      throw {
-        statusCode: 500,
+  if (!HOME_BUCKET_NAME || !HOME_BUCKET_REGION) {
+    return {
+      statusCode: 500,
+      body: JSON.stringify({
+        code: 500,
         message: "Invalid lambda environment variables"
-      };
-    }
-
+      })
+    };
+  }
+  try {
     const presignedUrl = await createPresignedUrlWithClient({
       region: HOME_BUCKET_REGION,
       bucket: HOME_BUCKET_NAME,
@@ -87,7 +112,7 @@ const uploadFileHandler: APIGatewayProxyHandler = async ({ body }) => {
         data: presignedUrl
       })
     };
-  } catch (error: any) {
+  } catch (error) {
     return {
       statusCode: error.statusCode ?? 500,
       headers: headers,

@@ -18,75 +18,47 @@ export const addSeveraOptInHandler: APIGatewayProxyHandler = async (event) => {
     };
   }
 
+  const severaApi = CreateSeveraApiService();
+  const keycloakApi = CreateKeycloakApiService();
+
   try {
-    const severaApi = CreateSeveraApiService();
-    const keycloakApi = CreateKeycloakApiService();
-
-    // Fetch Keycloak user and check for existing severaUserId attribute
-    let severaUserId: string;
-
-    try {
-      const keycloakUser = await keycloakApi.findUser(keycloakUserId);
-      if (!keycloakUser) {
-        return {
-          statusCode: 404,
-          body: JSON.stringify({ message: "Keycloak user not found." })
-        };
-      }
-
-      const attr = keycloakUser?.attributes || {};
-      const existingSeveraUserId = attr.severaUserId?.[0];
-
-      // If severaUserId already exists, use it; otherwise resolve by email
-      if (existingSeveraUserId) {
-        severaUserId = existingSeveraUserId;
-      } else {
-        const userEmail = getLookupEmail(keycloakUser.email);
-        if (!userEmail) {
-          return {
-            statusCode: 502,
-            body: JSON.stringify({ message: "Failed to lookup email." })
-          };
-        }
-
-        const severaUser = await severaApi.fetchUserByEmail(userEmail);
-        if (!severaUser.guid) {
-          return {
-            statusCode: 502,
-            body: JSON.stringify({ message: "Severa user missing guid." })
-          };
-        }
-
-        severaUserId = severaUser.guid;
-      }
-    } catch {
+    const keycloakUser = await keycloakApi.findUser(keycloakUserId);
+    if (!keycloakUser) {
       return {
-        statusCode: 502,
-        body: JSON.stringify({ message: "Failed to fetch Severa user." })
+        statusCode: 404,
+        body: JSON.stringify({ message: "Keycloak user not found." })
       };
     }
 
-    // Ensure global keyword exists
-    let globalGuid: string;
-    try {
-      const globalKeyword = await severaApi.checkKeywordExists("isSeveraOptIn");
-      globalGuid = globalKeyword?.guid;
-      if (!globalGuid) {
+    const attr = keycloakUser.attributes || {};
+    let severaUserId = attr.severaUserId?.[0];
+    if (!severaUserId) {
+      const userEmail = getLookupEmail(keycloakUser.email);
+      if (!userEmail) {
         return {
           statusCode: 502,
-          body: JSON.stringify({ message: "Global keyword missing." })
+          body: JSON.stringify({ message: "Failed to lookup email." })
         };
       }
-    } catch {
+
+      const severaUser = await severaApi.fetchUserByEmail(userEmail);
+      if (!severaUser?.guid) {
+        return {
+          statusCode: 502,
+          body: JSON.stringify({ message: "Severa user missing guid." })
+        };
+      }
+
+      severaUserId = severaUser.guid;
+    }
+    const globalKeyword = await severaApi.checkKeywordExists("isSeveraOptIn");
+    if (!globalKeyword?.guid) {
       return {
         statusCode: 502,
-        body: JSON.stringify({
-          message: "Failed to check global keyword.",
-        })
+        body: JSON.stringify({ message: "Global keyword missing." })
       };
     }
-
-    // Check if user already has the keyword, and add it only if not present
+    const globalGuid = globalKeyword.guid;
     try {
       const existingKeywordGuid = await severaApi.getKeywordIdForUser(
         severaUserId,
@@ -96,26 +68,11 @@ export const addSeveraOptInHandler: APIGatewayProxyHandler = async (event) => {
         await severaApi.addKeywordToUser(severaUserId, globalGuid);
       }
     } catch {
-      // If checking fails, try adding anyway (fallback to original behavior)
-      try {
-        await severaApi.addKeywordToUser(severaUserId, globalGuid);
-      } catch {
-        return {
-          statusCode: 502,
-          body: JSON.stringify({ message: "Failed to add isSeveraOptIn keyword to Severa user." })
-        };
-      }
+      await severaApi.addKeywordToUser(severaUserId, globalGuid);
     }
-
-    // Persist severaUserId attribute to Keycloak
-    try {
-      await keycloakApi.updateUserAttributes(keycloakUserId, { severaUserId: [severaUserId] });
-    } catch {
-      return {
-        statusCode: 502,
-        body: JSON.stringify({ message: "Failed to persist severaUserId to Keycloak." })
-      };
-    }
+    await keycloakApi.updateUserAttributes(keycloakUserId, {
+      severaUserId: [severaUserId]
+    });
 
     return {
       statusCode: 200,
@@ -123,8 +80,11 @@ export const addSeveraOptInHandler: APIGatewayProxyHandler = async (event) => {
     };
   } catch (error) {
     return {
-      statusCode: 500,
-      body: JSON.stringify({ message: "Opt-in failed.", error: String(error) })
+      statusCode: 502,
+      body: JSON.stringify({
+        message: "Opt-in failed.",
+        error: String(error)
+      })
     };
   }
 };

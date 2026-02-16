@@ -44,13 +44,10 @@ const createPresignedUrlWithClient = ({
  */
 const uploadFileHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
   const { HOME_BUCKET_NAME, HOME_BUCKET_REGION } = process.env;
-  const { body, headers: requestHeaders } = event;
+  const { body } = event;
 
-  // Echo the origin for CORS so it only responds to the requesting origin.
-  const origin = requestHeaders?.origin || requestHeaders?.Origin;
   const responseHeaders = {
-    "Access-Control-Allow-Origin": origin,
-    "Access-Control-Allow-Credentials": "true"
+    "Access-Control-Allow-Origin": "*"
   };
   let path: string | undefined;
   let contentType: string | undefined;

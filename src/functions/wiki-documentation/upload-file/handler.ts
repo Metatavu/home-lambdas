@@ -3,6 +3,13 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { middyfy } from "@libs/lambda";
 import type { APIGatewayProxyEvent, APIGatewayProxyHandler } from "aws-lambda";
 
+/**
+ * Parameters for creating a presigned URL with S3 client
+ * @region AWS region where the S3 bucket is located
+ * @bucket Name of the S3 bucket
+ * @key S3 object key (path) where the file will be stored
+ * @contentType MIME type of the file to be uploaded
+ */
 type CreatePresignedUrlWithClientParams = {
   region: string;
   bucket: string;
@@ -51,8 +58,8 @@ const uploadFileHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyE
     const parsed = typeof body === "string" ? JSON.parse(body) : body;
     path = parsed?.path;
     contentType = parsed?.contentType;
-  } catch (Error_) {
-    console.error("JSON parsing failed:", Error_);
+  } catch (error) {
+    console.error("JSON parsing failed:", error);
     return {
       statusCode: 400,
       body: JSON.stringify({

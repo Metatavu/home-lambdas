@@ -1,30 +1,65 @@
+import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { middyfy } from "@libs/lambda";
 import type { APIGatewayProxyEvent, APIGatewayProxyHandler } from "aws-lambda";
-import { generatePreSignedUrl } from "src/services/s3-file-service";
 
 /**
- * Handler for creating a presigned url for the following file upload.
+ * Parameters for creating a presigned URL with S3 client
+ * @region AWS region where the S3 bucket is located
+ * @bucket Name of the S3 bucket
+ * @key S3 object key (path) where the file will be stored
+ * @contentType MIME type of the file to be uploaded
+ */
+type CreatePresignedUrlWithClientParams = {
+  region: string;
+  bucket: string;
+  key: string;
+  contentType: string;
+};
+
+/**
+ * Create a presigned URL for a PUT request to upload a file to the specified Amazon S3 bucket
  *
- * @param event - API Gateway event.
- * @returns Response object with status code.
+ * @param params {CreatePresignedUrlWithClientParams}
+ * @returns A promise that resolves to the presigned URL
+ */
+const createPresignedUrlWithClient = ({
+  region,
+  bucket,
+  key,
+  contentType
+}: CreatePresignedUrlWithClientParams) => {
+  const client = new S3Client({ region: region });
+  const command = new PutObjectCommand({
+    Bucket: bucket,
+    Key: key,
+    ContentType: contentType
+  });
+
+  return getSignedUrl(client, command, { expiresIn: 3600 });
+};
+
+/**
+ * Lambda function that returns a presigned URL for a PUT request to upload a file to the specified Amazon S3 bucket
  */
 const uploadFileHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
-  console.log("=== uploadFileHandler invoked ===");
-  console.log("Raw event:", JSON.stringify(event, null, 2));
-  console.log("Raw body:", event.body);
+  const { HOME_BUCKET_NAME, HOME_BUCKET_REGION } = process.env;
+  const { body, headers: requestHeaders } = event;
 
-  const { body } = event;
+  // Echo the origin for CORS so it only responds to the requesting origin.
+  const origin = requestHeaders?.origin || requestHeaders?.Origin;
+  const responseHeaders = {
+    "Access-Control-Allow-Origin": origin,
+    "Access-Control-Allow-Credentials": "true"
+  };
   let path: string | undefined;
   let contentType: string | undefined;
   try {
     const parsed = typeof body === "string" ? JSON.parse(body) : body;
     path = parsed?.path;
     contentType = parsed?.contentType;
-    console.log("Parsed body:", parsed);
-    console.log("path:", path);
-    console.log("contentType:", contentType);
-  } catch (Error_) {
-    console.error("JSON parsing failed:", Error_);
+  } catch (error) {
+    console.error("JSON parsing failed:", error);
     return {
       statusCode: 400,
       body: JSON.stringify({
@@ -45,8 +80,10 @@ const uploadFileHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyE
     };
   }
 
+  /**NOTE: LIMITED TO ONLY IMAGES FOR NOW. FUTURE TASK CAN BE IMPORT PLAYBOOK,PDFS IN WIKI AND BREAK THEM DOWN TO
+   * TEXT/MARKDOWN WHERE POSSIBLE LIKE OTHER ARTICLES.
+   */
   if (!contentType?.startsWith("image/")) {
-    console.warn("Invalid contentType:", contentType);
     return {
       statusCode: 400,
       body: JSON.stringify({
@@ -56,22 +93,38 @@ const uploadFileHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyE
     };
   }
 
-  try {
-    console.log("Calling generatePreSignedUrl:", { path, method: "put", contentType });
-    const presignedUrl = await generatePreSignedUrl(path, "put", contentType);
-    console.log("Presigned URL generated:", presignedUrl);
-
-    return {
-      statusCode: 200,
-      body: JSON.stringify({ data: presignedUrl })
-    };
-  } catch (error) {
-    console.error("Error generating presigned URL:", error);
+  if (!HOME_BUCKET_NAME || !HOME_BUCKET_REGION) {
     return {
       statusCode: 500,
       body: JSON.stringify({
         code: 500,
-        message: `Error uploading file: ${error.message}`
+        message: "Invalid lambda environment variables"
+      })
+    };
+  }
+  try {
+    const presignedUrl = await createPresignedUrlWithClient({
+      region: HOME_BUCKET_REGION,
+      bucket: HOME_BUCKET_NAME,
+      key: path,
+      contentType: contentType
+    });
+
+    return {
+      statusCode: 200,
+      headers: responseHeaders,
+      body: JSON.stringify({
+        error: false,
+        data: presignedUrl
+      })
+    };
+  } catch (error) {
+    return {
+      statusCode: error.statusCode ?? 500,
+      headers: responseHeaders,
+      body: JSON.stringify({
+        error: true,
+        message: error.message
       })
     };
   }

@@ -1,5 +1,6 @@
 import { vacationRequestService } from "src/database/services";
 import { CreateKeycloakApiService } from "src/database/services/keycloak-api-service";
+import { dtoToEntity, entityToDto } from "src/dtos/vacationDtos";
 import type { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
 import { middyfy } from "src/libs/lambda";
 import {
@@ -10,7 +11,6 @@ import {
 import { notifyAdminsVacationSubmittedAll } from "src/notifications/vacation-notifications";
 import type vacationRequestSchema from "src/schema/vacationRequest";
 import { v4 as uuidv4 } from "uuid";
-import { dtoToEntity, entityToDto } from "src/dtos/vacationDtos";
 
 /**
  * Handler for creating a new vacation request entry in DynamoDB.
@@ -101,10 +101,10 @@ export const createVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
 
     const vacationEntity = dtoToEntity(vacationDto);
 
-    const createdVacationRequest = await vacationRequestService.createVacationRequest(vacationEntity);
+    const createdVacationRequest =
+      await vacationRequestService.createVacationRequest(vacationEntity);
 
     const createdVacationRequestDto = entityToDto(createdVacationRequest);
-
 
     if (draft === false) {
       await notifyAdminsVacationSubmittedAll({

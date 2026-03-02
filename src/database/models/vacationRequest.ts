@@ -1,6 +1,5 @@
-import { VacationRequestStatus } from "src/generated/homeLambdasModels/model/vacationRequestStatus";
-import { VacationType } from "src/generated/homeLambdasModels/model/vacationType";
-
+import type { VacationRequestStatus } from "src/generated/homeLambdasModels/model/vacationRequestStatus";
+import type { VacationType } from "src/generated/homeLambdasModels/model/vacationType";
 
 /**
  * DynamoDB model for vacation request

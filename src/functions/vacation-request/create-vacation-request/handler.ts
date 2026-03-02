@@ -10,6 +10,7 @@ import {
 import { notifyAdminsVacationSubmittedAll } from "src/notifications/vacation-notifications";
 import type vacationRequestSchema from "src/schema/vacationRequest";
 import { v4 as uuidv4 } from "uuid";
+import { dtoToEntity, entityToDto } from "src/dtos/vacationDtos";
 
 /**
  * Handler for creating a new vacation request entry in DynamoDB.
@@ -83,20 +84,27 @@ export const createVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
       }
     }
 
-    const createdVacationRequest = await vacationRequestService.createVacationRequest({
+    const vacationDto = {
       id: newVacationRequestId,
-      userId: userId,
-      draft: draft,
-      startDate: startDate,
-      endDate: endDate,
-      days: days,
-      type: type,
-      status: status,
-      message: message,
-      createdBy: createdBy,
-      createdAt: createdAt,
-      updatedAt: updatedAt
-    });
+      userId,
+      draft,
+      startDate,
+      endDate,
+      days,
+      type,
+      status,
+      message,
+      createdBy,
+      createdAt,
+      updatedAt
+    };
+
+    const vacationEntity = dtoToEntity(vacationDto);
+
+    const createdVacationRequest = await vacationRequestService.createVacationRequest(vacationEntity);
+
+    const createdVacationRequestDto = entityToDto(createdVacationRequest);
+
 
     if (draft === false) {
       await notifyAdminsVacationSubmittedAll({
@@ -109,7 +117,7 @@ export const createVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
     }
     return {
       statusCode: 201,
-      body: JSON.stringify(createdVacationRequest)
+      body: JSON.stringify(createdVacationRequestDto)
     };
   } catch (error) {
     return {

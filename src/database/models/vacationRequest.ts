@@ -1,4 +1,6 @@
-import { VacationRequestStatus } from "@generated/client/model/vacationRequestStatus";
+import { VacationRequestStatus } from "src/generated/homeLambdasModels/model/vacationRequestStatus";
+import { VacationType } from "src/generated/homeLambdasModels/model/vacationType";
+
 
 /**
  * DynamoDB model for vacation request
@@ -16,13 +18,6 @@ interface VacationRequestModel {
   createdBy: string;
   createdAt: string;
   updatedAt: string;
-}
-
-/**
- * DynamoDB model for vacation type
- */
-enum VacationType {
-  VACATION = "VACATION"
 }
 
 export default VacationRequestModel;

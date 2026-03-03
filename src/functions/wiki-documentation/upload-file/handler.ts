@@ -47,7 +47,8 @@ const uploadFileHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyE
   const { body } = event;
 
   const responseHeaders = {
-    "Access-Control-Allow-Origin": "*"
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Credentials": true
   };
   let path: string | undefined;
   let contentType: string | undefined;

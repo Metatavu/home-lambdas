@@ -1,6 +1,6 @@
+import { dtoToEntity, entityToDto } from "src/database/dtos/vacationDtos";
 import { vacationRequestService } from "src/database/services";
 import { CreateKeycloakApiService } from "src/database/services/keycloak-api-service";
-import { dtoToEntity, entityToDto } from "src/dtos/vacationDtos";
 import type { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
 import { middyfy } from "src/libs/lambda";
 import {
@@ -17,9 +17,6 @@ import { v4 as uuidv4 } from "uuid";
  *
  * @param event - API Gateway event containing the request body.
  * @returns Response object with status code
- *
- * Type mismatches between VacationRequestModel and VacationRequest:
- * - 'createdAt', 'updatedAt', 'startDate', 'endDate' are 'string' here, but VacationRequest expects 'Date'.
  */
 export const createVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
   typeof vacationRequestSchema

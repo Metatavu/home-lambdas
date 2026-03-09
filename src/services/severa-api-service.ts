@@ -28,10 +28,9 @@ export type SeveraPermission =
   | "settings:read";
 
 /**
- * Master list of all valid Severa permissions
- * Any permission not in this list will cause token creation to fail
+ * All available Severa permissions
  */
-const VALID_SEVERA_PERMISSIONS: ReadonlyArray<SeveraPermission> = [
+const ALL_SEVERA_PERMISSIONS: ReadonlyArray<SeveraPermission> = [
   "projects:read",
   "resourceallocations:read",
   "hours:read",
@@ -41,6 +40,28 @@ const VALID_SEVERA_PERMISSIONS: ReadonlyArray<SeveraPermission> = [
   "settings:write",
   "settings:read"
 ] as const;
+
+/**
+ * Gets valid Severa permissions based on deployment stage
+ * Returns empty array in production, full permissions otherwise
+ *
+ * @returns Array of valid Severa permissions for current environment
+ */
+const getValidSeveraPermissions = (): ReadonlyArray<SeveraPermission> => {
+  const stage = process.env.STAGE?.toLowerCase();
+  const isProduction = stage === "production" || stage === "prod";
+
+  if (isProduction) {
+    return [];
+  }
+  return ALL_SEVERA_PERMISSIONS;
+};
+
+/**
+ * Master list of valid Severa permissions for current environment
+ * Empty in production, full permissions otherwise
+ */
+const VALID_SEVERA_PERMISSIONS = getValidSeveraPermissions();
 
 /**
  * Interface for a SeveraApiService.
@@ -772,6 +793,12 @@ export const CreateSeveraApiService = (): SeveraApiService => {
  * @throws Error if any permission is not in the VALID_SEVERA_PERMISSIONS list
  */
 const validateSeveraPermissions = (permissions: SeveraPermission[]): void => {
+  const stage = process.env.STAGE?.toLowerCase();
+  const isProduction = stage === "production" || stage === "prod";
+
+  if (isProduction && permissions.length > 0) {
+    throw new Error("Severa API is disabled in production environment. ");
+  }
   const invalidPermissions = permissions.filter(
     (permission) => !VALID_SEVERA_PERMISSIONS.includes(permission)
   );

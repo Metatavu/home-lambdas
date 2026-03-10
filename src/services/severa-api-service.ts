@@ -15,22 +15,9 @@ import type {
 import type { Flextime } from "../types/severa/flexTime/flexTime";
 
 /**
- * Severa API permission types
- */
-export type SeveraPermission =
-  | "projects:read"
-  | "resourceallocations:read"
-  | "hours:read"
-  | "users:read"
-  | "users:write"
-  | "users:delete"
-  | "settings:write"
-  | "settings:read";
-
-/**
  * All available Severa permissions
  */
-const ALL_SEVERA_PERMISSIONS: ReadonlyArray<SeveraPermission> = [
+const ALL_SEVERA_PERMISSIONS = [
   "projects:read",
   "resourceallocations:read",
   "hours:read",
@@ -42,6 +29,11 @@ const ALL_SEVERA_PERMISSIONS: ReadonlyArray<SeveraPermission> = [
 ] as const;
 
 /**
+ * Severa API permission type - derived from ALL_SEVERA_PERMISSIONS array
+ */
+export type SeveraPermission = (typeof ALL_SEVERA_PERMISSIONS)[number];
+
+/**
  * Gets valid Severa permissions based on deployment stage
  * Returns empty array in production, full permissions otherwise
  *
@@ -49,7 +41,7 @@ const ALL_SEVERA_PERMISSIONS: ReadonlyArray<SeveraPermission> = [
  */
 const getValidSeveraPermissions = (): ReadonlyArray<SeveraPermission> => {
   const stage = process.env.STAGE?.toLowerCase();
-  const isProduction = stage === "production" || stage === "prod";
+  const isProduction = stage === "production";
 
   if (isProduction) {
     return [];
@@ -794,7 +786,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
  */
 const validateSeveraPermissions = (permissions: SeveraPermission[]): void => {
   const stage = process.env.STAGE?.toLowerCase();
-  const isProduction = stage === "production" || stage === "prod";
+  const isProduction = stage === "production";
 
   if (isProduction && permissions.length > 0) {
     throw new Error("Severa API is disabled in production environment. ");
@@ -824,7 +816,7 @@ const getSeveraAccessToken = async (permissions: SeveraPermission[]): Promise<st
     !process.env.SEVERA_CLIENT_ID ||
     !process.env.SEVERA_CLIENT_SECRET
   ) {
-    throw new Error("Severa API credentials are not configured. ");
+    throw new Error("Severa API credentials are not configured.");
   }
 
   // Validate permissions against master list

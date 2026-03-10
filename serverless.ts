@@ -9,6 +9,7 @@ import { env } from "process";
 import { getSlackUserAvatarHandler, listMemoPdfHandler } from "src/functions";
 import removeUserAttributeHanndler from "src/functions/keycloak/remove-user-attribute";
 import updateVacationHandler from "src/functions/keycloak/update-user-vacation";
+import updateUserJobDescriptionHandler from "src/functions/keycloak/update-user-job-description";
 import getContentPdfHandler from "src/functions/memo-management/drive-memos/get-content-pdf";
 import onCallImportFromJsonHandler from "src/functions/on-call/create-on-call-data-from-json";
 import onCallListDataHandler from "src/functions/on-call/list-on-call-data";
@@ -187,6 +188,7 @@ const serverlessConfiguration: AWS = {
     findUserHandler,
     removeUserAttributeHanndler,
     updateVacationHandler,
+    updateUserJobDescriptionHandler,
     createQuestionnaireHandler,
     findQuestionnaireHandler,
     deleteQuestionnaireHandler,

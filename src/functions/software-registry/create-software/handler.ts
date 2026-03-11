@@ -57,10 +57,10 @@ export const createSoftwareHandler: ValidatedEventAPIGatewayProxyEvent<SoftwareR
       description: data.description,
       review: data.review ?? "",
       recommend: data.recommend,
-      createdBy: data.createdBy ?? loggedUserId,
-      lastUpdatedBy: data.lastUpdatedBy ?? loggedUserId,
-      createdAt: data.createdAt ?? now,
-      lastUpdatedAt: data.lastUpdatedAt ?? now,
+      createdBy: loggedUserId,
+      lastUpdatedBy: loggedUserId,
+      createdAt: now,
+      lastUpdatedAt: now,
       tags: data.tags,
       users: data.users
     };

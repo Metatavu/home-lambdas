@@ -1,10 +1,9 @@
-import { middyfy } from "src/libs/lambda";
-import { getAuthDataFromToken, isAdminUser} from "src/libs/auth-utils"
-import type { SoftwareModel } from "src/database/models/software";
-import type { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
-import {softwareService} from "src/database/services";
+import { entityToDto } from "src/database/dtos/softwareRegistryDtos";
+import { softwareService } from "src/database/services";
 import type { SoftwareRegistry } from "src/generated/homeLambdasModels/model/softwareRegistry";
-
+import type { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
+import { getAuthDataFromToken, isAdminUser } from "src/libs/auth-utils";
+import { middyfy } from "src/libs/lambda";
 /**
  * Handler to update a software item in the DynamoDB table.
  *
@@ -86,7 +85,7 @@ export const updateSoftwareHandler: ValidatedEventAPIGatewayProxyEvent<SoftwareR
 
     return {
       statusCode: 200,
-      body: JSON.stringify(updatedSoftware)
+      body: JSON.stringify(entityToDto(updatedSoftware))
     };
   } catch (error) {
     return {

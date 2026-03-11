@@ -1,7 +1,8 @@
 import type { APIGatewayProxyHandler } from "aws-lambda";
-import { middyfy } from "src/libs/lambda";
-import {softwareService} from "src/database/services";
+import { entityToDto } from "src/database/dtos/softwareRegistryDtos";
+import { softwareService } from "src/database/services";
 import type { SoftwareRegistry } from "src/generated/homeLambdasModels/model/softwareRegistry";
+import { middyfy } from "src/libs/lambda";
 
 /**
  * Handler for listing all software entries from DynamoDB.
@@ -13,12 +14,7 @@ import type { SoftwareRegistry } from "src/generated/homeLambdasModels/model/sof
 export const listSoftwareHandler: APIGatewayProxyHandler = async () => {
   try {
     const softwareList = await softwareService.listSoftware();
-    const softwareRegistryList: SoftwareRegistry[] = softwareList.map((software) => ({
-      ...software,
-      status: software.status,
-      createdAt: software.createdAt ? new Date(software.createdAt) : undefined,
-      lastUpdatedAt: software.lastUpdatedAt ? new Date(software.lastUpdatedAt) : undefined
-    }));
+    const softwareRegistryList: SoftwareRegistry[] = softwareList.map(entityToDto);
     return {
       statusCode: 200,
       body: JSON.stringify(softwareRegistryList)

@@ -84,7 +84,7 @@ export const createVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
     const vacationDto = {
       id: newVacationRequestId,
       userId,
-      draft,
+      draft: draft ?? false,
       startDate,
       endDate,
       days,

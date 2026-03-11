@@ -1,8 +1,8 @@
 import type { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway";
 import { middyfy } from "@libs/lambda";
+import { entityToDto } from "src/database/dtos/vacationDtos";
 import { vacationRequestService } from "src/database/services";
 import { CreateKeycloakApiService } from "src/database/services/keycloak-api-service";
-import type { VacationRequest } from "src/generated/homeLambdasModels/model/vacationRequest";
 import { VacationRequestStatuses } from "src/generated/homeLambdasModels/model/vacationRequestStatuses";
 import {
   deductVacationDaysForApproval,
@@ -52,7 +52,7 @@ const handleApproval = async (
 
     return {
       statusCode: 200,
-      body: JSON.stringify(updatedVacationRequest as unknown as VacationRequest)
+      body: JSON.stringify(entityToDto(updatedVacationRequest))
     };
   } catch (dbError) {
     console.error("Database update failed, rolling back vacation day deduction", dbError);
@@ -86,14 +86,14 @@ const handleRejection = async (
 
     return {
       statusCode: 200,
-      body: JSON.stringify(updatedVacationRequest as unknown as VacationRequest)
+      body: JSON.stringify(entityToDto(updatedVacationRequest))
     };
   } catch (error) {
     console.error("Failed to return vacation days after status change.", error);
 
     return {
       statusCode: 200,
-      body: JSON.stringify(updatedVacationRequest as unknown as VacationRequest)
+      body: JSON.stringify(entityToDto(updatedVacationRequest))
     };
   }
 };
@@ -234,7 +234,7 @@ const updateVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
 
     return {
       statusCode: 200,
-      body: JSON.stringify(updatedVacationRequest as unknown as VacationRequest)
+      body: JSON.stringify(entityToDto(updatedVacationRequest))
     };
   } catch (error) {
     return {

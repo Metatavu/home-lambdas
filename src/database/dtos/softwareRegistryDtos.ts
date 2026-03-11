@@ -11,9 +11,9 @@ const dtoToEntity = (dto: SoftwareRegistry): SoftwareModel => {
     status: dto.status,
     review: dto.review,
     createdBy: dto.createdBy,
-    createdAt: new Date(dto.createdAt).toISOString(),
+    createdAt: dto.createdAt ? new Date(dto.createdAt).toISOString() : undefined,
     lastUpdatedBy: dto.lastUpdatedBy,
-    lastUpdatedAt: new Date(dto.lastUpdatedAt).toISOString(),
+    lastUpdatedAt: dto.lastUpdatedAt ? new Date(dto.lastUpdatedAt).toISOString() : undefined,
     recommend: dto.recommend,
     tags: dto.tags,
     users: dto.users
@@ -30,9 +30,9 @@ const entityToDto = (entity: SoftwareModel): SoftwareRegistry => {
     status: entity.status,
     review: entity.review,
     createdBy: entity.createdBy,
-    createdAt: new Date(entity.createdAt),
+    createdAt: entity.createdAt ? new Date(entity.createdAt) : undefined,
     lastUpdatedBy: entity.lastUpdatedBy,
-    lastUpdatedAt: new Date(entity.lastUpdatedAt),
+    lastUpdatedAt: entity.lastUpdatedAt ? new Date(entity.lastUpdatedAt) : undefined,
     recommend: entity.recommend,
     tags: entity.tags,
     users: entity.users

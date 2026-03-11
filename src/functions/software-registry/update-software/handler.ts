@@ -1,5 +1,4 @@
 import { entityToDto } from "src/database/dtos/softwareRegistryDtos";
-import type { SoftwareModel } from "src/database/models/software";
 import { softwareService } from "src/database/services";
 import type { SoftwareRegistry } from "src/generated/homeLambdasModels/model/softwareRegistry";
 import type { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";

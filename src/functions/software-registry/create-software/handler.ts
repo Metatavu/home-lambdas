@@ -50,7 +50,7 @@ export const createSoftwareHandler: ValidatedEventAPIGatewayProxyEvent<SoftwareR
     const loggedUserId = authData.sub;
     const now = new Date();
 
-    const softwareDto = {
+    const newSoftware = {
       name: data.name,
       url: data.url,
       image: data.image,
@@ -65,7 +65,7 @@ export const createSoftwareHandler: ValidatedEventAPIGatewayProxyEvent<SoftwareR
       users: data.users
     };
 
-    const softwareEntity = dtoToEntity(softwareDto);
+    const softwareEntity = dtoToEntity(newSoftware);
 
     const createdSoftware = await softwareService.createSoftware(softwareEntity);
 

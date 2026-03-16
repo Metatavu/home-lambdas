@@ -48,7 +48,6 @@ export const createSoftwareHandler: ValidatedEventAPIGatewayProxyEvent<SoftwareR
     }
 
     const loggedUserId = authData.sub;
-    const now = new Date();
 
     const newSoftware = {
       name: data.name,
@@ -57,8 +56,6 @@ export const createSoftwareHandler: ValidatedEventAPIGatewayProxyEvent<SoftwareR
       description: data.description,
       review: data.review ?? "",
       recommend: data.recommend,
-      createdAt: now,
-      lastUpdatedAt: now,
       createdBy: loggedUserId,
       lastUpdatedBy: loggedUserId,
       tags: data.tags,

@@ -3,32 +3,32 @@ import * as dotenv from "dotenv";
 
 dotenv.config({ path: __dirname + "/.env" });
 
-import sendDailyMessage from "@functions/meta-assistant/send-daily-message";
-import sendWeeklyMessage from "@functions/meta-assistant/send-weekly-message";
+// import sendDailyMessage from "@functions/meta-assistant/send-daily-message";
+// import sendWeeklyMessage from "@functions/meta-assistant/send-weekly-message";
 import { env } from "process";
 import { getSlackUserAvatarHandler } from "src/functions";
-import removeUserAttributeHanndler from "src/functions/keycloak/remove-user-attribute";
-import updateVacationHandler from "src/functions/keycloak/update-user-vacation";
-// import getContentPdfHandler from "src/functions/memo-management/drive-memos/get-content-pdf"; // DISABLED: inactive
-import onCallImportFromJsonHandler from "src/functions/on-call/create-on-call-data-from-json";
-import onCallListDataHandler from "src/functions/on-call/list-on-call-data";
-import deleteQuestionnaireHandler from "src/functions/questionnaire/delete-questionnaire";
-import listQuestionnaireHandler from "src/functions/questionnaire/list-questionnaire";
-import updateQuestionnaireHandler from "src/functions/questionnaire/update-questionnaire";
-import addOptInHandler from "src/functions/severa/add-opt-in";
-import getContractedWorkWeekHandler from "src/functions/severa/get-filtered-workdays";
-import getWorkHoursHandler from "src/functions/severa/get-filtered-workhours";
-import getFlextimeHandler from "src/functions/severa/get-flextime-by-user";
-import getPhasesHandler from "src/functions/severa/get-phases-by-project";
-import getResourceAllocationHandler from "src/functions/severa/get-resource-allocations-by-user";
-import listWorkdaysForUserHandler from "src/functions/severa/list-workdays-for-user";
-import removeOptInHandler from "src/functions/severa/remove-opt-in";
-import listUsersFlextimeHandler from "src/functions/users/flextime";
-import createVacationRequestHandler from "src/functions/vacation-request/create-vacation-request";
-import deleteVacationRequestHandler from "src/functions/vacation-request/delete-vacation-request";
-import findVacationRequestHandler from "src/functions/vacation-request/find-vacation-request";
-import listVacationRequestHandler from "src/functions/vacation-request/list-vacation-request";
-import updateVacationRequestHandler from "src/functions/vacation-request/update-vacation-request";
+// import removeUserAttributeHanndler from "src/functions/keycloak/remove-user-attribute";
+// import updateVacationHandler from "src/functions/keycloak/update-user-vacation";
+// import getContentPdfHandler from "src/functions/memo-management/drive-memos/get-content-pdf";
+// import onCallImportFromJsonHandler from "src/functions/on-call/create-on-call-data-from-json";
+// import onCallListDataHandler from "src/functions/on-call/list-on-call-data";
+// import deleteQuestionnaireHandler from "src/functions/questionnaire/delete-questionnaire";
+// import listQuestionnaireHandler from "src/functions/questionnaire/list-questionnaire";
+// import updateQuestionnaireHandler from "src/functions/questionnaire/update-questionnaire";
+// import addOptInHandler from "src/functions/severa/add-opt-in";
+// import getContractedWorkWeekHandler from "src/functions/severa/get-filtered-workdays";
+// import getWorkHoursHandler from "src/functions/severa/get-filtered-workhours";
+// import getFlextimeHandler from "src/functions/severa/get-flextime-by-user";
+// import getPhasesHandler from "src/functions/severa/get-phases-by-project";
+// import getResourceAllocationHandler from "src/functions/severa/get-resource-allocations-by-user";
+// import listWorkdaysForUserHandler from "src/functions/severa/list-workdays-for-user";
+// import removeOptInHandler from "src/functions/severa/remove-opt-in";
+// import listUsersFlextimeHandler from "src/functions/users/flextime";
+// import createVacationRequestHandler from "src/functions/vacation-request/create-vacation-request";
+// import deleteVacationRequestHandler from "src/functions/vacation-request/delete-vacation-request";
+// import findVacationRequestHandler from "src/functions/vacation-request/find-vacation-request";
+// import listVacationRequestHandler from "src/functions/vacation-request/list-vacation-request";
+// import updateVacationRequestHandler from "src/functions/vacation-request/update-vacation-request";
 import createArticleHandler from "src/functions/wiki-documentation/create-article";
 import deleteArticleHandler from "src/functions/wiki-documentation/delete-article";
 import findArticleHandler from "src/functions/wiki-documentation/find-article";
@@ -40,17 +40,18 @@ import updateArticleHandler from "src/functions/wiki-documentation/update-articl
 import uploadFileHandler from "src/functions/wiki-documentation/upload-file";
 import findUserHandler from "@/functions/keycloak/find-user";
 import listUsersHandler from "@/functions/keycloak/list-users";
-// import createTranslatedMemoPdfHandler from "@/functions/memo-management/drive-memos/translated-memos/create-translated-memo-pdf"; // DISABLED: inactive
-// import getTranslatedMemoPdfHandler from "@/functions/memo-management/drive-memos/translated-memos/get-translated-memo-pdf"; // DISABLED: inactive
-import onCallUpdatePaidHandler from "@/functions/on-call/update-paid";
-import onCallWeeklyCheckHandler from "@/functions/on-call/weekly-check";
-import createQuestionnaireHandler from "@/functions/questionnaire/create-questionnaire";
-import findQuestionnaireHandler from "@/functions/questionnaire/find-questionnaire";
-import createSoftwareHandler from "@/functions/software-registry/create-software";
-import deleteSoftwareHandler from "@/functions/software-registry/delete-software";
-import findSoftwareHandler from "@/functions/software-registry/find-software";
-import listSoftwareHandler from "@/functions/software-registry/list-software";
-import updateSoftwareHandler from "@/functions/software-registry/update-software";
+
+// import createTranslatedMemoPdfHandler from "@/functions/memo-management/drive-memos/translated-memos/create-translated-memo-pdf";
+// import getTranslatedMemoPdfHandler from "@/functions/memo-management/drive-memos/translated-memos/get-translated-memo-pdf";
+// import onCallUpdatePaidHandler from "@/functions/on-call/update-paid";
+// import onCallWeeklyCheckHandler from "@/functions/on-call/weekly-check";
+// import createQuestionnaireHandler from "@/functions/questionnaire/create-questionnaire";
+// import findQuestionnaireHandler from "@/functions/questionnaire/find-questionnaire";
+// import createSoftwareHandler from "@/functions/software-registry/create-software";
+// import deleteSoftwareHandler from "@/functions/software-registry/delete-software";
+// import findSoftwareHandler from "@/functions/software-registry/find-software";
+// import listSoftwareHandler from "@/functions/software-registry/list-software";
+// import updateSoftwareHandler from "@/functions/software-registry/update-software";
 
 const isLocal = process.env.STAGE === "local";
 const region = (env.AWS_DEFAULT_REGION as any) || "eu-north-1";
@@ -172,36 +173,36 @@ const serverlessConfiguration: AWS = {
     }
   },
   functions: {
-    onCallListDataHandler,
-    onCallWeeklyCheckHandler,
-    onCallImportFromJsonHandler,
-    sendDailyMessage,
-    sendWeeklyMessage,
-    onCallUpdatePaidHandler,
-    createSoftwareHandler,
-    findSoftwareHandler,
-    listSoftwareHandler,
-    updateSoftwareHandler,
-    deleteSoftwareHandler,
+    // onCallListDataHandler,
+    // onCallWeeklyCheckHandler,
+    // onCallImportFromJsonHandler,
+    // sendDailyMessage,
+    // sendWeeklyMessage,
+    // onCallUpdatePaidHandler,
+    // createSoftwareHandler,
+    // findSoftwareHandler,
+    // listSoftwareHandler,
+    // updateSoftwareHandler,
+    // deleteSoftwareHandler,
     listUsersHandler,
-    listUsersFlextimeHandler,
+    // listUsersFlextimeHandler,
     findUserHandler,
-    removeUserAttributeHanndler,
-    updateVacationHandler,
-    createQuestionnaireHandler,
-    findQuestionnaireHandler,
-    deleteQuestionnaireHandler,
-    listQuestionnaireHandler,
-    updateQuestionnaireHandler,
-    getFlextimeHandler,
-    createVacationRequestHandler,
-    deleteVacationRequestHandler,
-    findVacationRequestHandler,
-    listVacationRequestHandler,
-    updateVacationRequestHandler,
-    getResourceAllocationHandler,
-    getPhasesHandler,
-    getWorkHoursHandler,
+    // removeUserAttributeHanndler,
+    // updateVacationHandler,
+    // createQuestionnaireHandler,
+    // findQuestionnaireHandler,
+    // deleteQuestionnaireHandler,
+    // listQuestionnaireHandler,
+    // updateQuestionnaireHandler,
+    // getFlextimeHandler,
+    // createVacationRequestHandler,
+    // deleteVacationRequestHandler,
+    // findVacationRequestHandler,
+    // listVacationRequestHandler,
+    // updateVacationRequestHandler,
+    // getResourceAllocationHandler,
+    // getPhasesHandler,
+    // getWorkHoursHandler,
     listArticlesHandler,
     listMediaHandler,
     findArticleHandler,
@@ -211,15 +212,15 @@ const serverlessConfiguration: AWS = {
     deleteArticleHandler,
     readArticleHandler,
     uploadFileHandler,
-    getContractedWorkWeekHandler,
-    removeOptInHandler,
-    listWorkdaysForUserHandler,
-    getSlackUserAvatarHandler,
+    // getContractedWorkWeekHandler,
+    // removeOptInHandler,
+    // listWorkdaysForUserHandler,
+    getSlackUserAvatarHandler
     // listMemoPdfHandler,
     // getContentPdfHandler,
     // getTranslatedMemoPdfHandler,
     // createTranslatedMemoPdfHandler,
-    addOptInHandler
+    // addOptInHandler
   },
   package: { individually: true },
   custom: {

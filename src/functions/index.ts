@@ -52,10 +52,10 @@ export { default as listMediaHandler } from "./wiki-documentation/list-media";
 export { default as readArticleHandler } from "./wiki-documentation/read-article";
 export { default as updateArticleHandler } from "./wiki-documentation/update-article";
 export { default as uploadFileHandler } from "./wiki-documentation/upload-file";
-// export { default as listUsersFlextimeHandler } from "./users/flextime"; // DISABLED: inactive - note: was missing from original barrel
-// export { default as onCallImportFromJsonHandler } from "./on-call/create-on-call-data-from-json"; // DISABLED: inactive - note: was missing from original barrel
-// export { default as createVacationRequestHandler } from "./vacation-request/create-vacation-request"; // DISABLED: inactive - note: was missing from original barrel
-// export { default as deleteVacationRequestHandler } from "./vacation-request/delete-vacation-request"; // DISABLED: inactive - note: was missing from original barrel
-// export { default as findVacationRequestHandler } from "./vacation-request/find-vacation-request"; // DISABLED: inactive - note: was missing from original barrel
-// export { default as listVacationRequestHandler } from "./vacation-request/list-vacation-request"; // DISABLED: inactive - note: was missing from original barrel
-// export { default as updateVacationRequestHandler } from "./vacation-request/update-vacation-request"; // DISABLED: inactive - note: was missing from original barrel
+// export { default as listUsersFlextimeHandler } from "./users/flextime";
+// export { default as onCallImportFromJsonHandler } from "./on-call/create-on-call-data-from-json";
+// export { default as createVacationRequestHandler } from "./vacation-request/create-vacation-request";
+// export { default as deleteVacationRequestHandler } from "./vacation-request/delete-vacation-request";
+// export { default as findVacationRequestHandler } from "./vacation-request/find-vacation-request";
+// export { default as listVacationRequestHandler } from "./vacation-request/list-vacation-request";
+// export { default as updateVacationRequestHandler } from "./vacation-request/update-vacation-request";

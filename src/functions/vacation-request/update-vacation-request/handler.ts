@@ -3,14 +3,12 @@ import { middyfy } from "@libs/lambda";
 import { entityToDto } from "src/database/dtos/vacationDtos";
 import { vacationRequestService } from "src/database/services";
 import { CreateKeycloakApiService } from "src/database/services/keycloak-api-service";
-import { VacationRequestStatuses } from "src/generated/homeLambdasModels/model/vacationRequestStatuses";
 import {
-  deductVacationDaysForApproval,
-  getContractedWeek,
-  getLatestStatus,
-  returnVacationDaysForRejection,
-  validateVacationApproval
-} from "src/libs/vacation-utils";
+  handleApproval,
+  handleRejection
+} from "src/functions/vacation-request/update-vacation-request/vacation-handler-functions";
+import { VacationRequestStatuses } from "src/generated/homeLambdasModels/model/vacationRequestStatuses";
+import { getContractedWeek, getLatestStatus } from "src/libs/vacation-utils";
 import {
   notifyAdminsVacationSubmittedAll,
   notifyUserVacationStatusUpdatedAll
@@ -27,76 +25,6 @@ import type vacationRequestSchema from "src/schema/vacationRequest";
  * @param vacationRequestUpdates - The vacation request object to update in the database.
  * @param sendNotifications - Callback function to send notifications after successful update.
  */
-const handleApproval = async (
-  userId: string,
-  startDate: string,
-  endDate: string,
-  contractedWeek: number[],
-  vacationRequestUpdates: any,
-  sendNotifications: () => Promise<void>
-) => {
-  const validationError = await validateVacationApproval(
-    userId,
-    startDate,
-    endDate,
-    contractedWeek
-  );
-  if (validationError) return validationError;
-
-  await deductVacationDaysForApproval(userId, startDate, endDate, contractedWeek);
-
-  try {
-    const updatedVacationRequest =
-      await vacationRequestService.updateVacationRequest(vacationRequestUpdates);
-    await sendNotifications();
-
-    return {
-      statusCode: 200,
-      body: JSON.stringify(entityToDto(updatedVacationRequest))
-    };
-  } catch (dbError) {
-    console.error("Database update failed, rolling back vacation day deduction", dbError);
-    await returnVacationDaysForRejection(userId, startDate, endDate, contractedWeek);
-    throw dbError;
-  }
-};
-
-/**
- * Handles vacation request rejection/cancellation.
- */
-const handleRejection = async (
-  userId: string,
-  existingStartDate: string,
-  existingEndDate: string,
-  contractedWeek: number[],
-  vacationRequestUpdates: any,
-  sendNotifications: () => Promise<void>
-) => {
-  const updatedVacationRequest =
-    await vacationRequestService.updateVacationRequest(vacationRequestUpdates);
-
-  try {
-    await returnVacationDaysForRejection(
-      userId,
-      existingStartDate,
-      existingEndDate,
-      contractedWeek
-    );
-    await sendNotifications();
-
-    return {
-      statusCode: 200,
-      body: JSON.stringify(entityToDto(updatedVacationRequest))
-    };
-  } catch (error) {
-    console.error("Failed to return vacation days after status change.", error);
-
-    return {
-      statusCode: 200,
-      body: JSON.stringify(entityToDto(updatedVacationRequest))
-    };
-  }
-};
 
 /**
  * Lambda function to update a vacation request

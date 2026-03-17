@@ -6,10 +6,10 @@ dotenv.config({ path: __dirname + "/.env" });
 import sendDailyMessage from "@functions/meta-assistant/send-daily-message";
 import sendWeeklyMessage from "@functions/meta-assistant/send-weekly-message";
 import { env } from "process";
-import { getSlackUserAvatarHandler, listMemoPdfHandler } from "src/functions";
+import { getSlackUserAvatarHandler } from "src/functions";
 import removeUserAttributeHanndler from "src/functions/keycloak/remove-user-attribute";
 import updateVacationHandler from "src/functions/keycloak/update-user-vacation";
-import getContentPdfHandler from "src/functions/memo-management/drive-memos/get-content-pdf";
+// import getContentPdfHandler from "src/functions/memo-management/drive-memos/get-content-pdf"; // DISABLED: inactive
 import onCallImportFromJsonHandler from "src/functions/on-call/create-on-call-data-from-json";
 import onCallListDataHandler from "src/functions/on-call/list-on-call-data";
 import deleteQuestionnaireHandler from "src/functions/questionnaire/delete-questionnaire";
@@ -40,8 +40,8 @@ import updateArticleHandler from "src/functions/wiki-documentation/update-articl
 import uploadFileHandler from "src/functions/wiki-documentation/upload-file";
 import findUserHandler from "@/functions/keycloak/find-user";
 import listUsersHandler from "@/functions/keycloak/list-users";
-import createTranslatedMemoPdfHandler from "@/functions/memo-management/drive-memos/translated-memos/create-translated-memo-pdf";
-import getTranslatedMemoPdfHandler from "@/functions/memo-management/drive-memos/translated-memos/get-translated-memo-pdf";
+// import createTranslatedMemoPdfHandler from "@/functions/memo-management/drive-memos/translated-memos/create-translated-memo-pdf"; // DISABLED: inactive
+// import getTranslatedMemoPdfHandler from "@/functions/memo-management/drive-memos/translated-memos/get-translated-memo-pdf"; // DISABLED: inactive
 import onCallUpdatePaidHandler from "@/functions/on-call/update-paid";
 import onCallWeeklyCheckHandler from "@/functions/on-call/weekly-check";
 import createQuestionnaireHandler from "@/functions/questionnaire/create-questionnaire";

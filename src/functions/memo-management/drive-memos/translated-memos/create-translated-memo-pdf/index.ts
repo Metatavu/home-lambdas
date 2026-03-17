@@ -4,13 +4,13 @@ export default {
   handler: `${handlerPath(__dirname)}/handler.main`,
   events: [
     {
-      httpApi: {
-        method: "POST",
-        path: "/translate-memo",
-        authorizer: {
-          name: "homeKeycloakAuthorizer"
-        }
-      }
+      // httpApi: {
+      //   method: "POST",
+      //   path: "/translate-memo",
+      //   authorizer: {
+      //     name: "homeKeycloakAuthorizer"
+      //   }
+      // }
     }
   ]
 };

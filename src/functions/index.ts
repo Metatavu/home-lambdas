@@ -1,5 +1,5 @@
-// export { default as findUserHandler } from "./keycloak/find-user"; // DISABLED: inactive
-// export { default as listUsersHandler } from "./keycloak/list-users"; // DISABLED: inactive
+export { default as findUserHandler } from "./keycloak/find-user";
+export { default as listUsersHandler } from "./keycloak/list-users";
 // DISABLED: inactive memo functions
 // export { default as getContentPdfHandler } from "./memo-management/drive-memos/get-content-pdf";
 // export { default as listMemoPdfHandler } from "./memo-management/drive-memos/get-memos-pdf";

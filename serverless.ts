@@ -38,7 +38,7 @@ import listMediaHandler from "src/functions/wiki-documentation/list-media";
 import readArticleHandler from "src/functions/wiki-documentation/read-article";
 import updateArticleHandler from "src/functions/wiki-documentation/update-article";
 import uploadFileHandler from "src/functions/wiki-documentation/upload-file";
-// import findUserHandler from "@/functions/keycloak/find-user";
+import findUserHandler from "@/functions/keycloak/find-user";
 import listUsersHandler from "@/functions/keycloak/list-users";
 
 // import createTranslatedMemoPdfHandler from "@/functions/memo-management/drive-memos/translated-memos/create-translated-memo-pdf";
@@ -186,7 +186,7 @@ const serverlessConfiguration: AWS = {
     // deleteSoftwareHandler,
     listUsersHandler,
     // listUsersFlextimeHandler,
-    // findUserHandler,
+    findUserHandler,
     // removeUserAttributeHanndler,
     // updateVacationHandler,
     // createQuestionnaireHandler,

@@ -1,17 +1,12 @@
 import { handlerPath } from "@libs/handler-resolver";
 
-// NOTE: This lambda is marked as inactive in the OpenAPI spec (x-status: inactive).
-const isInactive = true;
-
 const { WEEKLY_SCHEDULE_TIMER } = process.env;
 
-export default isInactive
-  ? {}
-  : {
-      handler: `${handlerPath(__dirname)}/handler.main`,
-      events: WEEKLY_SCHEDULE_TIMER ? [
-        {
-          schedule: WEEKLY_SCHEDULE_TIMER,
-        }
-      ] : []
-    };
+export default {
+  handler: `${handlerPath(__dirname)}/handler.main`,
+  events: WEEKLY_SCHEDULE_TIMER ? [
+    {
+      schedule: WEEKLY_SCHEDULE_TIMER,
+    }
+  ] : []
+};

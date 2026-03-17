@@ -1,6 +1,0 @@
-{
-    "headers": {
-        "Content-Type": "application/json"
-    },
-    "body": "{\"existingInterest\": \"abcd1234;uusiuserid12345;\", \"userId\": \"uusiuserid12345\", \"dealId\": \"2\", \"rowtype\": \"deals\" }"
-}

@@ -4,6 +4,7 @@ import TimeBankApiProvider from "../../meta-assistant/timebank/timebank-api";
 import TestHelpers from "./utilities/test-utils";
 import { Timespan, DailyEntry } from "src/generated/client/api";
 import { personsMock2, dailyEntryMock3, dailyEntryMock4, dailyEntryArrayMock, personMock1, personMock2, personTotalTimeMock1, personTotalTimeMock2 } from "./__mocks__/timebankMocks";
+import { DateTime } from "luxon";
 
 let accessToken: string;
 
@@ -40,7 +41,7 @@ describe("timebank-api-provider tests", () => {
 
       const fakeId1 = 124;
       const fakeId2 = 3;
-      const fakeYesterday = "2022-04-20";
+      const fakeYesterday = DateTime.fromISO("2022-04-20");
 
       const results1 = await TimeBankApiProvider.getDailyEntries(fakeId1, fakeYesterday, fakeYesterday, accessToken);
       const results2 = await TimeBankApiProvider.getDailyEntries(fakeId2, fakeYesterday, fakeYesterday, accessToken);
@@ -52,7 +53,7 @@ describe("timebank-api-provider tests", () => {
     it("Should print corresponding error to console if no person id", async () => {
       TestHelpers.mockTimebankDailyEntries(404, dailyEntryMock3);
 
-      TimeBankApiProvider.getDailyEntries(null, "2022-04-22", "2022-04-22", accessToken);
+      TimeBankApiProvider.getDailyEntries(null, DateTime.fromISO("2022-04-22"), DateTime.fromISO("2022-04-22"), accessToken);
 
       expect(consoleSpy).toHaveBeenCalledWith("Error: Invalid ID was given (expecting a number)");
       expect(consoleSpy).toHaveBeenCalledTimes(1);

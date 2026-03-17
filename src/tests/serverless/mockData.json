@@ -1,0 +1,14 @@
+{
+  "headers": {
+    "Content-Type": "application/json"
+  },
+  "body": "{\"email\": \"*insert the email of the user whose attributes are to be updated.*\"}",
+  "pathParameters": {
+    "severaUserId": "*insert the keycloak id of the user whose attributes are to be updated.*",
+    "attributeName": "isSeveraOptIn"
+  },
+  "queryStringParameters": {
+    "startDate": "2020-11-03",
+    "endDate": "2021-11-03"
+  }
+}

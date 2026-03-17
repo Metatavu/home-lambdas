@@ -8,7 +8,7 @@ For detailed instructions, please refer to the [documentation](https://www.serve
 
 Depending on your preferred package manager, follow the instructions below to deploy your project.
 
-> **Requirements**: NodeJS `lts/fermium (v.14.15.0)`. If you're using [nvm](https://github.com/nvm-sh/nvm), run `nvm use` to ensure you're using the same Node version in local and in your lambda's runtime.
+> **Requirements**: NodeJS. If you're using [nvm](https://github.com/nvm-sh/nvm), run `nvm use` to ensure you're using the same Node version in local and in your lambda's runtime.
 
 ### Using NPM
 
@@ -34,7 +34,7 @@ This template contains a single lambda function triggered by an HTTP request mad
 
 In order to test the hello function locally, run the following command:
 
-- `npx sls invoke local -f hello --path src/functions/hello/mock.json` if you're using NPM
+- `npx sls invoke local -f hello --stage dev --path src/functions/hello/mock.json` if you're using NPM
 - `yarn sls invoke local -f hello --path src/functions/hello/mock.json` if you're using Yarn
 
 Check the [sls invoke local command documentation](https://www.serverless.com/framework/docs/providers/aws/cli-reference/invoke-local/) for more information.
@@ -49,6 +49,89 @@ curl --location --request POST 'https://myApiEndpoint/dev/hello' \
 --data-raw '{
     "name": "Frederic"
 }'
+```
+
+### Serverless-offline
+
+To run serverless-offline plugin run the following command:
+- `npx serverless offline --noAuth --stage dev`
+Ensure that you have the correct Lambda functions defined and added in your serverless.ts file for them to show up. You can test the endpoints using Postman.
+
+## Testing lambdas locally with dynamodb local & Serverless-offline
+
+AWS CLI is required to run this.
+
+Linux:
+- To install the AWS CLI, run the following commands:
+```
+    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+    unzip awscliv2.zip
+    sudo ./aws/install
+```
+
+Mac:
+- In your browser, download the macOS pkg file: [Here](https://awscli.amazonaws.com/AWSCLIV2.pkg)
+
+- Run your downloaded file and follow the on-screen instructions.
+
+Windows:
+- Download and run the AWS CLI MSI installer for Windows (64-bit): [Here](https://awscli.amazonaws.com/AWSCLIV2.msi)
+
+After install is completed you need to configure it as follows:
+run command: 
+
+```
+aws configure
+```
+
+- AWS Access Key ID: example (it can be whatever, you are running this locally)
+- AWS Secret Access Key: example (same as above)
+- Default region name: localhost
+- Default output format: (this can be empty)
+
+DynamoDB Local:
+- To set up DynamoDB on your computer Download DynamoDB local [Here](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.DownloadingAndRunning.html#DynamoDBLocal.DownloadingAndRunning.title)
+
+- After you download the archive, extract the contents and copy the extracted directory to a location of your choice.
+
+- There are other options for storing the table [Here](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.UsageNotes.html)
+
+- You can also use DynamoDB local as Docker Image.
+
+To start DynamoDB on your computer, open a command prompt window, navigate to the directory where you extracted DynamoDBLocal.jar, and enter the following command:
+
+```
+java -Djava.library.path=./DynamoDBLocal_lib -jar DynamoDBLocal.jar -sharedDb
+```
+
+Set AttributeType accordingly based on the type of the id.
+- "AttributeName=id,AttributeType=S \"
+- AND IN serverless.yml "AttributeType: S"
+
+
+Create a new table:
+```
+aws dynamodb create-table \
+    --table-name MyDynamoDbTable \
+    --attribute-definitions \
+        AttributeName=id,AttributeType=S \
+    --key-schema \
+        AttributeName=id,KeyType=HASH \
+    --provisioned-throughput \
+        ReadCapacityUnits=1,WriteCapacityUnits=1 \
+    --endpoint-url http://localhost:8000
+```
+
+To check current tables:
+
+```
+aws dynamodb list-tables --endpoint-url http://localhost:8000
+```
+
+Start serverless offline:
+
+```
+npx sls offline --stage local --noAuth start
 ```
 
 ## Template features
@@ -112,3 +195,54 @@ Multiple ids must be divided by `,` for example `SLACK_USER_OVERRIDE=xxxxxxx,xxx
 2. Click on "View full profile" in the menu that appears.
 3. Click the ellipses (three dots).
 4. Click on `Copy Member ID`.
+
+## Management Memos
+
+This section covers the configuration of various services used for management memos purposes. The project uses the existing `SLACK_USER_OVERRIDE=<slackid>` and `METATAVU_BOT_TOKEN` environment variables.
+
+### Google Cloud usage (Google Translation API, Google Drive API, Google Docs API)
+
+#### GOOGLE_CLOUD_PROJECT_ID
+1. Go to `Google Cloud Console`.
+2. Click `Dashboard` > Create Project.
+3. Copy the Project ID from the Project Info section.
+
+#### GOOGLE_MANAGEMENT_MINUTES_FOLDER_ID
+1. Go to `Google Drive`.
+2. Click `New` > Folder to create a folder.
+3. Right-click the folder > Share > Copy link.
+4. Copy the Folder ID from the URL.
+
+#### GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY_ID & GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY
+1. Go to `IAM & Admin`.
+2. Select Service Accounts > Create Service Account.
+3. Click `Create Key` > JSON.
+4. Download the key and extract the Private Key ID and Private Key from the JSON file.
+
+#### GOOGLE_SERVICE_ACCOUNT_CLIENT_EMAIL
+1. Go to `IAM & Admin`.
+2. Select Service Accounts.
+3. Copy the Client Email from the service account details.
+
+### Open AI Chat GPT usage
+
+#### OPENAI_API_KEY
+1. Go to OpenAI Platform.
+2. Click `API` > Create New Secret Key.
+3. Copy the generated API Key.
+
+### Trello usage
+
+#### TRELLO_API_KEY & TRELLO_TOKEN
+1. Go to `https://trello.com/power-ups/admin`.
+2. Create a Power-Up and generate the API Key and API Secret.
+
+#### TRELLO_MANAGEMENT_BOARD_ID
+1. Go to Trello and create a board.
+3. Copy the Board ID from the URL.
+
+### Slack usage
+
+#### CHANNEL_ID
+1. Open Slack and create a channel.
+3. Copy the Channel ID from the URL.

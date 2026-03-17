@@ -1,30 +1,82 @@
-import { cleanEnv, str } from "envalid";
-import { Configuration } from "../types/index";
+import { cleanEnv, port, str } from "envalid";
+import type { Configuration } from "src/types";
 
 const env = cleanEnv(process.env, {
-    FORECAST_API_KEY: str(),
-    AUTH_ISSUER: str(),
-    PIPEDRIVE_API_KEY: str(),
-    PIPEDRIVE_API_URL: str()
+  AUTH_ISSUER: str(),
+  SPLUNK_API_KEY: str(),
+  SPLUNK_API_ID: str(),
+  SPLUNK_TEAM_ONCALL_URL: str(),
+  SPLUNK_SCHEDULE_POLICY_NAME: str(),
+  SEVERA_TEST_USER_EMAIL: str({ default: undefined }),
+  MAILGUN_PORT: port(),
+  MAILGUN_SMTP_HOST: str(),
+  MAILGUN_SMTP_HOST_USER: str(),
+  MAILGUN_SMTP_PASSWORD: str(),
+  ADMIN_EMAILS: str({ default: undefined }),
+  METATAVU_BOT_TOKEN: str(),
+  ADMIN_SLACK_USERS: str({ default: undefined }),
+  HOME_BASE_URL: str({ default: "http://localhost:5173" }),
+  SEVERA_BASE_URL: str(),
+  SEVERA_CLIENT_ID: str(),
+  SEVERA_CLIENT_SECRET: str(),
+  HOME_BUCKET_NAME: str(),
+  HOME_BUCKET_REGION: str(),
+  SLACK_USER_OVERRIDE: str(),
+  CHANNEL_ID: str(),
+  GOOGLE_CLIENT_ID: str(),
+  GOOGLE_CLIENT_SECRET: str(),
+  GOOGLE_REFRESH_TOKEN: str(),
+  GOOGLE_DRIVE_FOLDER_ID: str()
 });
 
 export default class Config {
-
-    /**
-     * Get static application configuration
-     *
-     * @returns promise of static application configuration
-     */
-    public static get = (): Configuration => ({
-      auth: {
-        issuer: env.AUTH_ISSUER
-      },  
-      api: {
-        apiKey: env.FORECAST_API_KEY
-      },
-      pipedriveApi: {
-        apiKey: env.PIPEDRIVE_API_KEY,
-        apiUrl: env.PIPEDRIVE_API_URL
-      }
-    });
+  /**
+   * Get static application configuration
+   *
+   * @returns promise of static application configuration
+   */
+  public static get = (): Configuration => ({
+    auth: {
+      issuer: env.AUTH_ISSUER
+    },
+    splunkApi: {
+      apiKey: env.SPLUNK_API_KEY,
+      apiId: env.SPLUNK_API_ID,
+      teamOnCallUrl: env.SPLUNK_TEAM_ONCALL_URL,
+      schedulePolicyName: env.SPLUNK_SCHEDULE_POLICY_NAME
+    },
+    testUser: {
+      email: env.SEVERA_TEST_USER_EMAIL
+    },
+    email: {
+      mailgunPort: env.MAILGUN_PORT,
+      mailgunSmtpHost: env.MAILGUN_SMTP_HOST,
+      mailgunSmtpUser: env.MAILGUN_SMTP_HOST_USER,
+      mailgunSmtpPassword: env.MAILGUN_SMTP_PASSWORD,
+      adminEmails: env.ADMIN_EMAILS ? env.ADMIN_EMAILS.split(",") : []
+    },
+    google: {
+      // TODO: Change to service account credentials when they are set up
+      clientId: env.GOOGLE_CLIENT_ID,
+      clientSecret: env.GOOGLE_CLIENT_SECRET,
+      refreshToken: env.GOOGLE_REFRESH_TOKEN,
+      driveFolderId: env.GOOGLE_DRIVE_FOLDER_ID
+    },
+    slack: {
+      botToken: env.METATAVU_BOT_TOKEN,
+      adminUsers: env.ADMIN_SLACK_USERS ? env.ADMIN_SLACK_USERS.split(",") : [],
+      userOverride: env.SLACK_USER_OVERRIDE,
+      channelId: env.CHANNEL_ID
+    },
+    homeBaseUrl: env.HOME_BASE_URL || "http://localhost:5173",
+    severa: {
+      baseUrl: env.SEVERA_BASE_URL,
+      clientId: env.SEVERA_CLIENT_ID,
+      clientSecret: env.SEVERA_CLIENT_SECRET
+    },
+    homeBucket: {
+      name: env.HOME_BUCKET_NAME,
+      region: env.HOME_BUCKET_REGION
+    }
+  });
 }

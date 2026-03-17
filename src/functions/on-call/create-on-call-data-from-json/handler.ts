@@ -1,0 +1,94 @@
+import { middyfy } from "@libs/lambda";
+import type { OnCallImportEntry, OnCallImportError } from "src/database/models/oncall";
+import { onCallScheduleService } from "src/database/services";
+import { isAdminUser } from "src/libs/auth-utils";
+
+/**
+ * Lambda method for importing on-call data from JSON
+ *
+ * Expects body to be an array of objects with "Week" (number) and "Person" (string) properties
+ * and a query parameter "year" (number)
+ */
+export const onCallImportFromJsonHandler = async (event) => {
+  if (!isAdminUser(event)) {
+    return {
+      statusCode: 403,
+      body: JSON.stringify({
+        code: 403,
+        message: "Access denied. Admin privileges required."
+      })
+    };
+  }
+
+  const year = event.queryStringParameters?.year
+    ? parseInt(event.queryStringParameters.year, 10)
+    : undefined;
+
+  if (!year || year < 2020 || year > new Date().getFullYear()) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ code: 0, message: "Invalid or missing year in query parameter" }),
+      headers: {
+        "Content-Type": "application/json"
+      }
+    };
+  }
+
+  let data: OnCallImportEntry[];
+  try {
+    data = typeof event.body === "string" ? JSON.parse(event.body) : event.body;
+  } catch (err) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ code: 0, message: "Invalid json in body" }),
+      headers: {
+        "Content-Type": "application/json"
+      },
+      error: err.message
+    };
+  }
+
+  if (!Array.isArray(data)) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ code: 0, message: "Body must be an array" }),
+      headers: {
+        "Content-Type": "application/json"
+      }
+    };
+  }
+
+  const validEntries = [];
+  const errors: OnCallImportError[] = [];
+  for (const entry of data) {
+    if (
+      typeof entry.Week !== "number" ||
+      typeof entry.Person !== "string" ||
+      entry.Week < 1 ||
+      entry.Week > 52
+    ) {
+      errors.push({ entry, error: "Invalid entry" });
+      continue;
+    }
+
+    validEntries.push({
+      Year: year,
+      Week: entry.Week,
+      Username: entry.Person,
+      Paid: false
+    });
+  }
+
+  try {
+    await onCallScheduleService.createOnCallBatchFromJSON(validEntries);
+  } catch (err) {
+    errors.push({ error: err });
+  }
+
+  return {
+    statusCode: errors.length ? 207 : 200,
+    body: JSON.stringify({ validEntries, errors })
+  };
+};
+
+export const main = middyfy(onCallImportFromJsonHandler);

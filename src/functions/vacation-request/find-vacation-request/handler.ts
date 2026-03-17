@@ -1,0 +1,54 @@
+import type { APIGatewayProxyEvent, APIGatewayProxyHandler } from "aws-lambda";
+import { vacationRequestService } from "src/database/services";
+import { middyfy } from "src/libs/lambda";
+
+/**
+ * Lambda for finding a vacation request entry from DynamoDB.
+ *
+ * @param event event
+ * @returns vacation request information as object
+ *
+ */
+
+const findVacationRequestHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
+  const { id } = event.pathParameters || {};
+
+  if (!id) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({
+        error: "Missing or invalid path parameter: id"
+      })
+    };
+  }
+
+  try {
+    const vacationRequestById = await vacationRequestService.findVacationRequest(id);
+
+    if (!vacationRequestById) {
+      return {
+        statusCode: 404,
+        body: JSON.stringify({
+          error: "Vacation Request not found"
+        })
+      };
+    }
+
+    const vacationRequest = vacationRequestById;
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify(vacationRequest)
+    };
+  } catch (error) {
+    return {
+      statusCode: 500,
+      body: JSON.stringify({
+        error: "Failed to retrieve vacation request",
+        details: error.message
+      })
+    };
+  }
+};
+
+export const main = middyfy(findVacationRequestHandler);

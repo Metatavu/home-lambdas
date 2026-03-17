@@ -1,6 +1,5 @@
-import { ChatPostMessageResponse } from "@slack/web-api/dist/response/ChatPostMessageResponse";
-import { DateTime } from "luxon";
-import { PersonTotalTime } from "src/generated/client/api";
+import type { ChatPostMessageResponse } from "@slack/web-api/dist/response/ChatPostMessageResponse";
+import type { DateTime } from "luxon";
 
 /**
  * Serverless schema type
@@ -17,18 +16,16 @@ export default {
  * DailyCombinedData interface
  */
 export interface DailyCombinedData {
-  name: string;
+  userId: string;
   firstName: string;
-  personId: number;
-  minimumBillableRate: number;
-  expected: number;
-  logged: number;
-  loggedProjectTime: number;
-  billableProjectTime: number;
-  nonBillableProjectTime: number;
-  internalTime: number;
+  lastName: string;
   date: string;
-  balance: number;
+  totalLoggedTime: number;
+  expectedHours: number;
+  projectTime: number;
+  minimumBillableRate: number;
+  totalBillableTime: number;
+  nonBillableProject: number;
   slackId?: string;
 }
 
@@ -36,13 +33,16 @@ export interface DailyCombinedData {
  * WeeklyCombinedData interface
  */
 export interface WeeklyCombinedData {
-  selectedWeek: PersonTotalTime;
-  name: string;
+  userId: string;
   firstName: string;
-  slackId?: string;
-  personId: number;
-  expected: number;
+  totalExpectedHours: number;
+  totalEnteredHours: number;
   minimumBillableRate: number;
+  enteredTimeEntries: number;
+  projectTime: number;
+  week?: number;
+  startDate?: string;
+  endDate?: string;
 }
 
 /**
@@ -77,10 +77,10 @@ export interface TimeRegistrations {
  * Interface for dates
  */
 export interface PreviousWorkdayDates {
-  today: string;
-  yesterday: string;
+  today: DateTime;
+  yesterday: DateTime;
   numberOfToday: number;
-  dayBeforeYesterday: string;
+  dayBeforeYesterday: DateTime;
 }
 
 /**
@@ -99,26 +99,27 @@ export interface DailyMessageData {
   message: string;
   name: string;
   displayDate?: string;
-  displayLogged: string;
-  displayLoggedProject: string;
+  displayTotalLoggedTime: string;
   displayExpected: string;
-  displayBillableProject: string;
-  displayNonBillableProject: string;
-  displayInternal: string;
-  billableHoursPercentage: string;
 }
 
 /**
- * Interface for DisplayValues
+ * Interface for DisplayValuesDaily
  */
 export interface DisplayValues {
-  logged: string;
-  loggedProject: string;
-  expected: string;
-  difference: string;
-  billableProject: string;
+  totalLoggedTime: string;
+  projectTime: string;
+  expectedHours: string;
+  totalBillableTime: string;
   nonBillableProject: string;
-  internal: string;
+}
+/**
+ * Interface for DisplayValuesWeekly
+ */
+export interface DisplayValuesWeekly {
+  totalEnteredHours: string;
+  projectTime: string;
+  totalExpectedHours: string;
 }
 
 /**
@@ -141,9 +142,6 @@ export interface WeeklyMessageData {
   displayLogged: string;
   displayLoggedProject: string;
   displayExpected: string;
-  displayBillableProject: string;
-  displayNonBillableProject: string;
-  displayInternal: string;
   billableHoursPercentage: string;
 }
 

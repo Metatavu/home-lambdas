@@ -1,11 +1,10 @@
 export { default as findUserHandler } from "./keycloak/find-user";
 export { default as listUsersHandler } from "./keycloak/list-users";
-// DISABLED: inactive memo functions
-// export { default as getContentPdfHandler } from "./memo-management/drive-memos/get-content-pdf";
-// export { default as listMemoPdfHandler } from "./memo-management/drive-memos/get-memos-pdf";
-// export { default as getSummaryMemoPdfHandler } from "./memo-management/drive-memos/get-summary-memo-pdf";
-// export { default as createTranslatedMemoPdfHandler } from "./memo-management/drive-memos/translated-memos/create-translated-memo-pdf";
-// export { default as getTranslatedMemoPdfHandler } from "./memo-management/drive-memos/translated-memos/get-translated-memo-pdf";
+export { default as getContentPdfHandler } from "./memo-management/drive-memos/get-content-pdf";
+export { default as listMemoPdfHandler } from "./memo-management/drive-memos/get-memos-pdf";
+export { default as getSummaryMemoPdfHandler } from "./memo-management/drive-memos/get-summary-memo-pdf";
+export { default as createTranslatedMemoPdfHandler } from "./memo-management/drive-memos/translated-memos/create-translated-memo-pdf";
+export { default as getTranslatedMemoPdfHandler } from "./memo-management/drive-memos/translated-memos/get-translated-memo-pdf";
 export { default as createCommentHandler } from "./memo-management/trello-cards/comment-trello-card";
 export { default as createTrelloCardHandler } from "./memo-management/trello-cards/create-trello-card";
 export { default as deleteTrelloCardHandler } from "./memo-management/trello-cards/delete-trello-card";

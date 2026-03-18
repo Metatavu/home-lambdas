@@ -6,7 +6,7 @@ dotenv.config({ path: __dirname + "/.env" });
 // import sendDailyMessage from "@functions/meta-assistant/send-daily-message";
 // import sendWeeklyMessage from "@functions/meta-assistant/send-weekly-message";
 import { env } from "process";
-import { getSlackUserAvatarHandler } from "src/functions";
+//import { getSlackUserAvatarHandler } from "src/functions";
 // import removeUserAttributeHanndler from "src/functions/keycloak/remove-user-attribute";
 // import updateVacationHandler from "src/functions/keycloak/update-user-vacation";
 // import getContentPdfHandler from "src/functions/memo-management/drive-memos/get-content-pdf";
@@ -38,8 +38,9 @@ import listMediaHandler from "src/functions/wiki-documentation/list-media";
 import readArticleHandler from "src/functions/wiki-documentation/read-article";
 import updateArticleHandler from "src/functions/wiki-documentation/update-article";
 import uploadFileHandler from "src/functions/wiki-documentation/upload-file";
-import findUserHandler from "@/functions/keycloak/find-user";
-import listUsersHandler from "@/functions/keycloak/list-users";
+
+// import findUserHandler from "@/functions/keycloak/find-user";
+// import listUsersHandler from "@/functions/keycloak/list-users";
 
 // import createTranslatedMemoPdfHandler from "@/functions/memo-management/drive-memos/translated-memos/create-translated-memo-pdf";
 // import getTranslatedMemoPdfHandler from "@/functions/memo-management/drive-memos/translated-memos/get-translated-memo-pdf";
@@ -71,7 +72,7 @@ const serverlessConfiguration: AWS = {
     runtime: "nodejs20.x",
     region: region,
     deploymentBucket: {
-      name: isLocal ? "local-bucket" : `\${self:service}-\${opt:stage}-${region}-deploy`
+      name: isLocal ? "local-bucket" : `\${self:service}-\${opt:stage}-deploy`
     },
     memorySize: 256,
     timeout: 60,
@@ -184,9 +185,9 @@ const serverlessConfiguration: AWS = {
     // listSoftwareHandler,
     // updateSoftwareHandler,
     // deleteSoftwareHandler,
-    listUsersHandler,
+    //listUsersHandler,
     // listUsersFlextimeHandler,
-    findUserHandler,
+    //findUserHandler,
     // removeUserAttributeHanndler,
     // updateVacationHandler,
     // createQuestionnaireHandler,
@@ -211,11 +212,11 @@ const serverlessConfiguration: AWS = {
     updateArticleHandler,
     deleteArticleHandler,
     readArticleHandler,
-    uploadFileHandler,
+    uploadFileHandler
     // getContractedWorkWeekHandler,
     // removeOptInHandler,
     // listWorkdaysForUserHandler,
-    getSlackUserAvatarHandler
+    //getSlackUserAvatarHandler
     // listMemoPdfHandler,
     // getContentPdfHandler,
     // getTranslatedMemoPdfHandler,

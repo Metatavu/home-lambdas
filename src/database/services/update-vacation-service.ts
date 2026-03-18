@@ -106,7 +106,7 @@ export const VacationRequestUpdate = async ({
   const vacationRequestUpdates = {
     id: existingVacationRequest.id,
     userId: existingVacationRequest.userId,
-    draft: draft ? draft : false,
+    draft: draft ?? false,
     startDate,
     endDate,
     days,

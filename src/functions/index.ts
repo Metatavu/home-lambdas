@@ -1,5 +1,5 @@
-export { default as findUserHandler } from "./keycloak/find-user";
-export { default as listUsersHandler } from "./keycloak/list-users";
+//export { default as findUserHandler } from "./keycloak/find-user";
+//export { default as listUsersHandler } from "./keycloak/list-users";
 // DISABLED: inactive memo functions
 // export { default as getContentPdfHandler } from "./memo-management/drive-memos/get-content-pdf";
 // export { default as listMemoPdfHandler } from "./memo-management/drive-memos/get-memos-pdf";
@@ -37,7 +37,7 @@ export { default as listUsersHandler } from "./keycloak/list-users";
 // export { default as getResourceAllocationHandler } from "./severa/get-resource-allocations-by-user"; // DISABLED: inactive
 // export { default as listWorkdaysForUserHandler } from "./severa/list-workdays-for-user"; // DISABLED: inactive
 // export { default as removeSeveraOptInHandler } from "./severa/remove-opt-in"; // DISABLED: inactive
-export { default as getSlackUserAvatarHandler } from "./slack/get-slack-user-avatar";
+//export { default as getSlackUserAvatarHandler } from "./slack/get-slack-user-avatar";
 // export { default as createSoftwareHandler } from "./software-registry/create-software"; // DISABLED: inactive
 // export { default as deleteSoftwareHandler } from "./software-registry/delete-software"; // DISABLED: inactive
 // export { default as findSoftwareHandler } from "./software-registry/find-software"; // DISABLED: inactive

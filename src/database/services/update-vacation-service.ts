@@ -1,7 +1,9 @@
 import { entityToDto } from "src/database/dtos/vacationDtos";
 import { vacationRequestService } from "src/database/services";
+import { VacationRequestStatuses } from "src/generated/homeLambdasModels/model/vacationRequestStatuses";
 import {
   deductVacationDaysForApproval,
+  getLatestStatus,
   returnVacationDaysForRejection,
   validateVacationApproval
 } from "src/libs/vacation-utils";
@@ -80,4 +82,75 @@ export const handleRejection = async (
       body: JSON.stringify(entityToDto(updatedVacationRequest))
     };
   }
+};
+
+export const VacationRequestUpdate = async ({
+  existingVacationRequest,
+  userId,
+  draft,
+  startDate,
+  endDate,
+  days,
+  type,
+  status,
+  message,
+  updatedAt,
+  contractedWeek,
+  sendNotifications
+}) => {
+  const existingLatestStatus = getLatestStatus(existingVacationRequest.status);
+  const newLatestStatus = getLatestStatus(status);
+  const statusChanged = existingLatestStatus !== newLatestStatus;
+  const currentStatus = Array.isArray(status) ? status.at(-1)?.status : "UNKNOWN";
+
+  const vacationRequestUpdates = {
+    id: existingVacationRequest.id,
+    userId: existingVacationRequest.userId,
+    draft: draft ? draft : false,
+    startDate,
+    endDate,
+    days,
+    type,
+    status,
+    message,
+    createdBy: existingVacationRequest.createdBy,
+    createdAt: existingVacationRequest.createdAt,
+    updatedAt
+  };
+
+  if (currentStatus === VacationRequestStatuses.Approved && statusChanged) {
+    return await handleApproval(
+      userId,
+      startDate,
+      endDate,
+      contractedWeek,
+      vacationRequestUpdates,
+      sendNotifications
+    );
+  }
+
+  if (
+    existingLatestStatus === VacationRequestStatuses.Approved &&
+    statusChanged &&
+    currentStatus !== VacationRequestStatuses.Approved
+  ) {
+    return await handleRejection(
+      userId,
+      existingVacationRequest.startDate,
+      existingVacationRequest.endDate,
+      contractedWeek,
+      vacationRequestUpdates,
+      sendNotifications
+    );
+  }
+
+  const updatedVacationRequest =
+    await vacationRequestService.updateVacationRequest(vacationRequestUpdates);
+
+  await sendNotifications();
+
+  return {
+    statusCode: 200,
+    body: JSON.stringify(entityToDto(updatedVacationRequest))
+  };
 };

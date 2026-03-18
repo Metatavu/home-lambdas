@@ -45,7 +45,7 @@ export const handleApproval = async (
 };
 
 /**
- * Handles vacation request rejection/cancellation.
+ * Handles vacation request rejection.
  */
 
 export const handleRejection = async (

@@ -3,10 +3,7 @@ import { middyfy } from "@libs/lambda";
 import { entityToDto } from "src/database/dtos/vacationDtos";
 import { vacationRequestService } from "src/database/services";
 import { CreateKeycloakApiService } from "src/database/services/keycloak-api-service";
-import {
-  handleApproval,
-  handleRejection
-} from "src/functions/vacation-request/update-vacation-request/vacation-handler-functions";
+import { handleApproval, handleRejection } from "src/database/services/update-vacation-service";
 import { VacationRequestStatuses } from "src/generated/homeLambdasModels/model/vacationRequestStatuses";
 import { getContractedWeek, getLatestStatus } from "src/libs/vacation-utils";
 import {

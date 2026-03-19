@@ -1,8 +1,10 @@
 import type { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway";
 import { middyfy } from "@libs/lambda";
+import { entityToDto } from "src/database/dtos/vacationDtos";
 import { vacationRequestService } from "src/database/services";
 import { CreateKeycloakApiService } from "src/database/services/keycloak-api-service";
-import { VacationRequestUpdate } from "src/database/services/update-vacation-service";
+import { handleApproval, handleRejection } from "src/database/services/update-vacation-service";
+import { VacationRequestStatuses } from "src/generated/homeLambdasModels/model/vacationRequestStatuses";
 import { getContractedWeek, getLatestStatus } from "src/libs/vacation-utils";
 import {
   notifyAdminsVacationSubmittedAll,
@@ -85,6 +87,21 @@ const updateVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
   const statusChanged = existingLatestStatus !== newLatestStatus;
   const draftStatusChanged = existingVacationRequest.draft !== draft;
 
+  const vacationRequestUpdates = {
+    id: existingVacationRequest.id,
+    userId: existingVacationRequest.userId,
+    draft: draft ? draft : false,
+    startDate: startDate,
+    endDate: endDate,
+    days: days,
+    type: type,
+    status: status,
+    message: message,
+    createdBy: existingVacationRequest.createdBy,
+    createdAt: existingVacationRequest.createdAt,
+    updatedAt: updatedAt
+  };
+
   const api = CreateKeycloakApiService();
   const userDetails = await api.findUser(userId);
   const currentStatus = Array.isArray(status) ? status.at(-1)?.status : "UNKNOWN";
@@ -109,20 +126,41 @@ const updateVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
   };
 
   try {
-    return await VacationRequestUpdate({
-      existingVacationRequest,
-      userId,
-      draft,
-      startDate,
-      endDate,
-      days,
-      type,
-      status,
-      message,
-      updatedAt,
-      contractedWeek,
-      sendNotifications
-    });
+    if (currentStatus === VacationRequestStatuses.Approved && statusChanged) {
+      return await handleApproval(
+        userId,
+        startDate,
+        endDate,
+        contractedWeek,
+        vacationRequestUpdates,
+        sendNotifications
+      );
+    }
+
+    if (
+      existingLatestStatus === VacationRequestStatuses.Approved &&
+      statusChanged &&
+      currentStatus !== VacationRequestStatuses.Approved
+    ) {
+      return await handleRejection(
+        userId,
+        existingVacationRequest.startDate,
+        existingVacationRequest.endDate,
+        contractedWeek,
+        vacationRequestUpdates,
+        sendNotifications
+      );
+    }
+
+    const updatedVacationRequest =
+      await vacationRequestService.updateVacationRequest(vacationRequestUpdates);
+
+    await sendNotifications();
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify(entityToDto(updatedVacationRequest))
+    };
   } catch (error) {
     return {
       statusCode: 500,

@@ -13,17 +13,6 @@ import {
 import type vacationRequestSchema from "src/schema/vacationRequest";
 
 /**
- * Verifies user has enough vacation days and deducts them upon approval of a vacation request.
- *
- * @param userId - The ID of the user requesting vacation.
- * @param startDate - The start date of the vacation
- * @param endDate - The end date of the vacation
- * @param contractedWeek - Array of contracted work days
- * @param vacationRequestUpdates - The vacation request object to update in the database.
- * @param sendNotifications - Callback function to send notifications after successful update.
- */
-
-/**
  * Lambda function to update a vacation request
  *
  * @param event event containing path parameters and a JSON body that matches 'vacationRequestSchema'

@@ -20,3 +20,5 @@ generated/
 .vault-mount
 
 /.idea/
+
+lib/

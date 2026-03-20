@@ -33,6 +33,7 @@ import createArticleHandler from "src/functions/wiki-documentation/create-articl
 import deleteArticleHandler from "src/functions/wiki-documentation/delete-article";
 import findArticleHandler from "src/functions/wiki-documentation/find-article";
 import findArticleByPathHandler from "src/functions/wiki-documentation/find-article-by-path";
+import importDocumentHandler from "src/functions/wiki-documentation/import-document";
 import listArticlesHandler from "src/functions/wiki-documentation/list-articles";
 import listMediaHandler from "src/functions/wiki-documentation/list-media";
 import readArticleHandler from "src/functions/wiki-documentation/read-article";
@@ -211,6 +212,7 @@ const serverlessConfiguration: AWS = {
     deleteArticleHandler,
     readArticleHandler,
     uploadFileHandler,
+    importDocumentHandler,
     getContractedWorkWeekHandler,
     removeOptInHandler,
     listWorkdaysForUserHandler,

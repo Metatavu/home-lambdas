@@ -46,6 +46,7 @@ export { default as createArticleHandler } from "./wiki-documentation/create-art
 export { default as deleteArticleHandler } from "./wiki-documentation/delete-article";
 export { default as findArticleHandler } from "./wiki-documentation/find-article";
 export { default as findArticleByPathHandler } from "./wiki-documentation/find-article-by-path";
+export { default as importDocument } from "./wiki-documentation/import-document";
 export { default as listArticlesHandler } from "./wiki-documentation/list-articles";
 export { default as listMediaHandler } from "./wiki-documentation/list-media";
 export { default as readArticleHandler } from "./wiki-documentation/read-article";

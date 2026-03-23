@@ -1,7 +1,7 @@
 import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { middyfy } from "@libs/lambda";
 import type { APIGatewayProxyHandler } from "aws-lambda";
-import PDFParse from "pdf-parse";
+import { PDFParse } from "pdf-parse";
 import { articlesApiService } from "src/database/services";
 import { getAuthDataFromToken } from "src/libs/auth-utils";
 import { v4 as uuidv4 } from "uuid";
@@ -52,13 +52,18 @@ const validateFileType = (contentType: string | undefined, key: string) => {
  */
 
 const extractMarkdownFromPdf = async (bytes: Uint8Array) => {
-  const buffer = Buffer.from(bytes);
-  const parsed = await PDFParse(buffer);
-  return parsed.text
-    .split("\n")
-    .map((l) => l.trim())
-    .filter(Boolean)
-    .join("\n\n");
+  const parser = new PDFParse({ data: bytes });
+
+  try {
+    const parsed = await parser.getText();
+    return parsed.text
+      .split("\n")
+      .map((l) => l.trim())
+      .filter(Boolean)
+      .join("\n\n");
+  } finally {
+    await parser.destroy();
+  }
 };
 
 const importDocumentHandler: APIGatewayProxyHandler = async (event) => {

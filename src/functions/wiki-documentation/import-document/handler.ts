@@ -91,14 +91,19 @@ const importDocumentHandler: APIGatewayProxyHandler = async (event) => {
   }
 
   let payload: ImportDocumentRequest;
-  try {
-    payload = JSON.parse(event.body);
-  } catch {
-    return {
-      statusCode: 400,
-      headers: responseHeaders,
-      body: JSON.stringify({ message: "Invalid JSON" })
-    };
+  if (typeof event.body === "string") {
+    try {
+      payload = JSON.parse(event.body);
+    } catch {
+      return {
+        statusCode: 400,
+        headers: responseHeaders,
+        body: JSON.stringify({ message: "Invalid JSON" })
+      };
+    }
+  } else {
+    // When using middy/http-json-body-parser, event.body is already an object
+    payload = event.body as unknown as ImportDocumentRequest;
   }
 
   const path = payload.path || payload.Path;

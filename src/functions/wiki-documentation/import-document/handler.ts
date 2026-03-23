@@ -90,9 +90,6 @@ const importDocumentHandler: APIGatewayProxyHandler = async (event) => {
   }
 
   const env = getBucketEnv();
-  if ("error" in env) {
-    return env.error;
-  }
 
   const { HOME_BUCKET_NAME, HOME_BUCKET_REGION } = env;
 

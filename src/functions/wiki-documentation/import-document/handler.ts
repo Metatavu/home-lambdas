@@ -121,13 +121,6 @@ const importDocumentHandler: APIGatewayProxyHandler = async (event) => {
     }
 
     const bytes = await file.Body?.transformToByteArray();
-    if (!bytes?.length) {
-      return {
-        statusCode: 422,
-        headers: responseHeaders,
-        body: JSON.stringify({ message: "Empty PDF" })
-      };
-    }
 
     const markdown = await extractMarkdownFromPdf(new Uint8Array(bytes));
     if (!markdown) {

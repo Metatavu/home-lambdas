@@ -125,7 +125,10 @@ const importDocumentHandler: APIGatewayProxyHandler = async (event) => {
       })
     );
 
-    validateFileType(file.ContentType, path);
+    const validationResponse = validateFileType(file.ContentType, path);
+    if (validationResponse) {
+      return validationResponse;
+    }
 
     const bytes = await file.Body?.transformToByteArray();
     if (!bytes?.length) {

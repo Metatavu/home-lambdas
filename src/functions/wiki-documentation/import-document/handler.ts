@@ -22,8 +22,19 @@ const slugify = (value: string) =>
   value
     .toLowerCase()
     .trim()
-    .replace(/[^a-z0-9\s-]/g, "")
-    .replace(/\s+/g, "-");
+    .replaceAll(/[^a-z0-9\s-]/g, "")
+    .replaceAll(/\s+/g, "-");
+
+const validateFileType = (contentType: string | undefined, key: string) => {
+  const isPdf = contentType === "application/pdf" || key.toLowerCase().endsWith(".pdf");
+  if (!isPdf) {
+    return {
+      statusCode: 422,
+      headers: responseHeaders,
+      body: JSON.stringify({ message: "Only PDF files are allowed" })
+    };
+  }
+};
 
 const extractMarkdownFromPdf = async (bytes: Uint8Array) => {
   const parser = new PDFParse({ data: bytes });
@@ -55,13 +66,14 @@ const importDocumentHandler: APIGatewayProxyHandler = async (event) => {
       body: JSON.stringify({ message: "Body required" })
     };
   }
-
   const { HOME_BUCKET_NAME, HOME_BUCKET_REGION } = process.env;
   if (!HOME_BUCKET_NAME || !HOME_BUCKET_REGION) {
     return {
       statusCode: 500,
-      headers: responseHeaders,
-      body: JSON.stringify({ message: "Invalid lambda environment variables" })
+      body: JSON.stringify({
+        code: 500,
+        message: "Invalid lambda environment variables"
+      })
     };
   }
 
@@ -97,13 +109,7 @@ const importDocumentHandler: APIGatewayProxyHandler = async (event) => {
       })
     );
 
-    if (file.ContentType !== "application/pdf" && !path.toLowerCase().endsWith(".pdf")) {
-      return {
-        statusCode: 400,
-        headers: responseHeaders,
-        body: JSON.stringify({ message: "File must be PDF" })
-      };
-    }
+    validateFileType(file.ContentType, path);
 
     const bytes = await file.Body?.transformToByteArray();
     if (!bytes?.length) {

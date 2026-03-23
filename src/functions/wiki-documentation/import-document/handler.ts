@@ -44,28 +44,6 @@ const validateFileType = (contentType: string | undefined, key: string) => {
   }
 };
 
-const getBucketEnv = () => {
-  const { HOME_BUCKET_NAME, HOME_BUCKET_REGION } = process.env;
-
-  if (!HOME_BUCKET_NAME || !HOME_BUCKET_REGION) {
-    return {
-      error: {
-        statusCode: 500,
-        headers: responseHeaders,
-        body: JSON.stringify({
-          code: 500,
-          message: "Invalid lambda environment variables"
-        })
-      }
-    };
-  }
-
-  return {
-    HOME_BUCKET_NAME,
-    HOME_BUCKET_REGION
-  };
-};
-
 /**
  * Extracts text from PDF bytes and normalizes it into markdown.
  *
@@ -94,9 +72,18 @@ const importDocumentHandler: APIGatewayProxyHandler = async (event) => {
     };
   }
 
-  const env = getBucketEnv();
+  const HOME_BUCKET_NAME = process.env.HOME_BUCKET_NAME;
+  const HOME_BUCKET_REGION = process.env.HOME_BUCKET_REGION;
 
-  const { HOME_BUCKET_NAME, HOME_BUCKET_REGION } = env;
+  if (!HOME_BUCKET_NAME || !HOME_BUCKET_REGION) {
+    return {
+      statusCode: 500,
+      body: JSON.stringify({
+        code: 500,
+        message: "Invalid lambda environment variables"
+      })
+    };
+  }
 
   let payload: ImportDocumentRequest;
   try {
@@ -110,7 +97,7 @@ const importDocumentHandler: APIGatewayProxyHandler = async (event) => {
   }
 
   const path = payload.path || payload.Path;
-  const { documentTitle, overwriteExisting } = payload;
+  const { documentTitle } = payload;
 
   if (!path || !documentTitle) {
     return {
@@ -155,56 +142,32 @@ const importDocumentHandler: APIGatewayProxyHandler = async (event) => {
 
     const userId = getAuthDataFromToken(event)?.sub || "system";
     const basePath = `/wiki/${slugify(documentTitle)}`;
-    if (!basePath) {
-      return {
-        statusCode: 400,
-        headers: responseHeaders,
-        body: JSON.stringify({ message: "Invalid document title" })
-      };
-    }
-
-    const existing = await articlesApiService.findArticleByPath(basePath);
-    if (existing && !overwriteExisting) {
-      return {
-        statusCode: 409,
-        headers: responseHeaders,
-        body: JSON.stringify({ message: "Article already exists" })
-      };
-    }
 
     const now = new Date().toISOString();
 
     const article = {
-      id: existing?.id ?? uuidv4(),
+      id: uuidv4(),
       path: basePath,
       title: documentTitle,
-      description: `Imported from PDF`,
+      description: "Imported from PDF",
       content: markdown,
-      createdBy: existing?.createdBy ?? userId,
-      createdAt: existing?.createdAt ?? now,
+      createdBy: userId,
+      createdAt: now,
       lastUpdatedBy: userId,
       lastUpdatedAt: now,
-      lastReadAt: existing?.lastReadAt ?? now,
-      readBy: existing?.readBy ?? [userId],
-      tags: existing?.tags ?? [],
-      draft: existing?.draft ?? false,
-      coverImage: existing?.coverImage
+      lastReadAt: now,
+      readBy: [userId],
+      tags: [],
+      draft: false,
+      coverImage: undefined
     };
 
-    if (existing) {
-      await articlesApiService.updateArticle(article);
-    } else {
-      await articlesApiService.createArticle(article);
-    }
+    await articlesApiService.createArticle(article);
 
     return {
       statusCode: 200,
       headers: responseHeaders,
-      body: JSON.stringify({
-        path: basePath,
-        created: existing ? 0 : 1,
-        updated: existing ? 1 : 0
-      })
+      body: JSON.stringify({ path: basePath })
     };
   } catch (error) {
     return {

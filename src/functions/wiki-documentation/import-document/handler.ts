@@ -17,13 +17,21 @@ const responseHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Credentials": true
 };
-
+/**
+ * Converts a string into a URL-safe slug segment.
+ * @param value Title value
+ */
 const slugify = (value: string) =>
   value
     .toLowerCase()
     .trim()
     .replaceAll(/[^a-z0-9\s-]/g, "")
     .replaceAll(/\s+/g, "-");
+
+/**
+ * Makes sure that uploaded file is PDF
+ * @returns API error response when invalid; otherwise `undefined`.
+ */
 
 const validateFileType = (contentType: string | undefined, key: string) => {
   const isPdf = contentType === "application/pdf" || key.toLowerCase().endsWith(".pdf");
@@ -57,6 +65,13 @@ const getBucketEnv = () => {
     HOME_BUCKET_REGION
   };
 };
+
+/**
+ * Extracts text from PDF bytes and normalizes it into markdown.
+ *
+ * @param bytes - PDF file content as bytes.
+ * @returns Normalized markdown-like text content.
+ */
 
 const extractMarkdownFromPdf = async (bytes: Uint8Array) => {
   const buffer = Buffer.from(bytes);
@@ -121,6 +136,13 @@ const importDocumentHandler: APIGatewayProxyHandler = async (event) => {
     }
 
     const bytes = await file.Body?.transformToByteArray();
+    if (!bytes) {
+      return {
+        statusCode: 422,
+        headers: responseHeaders,
+        body: JSON.stringify({ message: "PDF is empty" })
+      };
+    }
 
     const markdown = await extractMarkdownFromPdf(new Uint8Array(bytes));
     if (!markdown) {

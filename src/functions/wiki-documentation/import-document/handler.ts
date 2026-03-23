@@ -150,7 +150,15 @@ const importDocumentHandler: APIGatewayProxyHandler = async (event) => {
       };
     }
 
-    const userId = getAuthDataFromToken(event)?.sub || "system";
+    const authData = getAuthDataFromToken(event);
+    if (!authData?.sub) {
+      return {
+        statusCode: 403,
+        headers: responseHeaders,
+        body: JSON.stringify({ message: "Forbidden" })
+      };
+    }
+    const userId = authData.sub;
     const basePath = `/wiki/${slugify(documentTitle)}`;
 
     const now = new Date().toISOString();

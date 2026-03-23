@@ -25,37 +25,48 @@ const slugify = (value: string) =>
     .replaceAll(/[^a-z0-9\s-]/g, "")
     .replaceAll(/\s+/g, "-");
 
-const validateFileType = (contentType: string | undefined, key: string) => {
-  const isPdf = contentType === "application/pdf" || key.toLowerCase().endsWith(".pdf");
-  if (!isPdf) {
-    return {
-      statusCode: 422,
-      headers: responseHeaders,
-      body: JSON.stringify({ message: "Only PDF files are allowed" })
-    };
-  }
+const validateEnv = () => {
+  const bucket = process.env.HOME_BUCKET_NAME;
+  const region = process.env.HOME_BUCKET_REGION;
+  if (!bucket || !region) throw new Error("Invalid lambda environment variables");
+  return { bucket, region };
 };
 
-const getBucketEnv = () => {
-  const { HOME_BUCKET_NAME, HOME_BUCKET_REGION } = process.env;
+const validateFileType = (contentType: string | undefined, key: string) => {
+  const isPdf = contentType === "application/pdf" || key.toLowerCase().endsWith(".pdf");
+  if (!isPdf) throw new Error("Only PDF files are allowed");
+};
 
-  if (!HOME_BUCKET_NAME || !HOME_BUCKET_REGION) {
-    return {
-      error: {
-        statusCode: 500,
-        headers: responseHeaders,
-        body: JSON.stringify({
-          code: 500,
-          message: "Invalid lambda environment variables"
-        })
-      }
-    };
-  }
-
-  return {
-    HOME_BUCKET_NAME,
-    HOME_BUCKET_REGION
+const saveArticle = async (
+  basePath: string,
+  documentTitle: string,
+  markdown: string,
+  existing: any,
+  userId: string
+) => {
+  const now = new Date().toISOString();
+  const article = {
+    id: existing?.id ?? uuidv4(),
+    path: basePath,
+    title: documentTitle,
+    description: `Imported from PDF`,
+    content: markdown,
+    createdBy: existing?.createdBy ?? userId,
+    createdAt: existing?.createdAt ?? now,
+    lastUpdatedBy: userId,
+    lastUpdatedAt: now,
+    lastReadAt: existing?.lastReadAt ?? now,
+    readBy: existing?.readBy ?? [userId],
+    tags: existing?.tags ?? [],
+    draft: existing?.draft ?? false,
+    coverImage: existing?.coverImage
   };
+  if (existing) {
+    await articlesApiService.updateArticle(article);
+  } else {
+    await articlesApiService.createArticle(article);
+  }
+  return { created: existing ? 0 : 1, updated: existing ? 1 : 0 };
 };
 
 const extractMarkdownFromPdf = async (bytes: Uint8Array) => {
@@ -89,21 +100,19 @@ const importDocumentHandler: APIGatewayProxyHandler = async (event) => {
     };
   }
 
-  const env = getBucketEnv();
-  if ("error" in env) {
-    return env.error;
-  }
-
-  const { HOME_BUCKET_NAME, HOME_BUCKET_REGION } = env;
-
+  let env: ReturnType<typeof validateEnv>;
   let payload: ImportDocumentRequest;
   try {
+    env = validateEnv();
     payload = JSON.parse(event.body);
-  } catch {
+  } catch (error) {
+    const isEnvError = error instanceof Error && error.message.includes("lambda");
     return {
-      statusCode: 400,
+      statusCode: isEnvError ? 500 : 400,
       headers: responseHeaders,
-      body: JSON.stringify({ message: "Invalid JSON" })
+      body: JSON.stringify({
+        message: isEnvError ? "Invalid lambda environment variables" : "Invalid JSON"
+      })
     };
   }
 
@@ -118,90 +127,41 @@ const importDocumentHandler: APIGatewayProxyHandler = async (event) => {
     };
   }
 
-  const s3 = new S3Client({ region: HOME_BUCKET_REGION });
-
+  const s3 = new S3Client({ region: env.region });
   try {
     const file = await s3.send(
       new GetObjectCommand({
-        Bucket: HOME_BUCKET_NAME,
+        Bucket: env.bucket,
         Key: path
       })
     );
-
     validateFileType(file.ContentType, path);
 
     const bytes = await file.Body?.transformToByteArray();
-    if (!bytes?.length) {
-      return {
-        statusCode: 422,
-        headers: responseHeaders,
-        body: JSON.stringify({ message: "Empty PDF" })
-      };
-    }
+    if (!bytes?.length) throw new Error("Empty PDF");
 
     const markdown = await extractMarkdownFromPdf(new Uint8Array(bytes));
-    if (!markdown) {
-      return {
-        statusCode: 422,
-        headers: responseHeaders,
-        body: JSON.stringify({ message: "No content extracted" })
-      };
-    }
+    if (!markdown) throw new Error("No content extracted");
 
     const userId = getAuthDataFromToken(event)?.sub || "system";
     const basePath = `/wiki/${slugify(documentTitle)}`;
-
     const existing = await articlesApiService.findArticleByPath(basePath);
-    if (existing && !overwriteExisting) {
-      return {
-        statusCode: 409,
-        headers: responseHeaders,
-        body: JSON.stringify({ message: "Article already exists" })
-      };
-    }
+    if (existing && !overwriteExisting) throw new Error("Article already exists");
 
-    const now = new Date().toISOString();
-
-    const article = {
-      id: existing?.id ?? uuidv4(),
-      path: basePath,
-      title: documentTitle,
-      description: `Imported from PDF`,
-      content: markdown,
-      createdBy: existing?.createdBy ?? userId,
-      createdAt: existing?.createdAt ?? now,
-      lastUpdatedBy: userId,
-      lastUpdatedAt: now,
-      lastReadAt: existing?.lastReadAt ?? now,
-      readBy: existing?.readBy ?? [userId],
-      tags: existing?.tags ?? [],
-      draft: existing?.draft ?? false,
-      coverImage: existing?.coverImage
-    };
-
-    if (existing) {
-      await articlesApiService.updateArticle(article);
-    } else {
-      await articlesApiService.createArticle(article);
-    }
-
+    const result = await saveArticle(basePath, documentTitle, markdown, existing, userId);
     return {
       statusCode: 200,
       headers: responseHeaders,
-      body: JSON.stringify({
-        path: basePath,
-        created: existing ? 0 : 1,
-        updated: existing ? 1 : 0
-      })
+      body: JSON.stringify({ path: basePath, ...result })
     };
   } catch (error) {
-    return {
-      statusCode: 500,
-      headers: responseHeaders,
-      body: JSON.stringify({
-        message: error instanceof Error ? error.message : "Import failed"
-      })
-    };
+    const message = error instanceof Error ? error.message : "Import failed";
+    const statusCode = message.includes("exists")
+      ? 409
+      : message.includes("Empty") || message.includes("extracted")
+        ? 422
+        : 500;
+    return { statusCode, headers: responseHeaders, body: JSON.stringify({ message }) };
   }
 };
 

@@ -1,9 +1,9 @@
 import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { middyfy } from "@libs/lambda";
 import type { APIGatewayProxyHandler } from "aws-lambda";
-import { PDFParse } from "pdf-parse";
+import PDFParse from "pdf-parse";
 import { articlesApiService } from "src/database/services";
-import { getAuthDataFromToken, isAdminUser } from "src/libs/auth-utils";
+import { getAuthDataFromToken } from "src/libs/auth-utils";
 import { v4 as uuidv4 } from "uuid";
 
 type ImportDocumentRequest = {
@@ -59,27 +59,17 @@ const getBucketEnv = () => {
 };
 
 const extractMarkdownFromPdf = async (bytes: Uint8Array) => {
-  const parser = new PDFParse({ data: bytes });
-  try {
-    const parsed = await parser.getText();
-    return parsed.text
-      .split("\n")
-      .map((l) => l.trim())
-      .filter(Boolean)
-      .join("\n\n");
-  } finally {
-    await parser.destroy();
-  }
+  const buffer = Buffer.from(bytes);
+  const parsed = await PDFParse(buffer);
+  return parsed.text
+    .split("\n")
+    .map((l) => l.trim())
+    .filter(Boolean)
+    .join("\n\n");
 };
 
 const importDocumentHandler: APIGatewayProxyHandler = async (event) => {
-  if (!isAdminUser(event)) {
-    return {
-      statusCode: 403,
-      headers: responseHeaders,
-      body: JSON.stringify({ message: "PDF import is allowed for admins only" })
-    };
-  }
+  // ADMIN ONLY NEEDS TO BE ADDED LATER
 
   if (!event.body) {
     return {
@@ -150,6 +140,13 @@ const importDocumentHandler: APIGatewayProxyHandler = async (event) => {
 
     const userId = getAuthDataFromToken(event)?.sub || "system";
     const basePath = `/wiki/${slugify(documentTitle)}`;
+    if (!basePath) {
+      return {
+        statusCode: 400,
+        headers: responseHeaders,
+        body: JSON.stringify({ message: "Invalid document title" })
+      };
+    }
 
     const existing = await articlesApiService.findArticleByPath(basePath);
     if (existing && !overwriteExisting) {

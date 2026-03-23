@@ -36,6 +36,28 @@ const validateFileType = (contentType: string | undefined, key: string) => {
   }
 };
 
+const getBucketEnv = () => {
+  const { HOME_BUCKET_NAME, HOME_BUCKET_REGION } = process.env;
+
+  if (!HOME_BUCKET_NAME || !HOME_BUCKET_REGION) {
+    return {
+      error: {
+        statusCode: 500,
+        headers: responseHeaders,
+        body: JSON.stringify({
+          code: 500,
+          message: "Invalid lambda environment variables"
+        })
+      }
+    };
+  }
+
+  return {
+    HOME_BUCKET_NAME,
+    HOME_BUCKET_REGION
+  };
+};
+
 const extractMarkdownFromPdf = async (bytes: Uint8Array) => {
   const parser = new PDFParse({ data: bytes });
   try {
@@ -66,16 +88,13 @@ const importDocumentHandler: APIGatewayProxyHandler = async (event) => {
       body: JSON.stringify({ message: "Body required" })
     };
   }
-  const { HOME_BUCKET_NAME, HOME_BUCKET_REGION } = process.env;
-  if (!HOME_BUCKET_NAME || !HOME_BUCKET_REGION) {
-    return {
-      statusCode: 500,
-      body: JSON.stringify({
-        code: 500,
-        message: "Invalid lambda environment variables"
-      })
-    };
+
+  const env = getBucketEnv();
+  if ("error" in env) {
+    return env.error;
   }
+
+  const { HOME_BUCKET_NAME, HOME_BUCKET_REGION } = env;
 
   let payload: ImportDocumentRequest;
   try {

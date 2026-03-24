@@ -1,77 +1,25 @@
 import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { middyfy } from "@libs/lambda";
-import type { APIGatewayProxyHandler } from "aws-lambda";
-import { PDFParse } from "pdf-parse";
+import type { APIGatewayProxyEvent, APIGatewayProxyHandler } from "aws-lambda";
 import { articlesApiService } from "src/database/services";
+import { responseHeaders } from "src/functions/wiki-documentation/upload-file/handler";
 import { getAuthDataFromToken } from "src/libs/auth-utils";
+import { extractMarkdownFromPdf, slugify, validateFileType } from "src/utils/importDocument";
 import { v4 as uuidv4 } from "uuid";
 
+/**
+ * Request payload for importing a document.
+ */
 type ImportDocumentRequest = {
-  Path?: string;
   path?: string;
   documentTitle?: string;
   overwriteExisting?: boolean;
 };
 
-const responseHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Credentials": true
-};
-
 /**
- * Converts a string into a URL-safe slug segment.
- * 
- *
- * @param value Title value
+ * Lambda function for importing a PDF from s3 and creating a wiki article from it.
  */
-const slugify = (value: string) =>
-  value
-    .toLowerCase()
-    .trim()
-    .replaceAll(/[^a-z0-9\s-]/g, "")
-    .replaceAll(/\s+/g, "-");
-
-/**
- * Makes sure that uploaded file is PDF
- * 
- *
- * @returns API error response when invalid; otherwise `undefined`.
- */
-const validateFileType = (contentType: string | undefined, key: string) => {
-  const isPdf = contentType === "application/pdf" || key.toLowerCase().endsWith(".pdf");
-  if (!isPdf) {
-    return {
-      statusCode: 422,
-      headers: responseHeaders,
-      body: JSON.stringify({ message: "Only PDF files are allowed" })
-    };
-  }
-};
-
-/**
- * Extracts text from PDF bytes and normalizes it into markdown.
- *
- * @param bytes - PDF file content as bytes.
- * @returns Normalized markdown-like text content.
- */
-const extractMarkdownFromPdf = async (bytes: Uint8Array) => {
-  const parser = new PDFParse({ data: bytes });
-
-  try {
-    const parsed = await parser.getText();
-    return parsed.text
-      .split("\n")
-      .map((l) => l.trim())
-      .filter(Boolean)
-      .join("\n\n");
-  } finally {
-    await parser.destroy();
-  }
-};
-
-const importDocumentHandler: APIGatewayProxyHandler = async (event) => {
-  // ADMIN ONLY NEEDS TO BE ADDED LATER
-
+const importDocumentHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
   if (!event.body) {
     return {
       statusCode: 400,
@@ -109,8 +57,7 @@ const importDocumentHandler: APIGatewayProxyHandler = async (event) => {
     payload = event.body as unknown as ImportDocumentRequest;
   }
 
-  const path = payload.path || payload.Path;
-  const { documentTitle } = payload;
+  const { path, documentTitle } = payload;
 
   if (!path || !documentTitle) {
     return {
@@ -130,9 +77,9 @@ const importDocumentHandler: APIGatewayProxyHandler = async (event) => {
       })
     );
 
-    const validationResponse = validateFileType(file.ContentType, path);
-    if (validationResponse) {
-      return validationResponse;
+    const invalidFileTypeResponse = validateFileType(file.ContentType, path);
+    if (invalidFileTypeResponse) {
+      return invalidFileTypeResponse;
     }
 
     const bytes = await file.Body?.transformToByteArray();
@@ -177,7 +124,7 @@ const importDocumentHandler: APIGatewayProxyHandler = async (event) => {
       lastUpdatedBy: userId,
       lastUpdatedAt: now,
       lastReadAt: now,
-      readBy: [userId],
+      readBy: [],
       tags: [],
       draft: false,
       coverImage: undefined

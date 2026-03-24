@@ -54,7 +54,6 @@ const validateFileType = (contentType: string | undefined, key: string) => {
  * @param bytes - PDF file content as bytes.
  * @returns Normalized markdown-like text content.
  */
-
 const extractMarkdownFromPdf = async (bytes: Uint8Array) => {
   const parser = new PDFParse({ data: bytes });
 

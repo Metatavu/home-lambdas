@@ -35,7 +35,6 @@ const slugify = (value: string) =>
  * Makes sure that uploaded file is PDF
  * @returns API error response when invalid; otherwise `undefined`.
  */
-
 const validateFileType = (contentType: string | undefined, key: string) => {
   const isPdf = contentType === "application/pdf" || key.toLowerCase().endsWith(".pdf");
   if (!isPdf) {

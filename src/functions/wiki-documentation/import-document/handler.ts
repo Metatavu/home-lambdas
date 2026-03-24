@@ -17,6 +17,7 @@ const responseHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Credentials": true
 };
+
 /**
  * Converts a string into a URL-safe slug segment.
  * @param value Title value

@@ -36,6 +36,7 @@ const importDocumentHandler: APIGatewayProxyHandler = async (event: APIGatewayPr
       statusCode: 500,
       body: JSON.stringify({
         code: 500,
+        headers: responseHeaders,
         message: "Invalid lambda environment variables"
       })
     };

@@ -42,14 +42,20 @@ export const listUsersFlextimeHandler: APIGatewayProxyHandler = async () => {
 			};
 		}
 		const keycloakUsers = await keycloakApi.getUsers();
+
+		const keycloakUsersBySeveraUserId = new Map<string, (typeof keycloakUsers)[number]>();
+		for (const user of keycloakUsers) {
+			if (user.severaUserId) {
+				keycloakUsersBySeveraUserId.set(user.severaUserId, user);
+			}
+		}
+
 		const usersWithFlextime = await Promise.allSettled(
 			optedInUsers.map(async (severaUser) => {
 				try {
 					// This should be typed according to the spec response type from the severa general spec generated client
 					const flextime = await api.getFlextimeBySeveraUserId(severaUser.guid);
-					const keycloakUser = keycloakUsers.find(
-						(user) => user.severaUserId === severaUser.guid,
-					);
+					const keycloakUser = keycloakUsersBySeveraUserId.get(severaUser.guid);
 					const isActive = keycloakUser?.attributes?.isActive?.[0] === "Active";
 
 					return {

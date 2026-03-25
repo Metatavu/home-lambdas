@@ -138,11 +138,13 @@ const importDocumentHandler: APIGatewayProxyHandler = async (event: APIGatewayPr
       body: JSON.stringify({ path: basePath })
     };
   } catch (error) {
+    console.error("Error importing document", error);
     return {
       statusCode: 500,
       headers: responseHeaders,
       body: JSON.stringify({
-        message: error instanceof Error ? error.message : "Import failed"
+        code: "IMPORT_DOCUMENT_ERROR",
+        message: "Import failed"
       })
     };
   }

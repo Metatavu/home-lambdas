@@ -1,5 +1,4 @@
 import { PDFParse } from "pdf-parse";
-import { responseHeaders } from "src/libs/http/headers";
 
 /**
  * Converts a string into a URL-safe slug segment.
@@ -15,18 +14,9 @@ export const slugify = (value: string) =>
 
 /**
  * Makes sure that uploaded file is PDF
-
- * @returns API error response when invalid; otherwise `undefined`.
  */
-export const validateFileType = (contentType: string | undefined, key: string) => {
-  const isPdf = contentType === "application/pdf" || key.toLowerCase().endsWith(".pdf");
-  if (!isPdf) {
-    return {
-      statusCode: 422,
-      headers: responseHeaders,
-      body: JSON.stringify({ message: "Only PDF files are allowed" })
-    };
-  }
+export const isPdfFile = (contentType: string | undefined, key: string): boolean => {
+  return contentType === "application/pdf" || key.toLowerCase().endsWith(".pdf");
 };
 
 /**
@@ -45,6 +35,9 @@ export const extractMarkdownFromPdf = async (bytes: Uint8Array) => {
       .map((l) => l.trim())
       .filter(Boolean)
       .join("\n\n");
+  } catch (error) {
+    console.error("PDF parsing failed:", error);
+    throw error;
   } finally {
     await parser.destroy();
   }

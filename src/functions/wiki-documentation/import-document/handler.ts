@@ -3,8 +3,7 @@ import { middyfy } from "@libs/lambda";
 import type { APIGatewayProxyEvent, APIGatewayProxyHandler } from "aws-lambda";
 import { articlesApiService } from "src/database/services";
 import { getAuthDataFromToken } from "src/libs/auth-utils";
-import { responseHeaders } from "src/libs/http/headers";
-import { extractMarkdownFromPdf, slugify, validateFileType } from "src/utils/importDocument";
+import { extractMarkdownFromPdf, isPdfFile, slugify } from "src/utils/importDocument";
 import { v4 as uuidv4 } from "uuid";
 
 /**
@@ -23,7 +22,6 @@ const importDocumentHandler: APIGatewayProxyHandler = async (event: APIGatewayPr
   if (!event.body) {
     return {
       statusCode: 400,
-      headers: responseHeaders,
       body: JSON.stringify({ message: "Body required" })
     };
   }
@@ -36,7 +34,6 @@ const importDocumentHandler: APIGatewayProxyHandler = async (event: APIGatewayPr
       statusCode: 500,
       body: JSON.stringify({
         code: 500,
-        headers: responseHeaders,
         message: "Invalid lambda environment variables"
       })
     };
@@ -49,7 +46,6 @@ const importDocumentHandler: APIGatewayProxyHandler = async (event: APIGatewayPr
     } catch {
       return {
         statusCode: 400,
-        headers: responseHeaders,
         body: JSON.stringify({ message: "Invalid JSON" })
       };
     }
@@ -63,7 +59,6 @@ const importDocumentHandler: APIGatewayProxyHandler = async (event: APIGatewayPr
   if (!path || !documentTitle) {
     return {
       statusCode: 400,
-      headers: responseHeaders,
       body: JSON.stringify({ message: "path and documentTitle required" })
     };
   }
@@ -78,16 +73,17 @@ const importDocumentHandler: APIGatewayProxyHandler = async (event: APIGatewayPr
       })
     );
 
-    const invalidFileTypeResponse = validateFileType(file.ContentType, path);
-    if (invalidFileTypeResponse) {
-      return invalidFileTypeResponse;
+    if (!isPdfFile(file.ContentType, path)) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ message: "Only PDF files are allowed" })
+      };
     }
 
     const bytes = await file.Body?.transformToByteArray();
     if (!bytes) {
       return {
         statusCode: 422,
-        headers: responseHeaders,
         body: JSON.stringify({ message: "PDF is empty" })
       };
     }
@@ -96,7 +92,6 @@ const importDocumentHandler: APIGatewayProxyHandler = async (event: APIGatewayPr
     if (!markdown) {
       return {
         statusCode: 422,
-        headers: responseHeaders,
         body: JSON.stringify({ message: "No content extracted" })
       };
     }
@@ -105,7 +100,6 @@ const importDocumentHandler: APIGatewayProxyHandler = async (event: APIGatewayPr
     if (!authData?.sub) {
       return {
         statusCode: 403,
-        headers: responseHeaders,
         body: JSON.stringify({ message: "Forbidden" })
       };
     }
@@ -135,14 +129,12 @@ const importDocumentHandler: APIGatewayProxyHandler = async (event: APIGatewayPr
 
     return {
       statusCode: 200,
-      headers: responseHeaders,
       body: JSON.stringify({ path: basePath })
     };
   } catch (error) {
     console.error("Error importing document", error);
     return {
       statusCode: 500,
-      headers: responseHeaders,
       body: JSON.stringify({
         code: "IMPORT_DOCUMENT_ERROR",
         message: "Import failed"

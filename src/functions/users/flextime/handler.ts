@@ -35,13 +35,13 @@ export const listUsersFlextimeHandler: APIGatewayProxyHandler = async () => {
 		const api = CreateSeveraApiService();
 		const keycloakApi = CreateKeycloakApiService();
 		const optedInUsers = await api.getOptInUsers();
-		const keycloakUsers = await keycloakApi.getUsers();
 		if (!optedInUsers || optedInUsers.length === 0) {
 			return {
 				statusCode: 200,
 				body: JSON.stringify([]),
 			};
 		}
+		const keycloakUsers = await keycloakApi.getUsers();
 		const usersWithFlextime = await Promise.allSettled(
 			optedInUsers.map(async (severaUser) => {
 				try {

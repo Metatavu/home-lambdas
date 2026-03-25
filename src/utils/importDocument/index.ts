@@ -1,5 +1,5 @@
 import { PDFParse } from "pdf-parse";
-import { responseHeaders } from "src/functions/wiki-documentation/upload-file/handler";
+import { responseHeaders } from "src/libs/http/headers";
 
 /**
  * Converts a string into a URL-safe slug segment.

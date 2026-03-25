@@ -3,6 +3,7 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { middyfy } from "@libs/lambda";
 import type { APIGatewayProxyEvent, APIGatewayProxyHandler } from "aws-lambda";
 import { isAdminUser } from "src/libs/auth-utils";
+import { responseHeaders } from "src/libs/http/headers";
 
 /**
  * Parameters for creating a presigned URL with S3 client
@@ -38,14 +39,6 @@ const createPresignedUrlWithClient = ({
   });
 
   return getSignedUrl(client, command, { expiresIn: 3600 });
-};
-
-/**
- * Response headers
- */
-export const responseHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Credentials": true
 };
 
 /**

@@ -2,8 +2,8 @@ import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { middyfy } from "@libs/lambda";
 import type { APIGatewayProxyEvent, APIGatewayProxyHandler } from "aws-lambda";
 import { articlesApiService } from "src/database/services";
-import { responseHeaders } from "src/functions/wiki-documentation/upload-file/handler";
 import { getAuthDataFromToken } from "src/libs/auth-utils";
+import { responseHeaders } from "src/libs/http/headers";
 import { extractMarkdownFromPdf, slugify, validateFileType } from "src/utils/importDocument";
 import { v4 as uuidv4 } from "uuid";
 

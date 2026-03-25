@@ -22,9 +22,13 @@ export const updateUserStatusHandler: APIGatewayProxyHandler = async (
 
 		const keycloakApi = CreateKeycloakApiService();
 
-		await keycloakApi.updateUserAttributes(userId, {
-			isActive: [isActive ? "Active" : "Inactive"],
-		});
+		if (isActive) {
+			await keycloakApi.updateUserAttributes(userId, {
+				isActive: ["Active"],
+			});
+		} else {
+			await keycloakApi.removeUserAttribute(userId, "isActive");
+		}
 
 		return {
 			statusCode: 200,

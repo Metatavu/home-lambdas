@@ -4,10 +4,9 @@ export default {
 	handler: `${handlerPath(__dirname)}/handler.main`,
 	events: [
 		{
-			httpApi: {
+			http: {
 				method: "put",
-				path: "/users/{userId}/status",
-				authorizer: "homeKeycloakAuthorizer",
+				path: "users/{userId}/status",
 			},
 		},
 	],

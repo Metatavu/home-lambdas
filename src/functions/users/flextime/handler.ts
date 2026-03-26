@@ -60,7 +60,7 @@ export const listUsersFlextimeHandler: APIGatewayProxyHandler = async () => {
               email: severaUser.email || "",
               attributes: {
                 severaUserId: severaUser.guid,
-                isActive: isActive || false
+                isActive: isActive
               }
             },
             flextime: {

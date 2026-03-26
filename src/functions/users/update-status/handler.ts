@@ -8,10 +8,9 @@ import { middyfy } from "src/libs/lambda";
  * @param event - API gateway event contaning unseId and isActive flag
  * @returns API response indicating sucess or failure
  */
-
 export const updateUserStatusHandler: APIGatewayProxyHandler = async (event) => {
   const userId = event.pathParameters?.userId;
-  const body = event.body as unknown as { isActive: boolean };
+  const body = typeof event.body === "string" ? JSON.parse(event.body) : event.body;
   const isActive = body?.isActive;
 
   if (!userId || typeof isActive !== "boolean") {

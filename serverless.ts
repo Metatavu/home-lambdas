@@ -24,7 +24,7 @@ import getResourceAllocationHandler from "src/functions/severa/get-resource-allo
 import listWorkdaysForUserHandler from "src/functions/severa/list-workdays-for-user";
 import removeOptInHandler from "src/functions/severa/remove-opt-in";
 import listUsersFlextimeHandler from "src/functions/users/flextime";
-import updateUserStatus from "src/functions/users/status";
+import updateUserStatus from "src/functions/users/update-status";
 import createVacationRequestHandler from "src/functions/vacation-request/create-vacation-request";
 import deleteVacationRequestHandler from "src/functions/vacation-request/delete-vacation-request";
 import findVacationRequestHandler from "src/functions/vacation-request/find-vacation-request";

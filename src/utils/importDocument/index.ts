@@ -1,4 +1,4 @@
-import { PDFParse } from "pdf-parse";
+import pdf from "pdf-parse";
 
 /**
  * Converts a string into a URL-safe slug segment.
@@ -25,20 +25,17 @@ export const isPdfFile = (contentType: string | undefined, key: string): boolean
  * @param bytes - PDF file content as bytes.
  * @returns Normalized markdown-like text content.
  */
-export const extractMarkdownFromPdf = async (bytes: Uint8Array) => {
-  const parser = new PDFParse({ data: bytes });
-
+export const extractMarkdownFromPdf = async (bytes: Uint8Array): Promise<string> => {
   try {
-    const parsed = await parser.getText();
-    return parsed.text
+    const parsed = await pdf(Buffer.from(bytes));
+
+    return (parsed.text || "")
       .split("\n")
-      .map((l) => l.trim())
+      .map((line: string) => line.trim())
       .filter(Boolean)
       .join("\n\n");
   } catch (error) {
     console.error("PDF parsing failed:", error);
     throw error;
-  } finally {
-    await parser.destroy();
   }
 };

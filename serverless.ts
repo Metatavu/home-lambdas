@@ -24,6 +24,7 @@ import getResourceAllocationHandler from "src/functions/severa/get-resource-allo
 import listWorkdaysForUserHandler from "src/functions/severa/list-workdays-for-user";
 import removeOptInHandler from "src/functions/severa/remove-opt-in";
 import listUsersFlextimeHandler from "src/functions/users/flextime";
+import updateUserStatus from "src/functions/users/update-status";
 import createVacationRequestHandler from "src/functions/vacation-request/create-vacation-request";
 import deleteVacationRequestHandler from "src/functions/vacation-request/delete-vacation-request";
 import findVacationRequestHandler from "src/functions/vacation-request/find-vacation-request";
@@ -33,7 +34,6 @@ import createArticleHandler from "src/functions/wiki-documentation/create-articl
 import deleteArticleHandler from "src/functions/wiki-documentation/delete-article";
 import findArticleHandler from "src/functions/wiki-documentation/find-article";
 import findArticleByPathHandler from "src/functions/wiki-documentation/find-article-by-path";
-import importDocument from "src/functions/wiki-documentation/import-document";
 import listArticlesHandler from "src/functions/wiki-documentation/list-articles";
 import listMediaHandler from "src/functions/wiki-documentation/list-media";
 import readArticleHandler from "src/functions/wiki-documentation/read-article";
@@ -221,7 +221,7 @@ const serverlessConfiguration: AWS = {
     getTranslatedMemoPdfHandler,
     createTranslatedMemoPdfHandler,
     addOptInHandler,
-    importDocument
+    updateUserStatus
   },
   package: { individually: true },
   custom: {

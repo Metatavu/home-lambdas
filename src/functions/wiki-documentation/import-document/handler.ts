@@ -15,7 +15,7 @@ type ImportDocumentRequest = {
   overwriteExisting?: boolean;
 };
 
-const MAX_PDF_SIZE_BYTES = 10 * 1024 * 1024;
+const MAX_PDF_SIZE_BYTES = 5 * 1024 * 1024;
 const MAX_ARTICLE_CONTENT_LENGTH = 200_000;
 
 /**
@@ -82,7 +82,7 @@ const importDocumentHandler: APIGatewayProxyHandler = async (event: APIGatewayPr
       };
     }
 
-   if (!file.ContentLength || file.ContentLength === 0) {
+    if (!file.ContentLength || file.ContentLength === 0) {
       return {
         statusCode: 422,
         body: JSON.stringify({ message: "PDF is empty" })

@@ -3,7 +3,12 @@ import { middyfy } from "@libs/lambda";
 import type { APIGatewayProxyEvent, APIGatewayProxyHandler } from "aws-lambda";
 import { articlesApiService } from "src/database/services";
 import { getAuthDataFromToken } from "src/libs/auth-utils";
-import { extractMarkdownFromPdf, isPdfFile, slugify } from "src/utils/importDocument";
+import {
+  createResponse,
+  extractMarkdownFromPdf,
+  isPdfFile,
+  slugify
+} from "src/utils/importDocument";
 import { v4 as uuidv4 } from "uuid";
 
 /**
@@ -23,23 +28,17 @@ const MAX_ARTICLE_CONTENT_LENGTH = 200_000;
  */
 const importDocumentHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
   if (!event.body) {
-    return {
-      statusCode: 400,
-      body: JSON.stringify({ message: "Body required" })
-    };
+    return createResponse(400, { message: "Body required" });
   }
 
   const HOME_BUCKET_NAME = process.env.HOME_BUCKET_NAME;
   const HOME_BUCKET_REGION = process.env.HOME_BUCKET_REGION;
 
   if (!HOME_BUCKET_NAME || !HOME_BUCKET_REGION) {
-    return {
-      statusCode: 500,
-      body: JSON.stringify({
-        code: 500,
-        message: "Invalid lambda environment variables"
-      })
-    };
+    return createResponse(500, {
+      code: 500,
+      message: "Invalid lambda environment variables"
+    });
   }
 
   let payload: ImportDocumentRequest;
@@ -47,10 +46,7 @@ const importDocumentHandler: APIGatewayProxyHandler = async (event: APIGatewayPr
     try {
       payload = JSON.parse(event.body);
     } catch {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ message: "Invalid JSON" })
-      };
+      return createResponse(400, { message: "Invalid JSON" });
     }
   } else {
     payload = event.body as unknown as ImportDocumentRequest;
@@ -59,10 +55,7 @@ const importDocumentHandler: APIGatewayProxyHandler = async (event: APIGatewayPr
   const { path, documentTitle } = payload;
 
   if (!path || !documentTitle) {
-    return {
-      statusCode: 400,
-      body: JSON.stringify({ message: "path and documentTitle required" })
-    };
+    return createResponse(400, { message: "path and documentTitle required" });
   }
 
   const s3 = new S3Client({ region: HOME_BUCKET_REGION });
@@ -76,26 +69,17 @@ const importDocumentHandler: APIGatewayProxyHandler = async (event: APIGatewayPr
     );
 
     if (!isPdfFile(file.ContentType, path)) {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ message: "Only PDF files are allowed" })
-      };
+      return createResponse(400, { message: "Only PDF files are allowed" });
     }
 
     if (!file.ContentLength || file.ContentLength === 0) {
-      return {
-        statusCode: 422,
-        body: JSON.stringify({ message: "PDF is empty" })
-      };
+      return createResponse(422, { message: "PDF is empty" });
     }
 
     if (file.ContentLength > MAX_PDF_SIZE_BYTES) {
-      return {
-        statusCode: 413,
-        body: JSON.stringify({
-          message: `PDF too large. Maximum supported size is ${MAX_PDF_SIZE_BYTES / 1024 / 1024} MB`
-        })
-      };
+      return createResponse(413, {
+        message: `PDF too large. Maximum supported size is ${MAX_PDF_SIZE_BYTES / 1024 / 1024} MB`
+      });
     }
 
     console.info("Importing PDF", {
@@ -107,18 +91,12 @@ const importDocumentHandler: APIGatewayProxyHandler = async (event: APIGatewayPr
 
     const bytes = await file.Body?.transformToByteArray();
     if (!bytes) {
-      return {
-        statusCode: 422,
-        body: JSON.stringify({ message: "PDF is empty" })
-      };
+      return createResponse(422, { message: "PDF is empty" });
     }
 
     const markdown = await extractMarkdownFromPdf(bytes);
     if (!markdown) {
-      return {
-        statusCode: 422,
-        body: JSON.stringify({ message: "No content extracted" })
-      };
+      return createResponse(422, { message: "No content extracted" });
     }
 
     const normalizedMarkdown =
@@ -128,10 +106,7 @@ const importDocumentHandler: APIGatewayProxyHandler = async (event: APIGatewayPr
 
     const authData = getAuthDataFromToken(event);
     if (!authData?.sub) {
-      return {
-        statusCode: 403,
-        body: JSON.stringify({ message: "Forbidden" })
-      };
+      return createResponse(403, { message: "Forbidden" });
     }
 
     const userId = authData.sub;
@@ -157,19 +132,13 @@ const importDocumentHandler: APIGatewayProxyHandler = async (event: APIGatewayPr
 
     await articlesApiService.createArticle(article);
 
-    return {
-      statusCode: 200,
-      body: JSON.stringify({ path: basePath })
-    };
+    return createResponse(200, { path: basePath });
   } catch (error) {
     console.error("Error importing document", error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({
-        code: "IMPORT_DOCUMENT_ERROR",
-        message: "Import failed"
-      })
-    };
+    return createResponse(500, {
+      code: "IMPORT_DOCUMENT_ERROR",
+      message: "Import failed"
+    });
   }
 };
 

@@ -82,7 +82,7 @@ const importDocumentHandler: APIGatewayProxyHandler = async (event: APIGatewayPr
       };
     }
 
-    if (file.ContentLength === 0) {
+   if (!file.ContentLength || file.ContentLength === 0) {
       return {
         statusCode: 422,
         body: JSON.stringify({ message: "PDF is empty" })

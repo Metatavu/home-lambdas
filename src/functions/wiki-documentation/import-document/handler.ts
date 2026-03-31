@@ -6,6 +6,9 @@ import { getAuthDataFromToken } from "src/libs/auth-utils";
 import { extractMarkdownFromPdf, isPdfFile, slugify } from "src/utils/importDocument";
 import { v4 as uuidv4 } from "uuid";
 
+/**
+ * Request payload for importing a document.
+ */
 type ImportDocumentRequest = {
   path?: string;
   documentTitle?: string;
@@ -15,6 +18,9 @@ type ImportDocumentRequest = {
 const MAX_PDF_SIZE_BYTES = 10 * 1024 * 1024;
 const MAX_ARTICLE_CONTENT_LENGTH = 200_000;
 
+/**
+ * Lambda function for importing a PDF from s3 and creating a wiki article from it.
+ */
 const importDocumentHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
   if (!event.body) {
     return {

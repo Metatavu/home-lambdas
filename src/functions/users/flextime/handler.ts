@@ -32,9 +32,9 @@ type UserWithFlextime = {
  */
 export const listUsersFlextimeHandler: APIGatewayProxyHandler = async () => {
   try {
-    const api = CreateSeveraApiService();
+    const severaApi = CreateSeveraApiService();
     const keycloakApi = CreateKeycloakApiService();
-    const optedInUsers = await api.getOptInUsers();
+    const optedInUsers = await severaApi.getOptInUsers();
     const keycloakUsers = await keycloakApi.getUsers();
     if (!optedInUsers || optedInUsers.length === 0) {
       return {
@@ -45,8 +45,7 @@ export const listUsersFlextimeHandler: APIGatewayProxyHandler = async () => {
     const usersWithFlextime = await Promise.allSettled(
       optedInUsers.map(async (severaUser) => {
         try {
-          // This should be typed according to the spec response type from the severa general spec generated client
-          const flextime = await api.getFlextimeBySeveraUserId(severaUser.guid);
+          const flextime = await severaApi.getFlextimeBySeveraUserId(severaUser.guid);
           const keycloakUser = keycloakUsers.find(
             (user) => user.attributes?.severaUserId?.[0] === severaUser.guid
           );

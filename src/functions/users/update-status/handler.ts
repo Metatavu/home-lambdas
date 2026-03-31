@@ -5,8 +5,9 @@ import { middyfy } from "src/libs/lambda";
 /**
  *
  * updates user's active status in keycloak.
- * @param event - API gateway event contaning unseId and isActive flag
- * @returns API response indicating sucess or failure
+ *
+ * @param event - API Gateway event containing userId and isActive flag
+ * @returns API response indicating success or failure
  */
 export const updateUserStatusHandler: APIGatewayProxyHandler = async (event) => {
   const userId = event.pathParameters?.userId;

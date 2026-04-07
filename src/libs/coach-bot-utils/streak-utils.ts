@@ -20,8 +20,14 @@ const getYesterday = (date: string): string => {
 export const processCoachBotAnswer = async (attempt: CoachAnswer): Promise<CoachAnswerResponse> => {
   const { slackUserId, answeredCorrectly, date } = attempt;
 
-  // store attempt
-  await coachBotApiService.createCoachBotAnswer(attempt);
+  try {
+    await coachBotApiService.createCoachBotAnswer(attempt);
+  } catch (error: any) {
+    if (error.name === "ConditionalCheckFailedException") {
+      throw new DuplicateAnswerError();
+    }
+    throw error;
+  }
 
   const currentStreak = await coachBotApiService.getUserStreak(slackUserId);
 
@@ -74,3 +80,13 @@ export const calculateDifficulty = (streak: number): "easy" | "medium" | "hard" 
     return "hard";
   }
 };
+
+/**
+ * Custom error class for handling duplicate answer attempts.
+ */
+export class DuplicateAnswerError extends Error {
+  constructor(message = "User has already answered today's question") {
+    super(message);
+    this.name = "DuplicateAnswerError";
+  }
+}

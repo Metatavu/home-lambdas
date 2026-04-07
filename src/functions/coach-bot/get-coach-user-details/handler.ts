@@ -2,7 +2,11 @@ import type { APIGatewayProxyEvent, APIGatewayProxyHandler } from "aws-lambda";
 import { coachBotApiService } from "src/database/services";
 import { CreateKeycloakApiService } from "src/database/services/keycloak-api-service";
 import type { CoachUserDetailsResponse } from "src/generated/homeLambdasModels/model/coachUserDetailsResponse";
-import { difficultyToEnum, normalizeQuizRole, roleToEnum } from "src/libs/coach-bot-utils";
+import {
+  difficultyToEnum,
+  normalizeQuizRole,src/libs/coach-bot-utils/streak-utils
+  roleToEnum
+} from "src/libs/coach-bot-utils/coach-bot-utils";
 import { middyfy } from "src/libs/lambda";
 import { calculateDifficulty } from "src/libs/streak-utils";
 

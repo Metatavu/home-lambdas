@@ -1,23 +1,23 @@
 import type { APIGatewayProxyEvent, APIGatewayProxyHandler } from "aws-lambda";
-import { createCoachBotAnswer } from "src/libs/coach-bot-utils";
+import { createCoachBotAnswer } from "src/libs/coach-bot-utils/coach-answer-mapper";
+import { DuplicateAnswerError, processCoachBotAnswer } from "src/libs/coach-bot-utils/streak-utils";
 import { middyfy } from "src/libs/lambda";
-import { processCoachBotAnswer } from "src/libs/streak-utils";
 
 /**
  * Handler for logging a coach bot answer and updating streak
  */
 const createCoachBotAnswerHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
-  const body = event.body ? JSON.parse(event.body) : null;
-  if (!body) {
-    return {
-      statusCode: 400,
-      body: JSON.stringify({ error: "Request body is required." })
-    };
-  }
-
-  const attempt = createCoachBotAnswer(body);
-
   try {
+    const body = event.body ? JSON.parse(event.body) : null;
+    if (!body) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ error: "Request body is required." })
+      };
+    }
+
+    const attempt = createCoachBotAnswer(body);
+
     const result = await processCoachBotAnswer(attempt);
 
     return {
@@ -25,6 +25,16 @@ const createCoachBotAnswerHandler: APIGatewayProxyHandler = async (event: APIGat
       body: JSON.stringify(result)
     };
   } catch (error) {
+    if (error instanceof DuplicateAnswerError) {
+      return {
+        statusCode: 409,
+        body: JSON.stringify({
+          code: "ALREADY_ANSWERED",
+          message: error.message
+        })
+      };
+    }
+
     return {
       statusCode: 500,
       body: JSON.stringify({

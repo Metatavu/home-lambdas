@@ -13,6 +13,9 @@ import type { UserStreakRecord } from "../models/user-streak-record";
 const STREAK_TABLE = "UserStreaks";
 const ATTEMPTS_TABLE = "CoachAnswers";
 
+/**
+ * Service for managing coach bot related database operations, such as user streaks and answer attempts.
+ */
 class CoachBotApiService {
   /**
    * Constructor

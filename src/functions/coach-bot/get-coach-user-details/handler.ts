@@ -10,6 +10,9 @@ import {
 import { calculateDifficulty } from "src/libs/coach-bot-utils/streak-utils";
 import { middyfy } from "src/libs/lambda";
 
+/**
+ * Handler for retrieving coach bot user details, including their Slack ID, role, and difficulty level based on their streak.
+ */
 const getCoachUserDetailsHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
   try {
     const { userId } = event.pathParameters ?? {};

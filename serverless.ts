@@ -5,8 +5,14 @@ dotenv.config({ path: __dirname + "/.env" });
 
 import sendDailyMessage from "@functions/meta-assistant/send-daily-message";
 import sendWeeklyMessage from "@functions/meta-assistant/send-weekly-message";
+import { create } from "domain";
 import { env } from "process";
-import { getSlackUserAvatarHandler, listMemoPdfHandler } from "src/functions";
+import {
+  createCoachBotAnswerHandler,
+  getCoachUserDetailsHandler,
+  getSlackUserAvatarHandler,
+  listMemoPdfHandler
+} from "src/functions";
 import removeUserAttributeHanndler from "src/functions/keycloak/remove-user-attribute";
 import updateVacationHandler from "src/functions/keycloak/update-user-vacation";
 import getContentPdfHandler from "src/functions/memo-management/drive-memos/get-content-pdf";
@@ -165,7 +171,9 @@ const serverlessConfiguration: AWS = {
                   "arn:aws:dynamodb:${self:provider.region}:*:table/Articles/index/GSI_Path",
                   "arn:aws:dynamodb:${self:provider.region}:*:table/OnCallSchedule",
                   "arn:aws:dynamodb:${self:provider.region}:*:table/Memos",
-                  "arn:aws:dynamodb:${self:provider.region}:*:table/Memos/index/FileIdIndex"
+                  "arn:aws:dynamodb:${self:provider.region}:*:table/Memos/index/FileIdIndex",
+                  "arn:aws:dynamodb:${self:provider.region}:*:table/UserStreaks",
+                  "arn:aws:dynamodb:${self:provider.region}:*:table/CoachAnswers"
                 ]
           }
         ]
@@ -221,7 +229,9 @@ const serverlessConfiguration: AWS = {
     getTranslatedMemoPdfHandler,
     createTranslatedMemoPdfHandler,
     addOptInHandler,
-    updateUserStatus
+    updateUserStatus,
+    createCoachBotAnswerHandler,
+    getCoachUserDetailsHandler
   },
   package: { individually: true },
   custom: {
@@ -362,6 +372,38 @@ const serverlessConfiguration: AWS = {
                 WriteCapacityUnits: 1
               }
             }
+          ],
+          ProvisionedThroughput: {
+            ReadCapacityUnits: 1,
+            WriteCapacityUnits: 1
+          }
+        }
+      },
+      UserStreaks: {
+        Type: "AWS::DynamoDB::Table",
+        DeletionPolicy: "Delete",
+        Properties: {
+          TableName: "UserStreaks",
+          AttributeDefinitions: [{ AttributeName: "slack_user_id", AttributeType: "S" }],
+          KeySchema: [{ AttributeName: "slack_user_id", KeyType: "HASH" }],
+          ProvisionedThroughput: {
+            ReadCapacityUnits: 1,
+            WriteCapacityUnits: 1
+          }
+        }
+      },
+      CoachAnswers: {
+        Type: "AWS::DynamoDB::Table",
+        DeletionPolicy: "Delete",
+        Properties: {
+          TableName: "CoachAnswers",
+          AttributeDefinitions: [
+            { AttributeName: "slack_user_id", AttributeType: "S" },
+            { AttributeName: "date", AttributeType: "S" }
+          ],
+          KeySchema: [
+            { AttributeName: "slack_user_id", KeyType: "HASH" },
+            { AttributeName: "date", KeyType: "RANGE" }
           ],
           ProvisionedThroughput: {
             ReadCapacityUnits: 1,

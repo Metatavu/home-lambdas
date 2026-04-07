@@ -14,14 +14,14 @@ const getYesterday = (date: string): string => {
 
 /**
  * Processes a coach bot answer by recording it, calculating the user's new streak based on their previous attempts, and updating the streak record accordingly.
- * @param attempt - The coach bot answer to process
+ * @param answer - The coach bot answer to process
  * @returns An object containing whether the answer was successful and the user's new streak count
  */
-export const processCoachBotAnswer = async (attempt: CoachAnswer): Promise<CoachAnswerResponse> => {
-  const { slackUserId, answeredCorrectly, date } = attempt;
+export const processCoachBotAnswer = async (answer: CoachAnswer): Promise<CoachAnswerResponse> => {
+  const { slackUserId, answeredCorrectly, date } = answer;
 
   try {
-    await coachBotApiService.createCoachBotAnswer(attempt);
+    await coachBotApiService.createCoachBotAnswer(answer);
   } catch (error: any) {
     if (error.name === "ConditionalCheckFailedException") {
       throw new DuplicateAnswerError();
@@ -44,7 +44,7 @@ export const processCoachBotAnswer = async (attempt: CoachAnswer): Promise<Coach
   if (!answeredCorrectly) {
     newStreak = 0;
   } else {
-    const hadYesterdaySuccess = yesterdayAnswers.some((answer) => answer.answeredCorrectly);
+    const hadYesterdaySuccess = yesterdayAnswers.some((a) => a.answeredCorrectly);
     if (hadYesterdaySuccess) {
       newStreak = currentStreak + 1;
     } else {

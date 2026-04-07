@@ -100,24 +100,3 @@ export const difficultyToEnum = (difficulty: QuizDifficulty): CoachAnswer.Diffic
       return CoachAnswer.DifficultyEnum.Hard;
   }
 };
-
-/**
- * Creates a normalized CoachAnswer from raw request body data.
- *
- * This factory method handles all validation and enum conversion in one place,
- * normalizing untrusted input to safe enum values.
- *
- * @param body Raw request body object
- * @returns A fully validated and normalized CoachAnswer instance
- */
-export const createCoachBotAnswer = (body: any): CoachAnswer => {
-  const attempt = new CoachAnswer();
-  attempt.slackUserId = body.slack_user_id;
-  attempt.answeredCorrectly = body.answered_correctly;
-  attempt.role = roleToEnum(normalizeQuizRole(body.role as string));
-  attempt.topic = body.topic;
-  attempt.topicKey = body.topic_key;
-  attempt.difficulty = difficultyToEnum(normalizeDifficulty(body.difficulty as string));
-  attempt.date = body.date;
-  return attempt;
-};

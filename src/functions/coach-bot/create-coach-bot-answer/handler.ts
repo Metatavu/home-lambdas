@@ -1,14 +1,21 @@
-import type { APIGatewayProxyEvent, APIGatewayProxyHandler } from "aws-lambda";
-import { createCoachBotAnswer } from "src/libs/coach-bot-utils/coach-answer-mapper";
+import type { CoachAnswer } from "src/generated/homeLambdasModels/model/coachAnswer";
+import type { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
 import { DuplicateAnswerError, processCoachBotAnswer } from "src/libs/coach-bot-utils/streak-utils";
 import { middyfy } from "src/libs/lambda";
 
 /**
  * Handler for logging a coach bot answer and updating streak
  */
-const createCoachBotAnswerHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
+const createCoachBotAnswerHandler: ValidatedEventAPIGatewayProxyEvent<CoachAnswer> = async (
+  event
+) => {
   try {
-    const body = event.body;
+    let body: CoachAnswer;
+    if (typeof event.body === "string") {
+      body = JSON.parse(event.body);
+    } else {
+      body = event.body as CoachAnswer;
+    }
     if (!body) {
       return {
         statusCode: 400,
@@ -16,9 +23,17 @@ const createCoachBotAnswerHandler: APIGatewayProxyHandler = async (event: APIGat
       };
     }
 
-    const attempt = createCoachBotAnswer(body);
+    const newAnswer = {
+      slackUserId: body.slackUserId,
+      answeredCorrectly: body.answeredCorrectly,
+      role: body.role,
+      topic: body.topic,
+      topicKey: body.topicKey,
+      difficulty: body.difficulty,
+      date: body.date
+    };
 
-    const result = await processCoachBotAnswer(attempt);
+    const result = await processCoachBotAnswer(newAnswer);
 
     return {
       statusCode: 200,
@@ -29,7 +44,6 @@ const createCoachBotAnswerHandler: APIGatewayProxyHandler = async (event: APIGat
       return {
         statusCode: 409,
         body: JSON.stringify({
-          code: "ALREADY_ANSWERED",
           message: error.message
         })
       };
@@ -38,7 +52,7 @@ const createCoachBotAnswerHandler: APIGatewayProxyHandler = async (event: APIGat
     return {
       statusCode: 500,
       body: JSON.stringify({
-        error: `Failed to process coach bot answer ${error}`
+        error: `Internal server error`
       })
     };
   }

@@ -8,7 +8,7 @@ import type { CoachAnswerResponse } from "src/generated/homeLambdasModels/model/
  */
 const getYesterday = (date: string): string => {
   const d = new Date(date);
-  d.setDate(d.getDate() - 1);
+  d.setUTCDate(d.getUTCDate() - 1);
   return d.toISOString().slice(0, 10);
 };
 

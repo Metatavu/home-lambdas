@@ -49,8 +49,8 @@ const getCoachUserDetailsHandler: APIGatewayProxyHandler = async (event: APIGate
 
     //Calculate difficulty based on streak and convert role and difficulty to enums for response
     const difficulty = calculateDifficulty(streak);
-    const roleEnum = roleToEnum(normalizedRole) as CoachUserDetailsResponse.RoleEnum;
-    const difficultyEnum = difficultyToEnum(difficulty) as CoachUserDetailsResponse.DifficultyEnum;
+    const roleEnum = roleToEnum(normalizedRole);
+    const difficultyEnum = difficultyToEnum(difficulty);
 
     const responseBody: CoachUserDetailsResponse = {
       slackUserId: slackUserId,

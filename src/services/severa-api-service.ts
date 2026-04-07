@@ -15,6 +15,47 @@ import type {
 import type { Flextime } from "../types/severa/flexTime/flexTime";
 
 /**
+ * All available Severa permissions
+ */
+const ALL_SEVERA_PERMISSIONS = [
+  "projects:read",
+  "resourceallocations:read",
+  "hours:read",
+  "users:read",
+  "users:write",
+  "users:delete",
+  "settings:write",
+  "settings:read"
+] as const;
+
+/**
+ * Severa API permission type - derived from ALL_SEVERA_PERMISSIONS array
+ */
+export type SeveraPermission = (typeof ALL_SEVERA_PERMISSIONS)[number];
+
+/**
+ * Gets valid Severa permissions based on deployment stage
+ * Returns empty array in production, full permissions otherwise
+ *
+ * @returns Array of valid Severa permissions for current environment
+ */
+const getValidSeveraPermissions = (): ReadonlyArray<SeveraPermission> => {
+  const stage = process.env.STAGE?.toLowerCase();
+  const isProduction = stage === "production";
+
+  if (isProduction) {
+    return [];
+  }
+  return ALL_SEVERA_PERMISSIONS;
+};
+
+/**
+ * Master list of valid Severa permissions for current environment
+ * Empty in production, full permissions otherwise
+ */
+const VALID_SEVERA_PERMISSIONS = getValidSeveraPermissions();
+
+/**
  * Interface for a SeveraApiService.
  */
 export interface SeveraApiService {
@@ -86,7 +127,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
       const response = await fetch(url, {
         method: "GET",
         headers: {
-          Authorization: `Bearer ${await getSeveraAccessToken()}`,
+          Authorization: `Bearer ${await getSeveraAccessToken(["users:read"])}`,
           Client_Id: process.env.SEVERA_CLIENT_ID,
           "Content-Type": "application/json"
         }
@@ -108,7 +149,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
       const response = await fetch(`${endpointPath}`, {
         method: "GET",
         headers: {
-          Authorization: `Bearer ${await getSeveraAccessToken()}`,
+          Authorization: `Bearer ${await getSeveraAccessToken(["resourceallocations:read"])}`,
           Client_Id: process.env.SEVERA_CLIENT_ID,
           "Content-Type": "application/json"
         }
@@ -134,7 +175,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
       const response = await fetch(url, {
         method: "GET",
         headers: {
-          Authorization: `Bearer ${await getSeveraAccessToken()}`,
+          Authorization: `Bearer ${await getSeveraAccessToken(["projects:read"])}`,
           Client_Id: process.env.SEVERA_CLIENT_ID,
           "Content-Type": "application/json"
         }
@@ -156,7 +197,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
       const response = await fetch(`${endpointPath}`, {
         method: "GET",
         headers: {
-          Authorization: `Bearer ${await getSeveraAccessToken()}`,
+          Authorization: `Bearer ${await getSeveraAccessToken(["hours:read"])}`,
           Client_Id: process.env.SEVERA_CLIENT_ID,
           "Content-Type": "application/json"
         }
@@ -186,7 +227,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
       const response = await fetch(url, {
         method: "GET",
         headers: {
-          Authorization: `Bearer ${await getSeveraAccessToken()}`,
+          Authorization: `Bearer ${await getSeveraAccessToken(["users:read"])}`,
           Client_Id: process.env.SEVERA_CLIENT_ID,
           "Content-Type": "application/json"
         }
@@ -221,7 +262,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
       const response = await fetch(url, {
         method: "GET",
         headers: {
-          Authorization: `Bearer ${await getSeveraAccessToken()}`,
+          Authorization: `Bearer ${await getSeveraAccessToken(["users:read"])}`,
           Client_Id: process.env.SEVERA_CLIENT_ID,
           "Content-Type": "application/json"
         }
@@ -243,7 +284,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
       const response = await fetch(url, {
         method: "GET",
         headers: {
-          Authorization: `Bearer ${await getSeveraAccessToken()}`,
+          Authorization: `Bearer ${await getSeveraAccessToken(["resourceallocations:read"])}`,
           Client_Id: process.env.SEVERA_CLIENT_ID,
           "Content-Type": "application/json"
         }
@@ -267,7 +308,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
       const response = await fetch(url, {
         method: "GET",
         headers: {
-          Authorization: `Bearer ${await getSeveraAccessToken()}`,
+          Authorization: `Bearer ${await getSeveraAccessToken(["users:read"])}`,
           Client_Id: process.env.SEVERA_CLIENT_ID,
           "Content-Type": "application/json"
         }
@@ -296,7 +337,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
       const response = await fetch(url, {
         method: "GET",
         headers: {
-          Authorization: `Bearer ${await getSeveraAccessToken()}`,
+          Authorization: `Bearer ${await getSeveraAccessToken(["hours:read"])}`,
           Client_Id: process.env.SEVERA_CLIENT_ID,
           "Content-Type": "application/json"
         }
@@ -330,7 +371,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
       const response = await fetch(url, {
         method: "GET",
         headers: {
-          Authorization: `Bearer ${await getSeveraAccessToken()}`,
+          Authorization: `Bearer ${await getSeveraAccessToken(["hours:read", "users:read"])}`,
           Client_Id: process.env.SEVERA_CLIENT_ID,
           "Content-Type": "application/json"
         }
@@ -354,7 +395,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
       const response = await fetch(url, {
         method: "GET",
         headers: {
-          Authorization: `Bearer ${await getSeveraAccessToken()}`,
+          Authorization: `Bearer ${await getSeveraAccessToken(["users:read"])}`,
           Client_Id: process.env.SEVERA_CLIENT_ID,
           "Content-Type": "application/json"
         }
@@ -380,7 +421,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
       const response = await fetch(url, {
         method: "GET",
         headers: {
-          Authorization: `Bearer ${await getSeveraAccessToken()}`,
+          Authorization: `Bearer ${await getSeveraAccessToken(["users:read"])}`,
           Client_Id: process.env.SEVERA_CLIENT_ID,
           "Content-Type": "application/json"
         }
@@ -425,7 +466,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
               await fetch(url.toString(), {
                 method: "GET",
                 headers: {
-                  Authorization: `Bearer ${await getSeveraAccessToken()}`,
+                  Authorization: `Bearer ${await getSeveraAccessToken(["hours:read", "users:read"])}`,
                   Client_Id: process.env.SEVERA_CLIENT_ID,
                   "Content-Type": "application/json"
                 }
@@ -458,7 +499,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
       const response = await fetch(url.toString(), {
         method: "GET",
         headers: {
-          Authorization: `Bearer ${await getSeveraAccessToken()}`,
+          Authorization: `Bearer ${await getSeveraAccessToken(["hours:read", "users:read"])}`,
           Client_Id: process.env.SEVERA_CLIENT_ID,
           "Content-Type": "application/json"
         }
@@ -500,7 +541,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
           await fetch(url.toString(), {
             method: "GET",
             headers: {
-              Authorization: `Bearer ${await getSeveraAccessToken()}`,
+              Authorization: `Bearer ${await getSeveraAccessToken(["resourceallocations:read"])}`,
               Client_Id: process.env.SEVERA_CLIENT_ID,
               "Content-Type": "application/json"
             }
@@ -518,7 +559,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
                 await fetch(userUrl.toString(), {
                   method: "GET",
                   headers: {
-                    Authorization: `Bearer ${await getSeveraAccessToken()}`,
+                    Authorization: `Bearer ${await getSeveraAccessToken(["resourceallocations:read"])}`,
                     Client_Id: process.env.SEVERA_CLIENT_ID,
                     "Content-Type": "application/json"
                   }
@@ -548,7 +589,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
       const allKeywordsResponse = await fetch(KeywordsUrl, {
         method: "GET",
         headers: {
-          Authorization: `Bearer ${await getSeveraAccessToken()}`,
+          Authorization: `Bearer ${await getSeveraAccessToken(["settings:read"])}`,
           Client_Id: process.env.SEVERA_CLIENT_ID,
           "Content-Type": "application/json"
         }
@@ -571,7 +612,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
       const createKeywordResponse = await fetch(createKeywordUrl, {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${await getSeveraAccessToken()}`,
+          Authorization: `Bearer ${await getSeveraAccessToken(["settings:write"])}`,
           Client_Id: process.env.SEVERA_CLIENT_ID,
           "Content-Type": "application/json"
         },
@@ -603,7 +644,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
       const response = await fetch(url, {
         method: "GET",
         headers: {
-          Authorization: `Bearer ${await getSeveraAccessToken()}`,
+          Authorization: `Bearer ${await getSeveraAccessToken(["users:read"])}`,
           Client_Id: process.env.SEVERA_CLIENT_ID,
           "Content-Type": "application/json"
         }
@@ -634,7 +675,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
       const keywordsResponse = await fetch(userKeywordsUrl, {
         method: "GET",
         headers: {
-          Authorization: `Bearer ${await getSeveraAccessToken()}`,
+          Authorization: `Bearer ${await getSeveraAccessToken(["users:read"])}`,
           Client_Id: process.env.SEVERA_CLIENT_ID,
           "Content-Type": "application/json"
         }
@@ -666,7 +707,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
       const updateResponse = await fetch(updateKeywordUrl, {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${await getSeveraAccessToken()}`,
+          Authorization: `Bearer ${await getSeveraAccessToken(["users:write"])}`,
           Client_Id: process.env.SEVERA_CLIENT_ID,
           "Content-Type": "application/json"
         },
@@ -695,7 +736,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
       const removeResponse = await fetch(removeKeywordUrl, {
         method: "DELETE",
         headers: {
-          Authorization: `Bearer ${await getSeveraAccessToken()}`,
+          Authorization: `Bearer ${await getSeveraAccessToken(["users:delete"])}`,
           Client_Id: process.env.SEVERA_CLIENT_ID,
           "Content-Type": "application/json"
         }
@@ -719,7 +760,7 @@ export const CreateSeveraApiService = (): SeveraApiService => {
       const addResponse = await fetch(addKeywordUrl, {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${await getSeveraAccessToken()}`,
+          Authorization: `Bearer ${await getSeveraAccessToken(["users:write"])}`,
           Client_Id: process.env.SEVERA_CLIENT_ID,
           "Content-Type": "application/json"
         },
@@ -738,20 +779,60 @@ export const CreateSeveraApiService = (): SeveraApiService => {
 };
 
 /**
- * Gets Severa access token
+ * Validates that all requested permissions are in the master list
  *
- * @returns Access token as string
+ * @param permissions - Array of permissions to validate
+ * @throws Error if any permission is not in the VALID_SEVERA_PERMISSIONS list
  */
-const getSeveraAccessToken = async (): Promise<string> => {
+const validateSeveraPermissions = (permissions: SeveraPermission[]): void => {
+  const stage = process.env.STAGE?.toLowerCase();
+  const isProduction = stage === "production";
+
+  if (isProduction && permissions.length > 0) {
+    throw new Error("Severa API is disabled in production environment. ");
+  }
+  const invalidPermissions = permissions.filter(
+    (permission) => !VALID_SEVERA_PERMISSIONS.includes(permission)
+  );
+
+  if (invalidPermissions.length > 0) {
+    throw new Error(
+      `Invalid Severa permissions requested: ${invalidPermissions.join(", ")}. ` +
+        `Valid permissions are: ${VALID_SEVERA_PERMISSIONS.join(", ")}`
+    );
+  }
+};
+
+/**
+ * Gets Severa access token with specific permissions
+ *
+ * @param permissions - Array of specific permissions needed for this token
+ * @returns Access token as string
+ * @throws Error if invalid permissions are requested or token creation fails
+ */
+const getSeveraAccessToken = async (permissions: SeveraPermission[]): Promise<string> => {
+  if (
+    !process.env.SEVERA_BASE_URL ||
+    !process.env.SEVERA_CLIENT_ID ||
+    !process.env.SEVERA_CLIENT_SECRET
+  ) {
+    throw new Error("Severa API credentials are not configured.");
+  }
+
+  // Validate permissions against master list
+  validateSeveraPermissions(permissions);
+
   const url: string = `${process.env.SEVERA_BASE_URL}/v1/token`;
   const client_Id: string = process.env.SEVERA_CLIENT_ID;
   const client_Secret: string = process.env.SEVERA_CLIENT_SECRET;
 
+  // Create comma-separated scope string from permissions array
+  const scope = permissions.join(", ");
+
   const requestBody = {
     client_id: client_Id,
     client_secret: client_Secret,
-    scope:
-      "projects:read, resourceallocations:read, hours:read, users:read, users:write, users:delete, settings:write, settings:read"
+    scope
   };
 
   try {

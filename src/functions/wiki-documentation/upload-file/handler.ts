@@ -2,6 +2,8 @@ import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { middyfy } from "@libs/lambda";
 import type { APIGatewayProxyEvent, APIGatewayProxyHandler } from "aws-lambda";
+import { isAdminUser } from "src/libs/auth-utils";
+import { responseHeaders } from "src/libs/http/headers";
 
 /**
  * Parameters for creating a presigned URL with S3 client
@@ -46,9 +48,6 @@ const uploadFileHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyE
   const { HOME_BUCKET_NAME, HOME_BUCKET_REGION } = process.env;
   const { body } = event;
 
-  const responseHeaders = {
-    "Access-Control-Allow-Origin": "*"
-  };
   let path: string | undefined;
   let contentType: string | undefined;
   try {
@@ -77,15 +76,24 @@ const uploadFileHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyE
     };
   }
 
-  /**NOTE: LIMITED TO ONLY IMAGES FOR NOW. FUTURE TASK CAN BE IMPORT PLAYBOOK,PDFS IN WIKI AND BREAK THEM DOWN TO
-   * TEXT/MARKDOWN WHERE POSSIBLE LIKE OTHER ARTICLES.
-   */
-  if (!contentType?.startsWith("image/")) {
+  const isPdf = contentType === "application/pdf";
+  const isImage = contentType?.startsWith("image/");
+  if (!isImage && !isPdf) {
     return {
       statusCode: 400,
       body: JSON.stringify({
         code: 400,
         message: "Invalid file type."
+      })
+    };
+  }
+
+  if (isPdf && !isAdminUser(event)) {
+    return {
+      statusCode: 403,
+      body: JSON.stringify({
+        code: 403,
+        message: "Only admin can upload PDF files."
       })
     };
   }

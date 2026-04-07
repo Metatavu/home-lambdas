@@ -1,29 +1,28 @@
 import type { APIGatewayProxyHandler } from "aws-lambda";
-import type VacationRequestModel from "src/database/models/vacationRequest";
+import { entityToDto } from "src/database/dtos/vacationDtos";
 import { vacationRequestService } from "src/database/services";
-//import { VacationRequest } from "src/generated/homeLambdasModels/model/vacationRequest";
+import type { VacationRequest } from "src/generated/homeLambdasModels/model/vacationRequest";
 import { middyfy } from "src/libs/lambda";
 
 /**
- * Labmda for listing all vacation requests from DynamoDB.
- * Type mismatches between VacationRequestModel and VacationRequest:
- * - 'createdAt', 'updatedAt', 'startDate', 'endDate' are 'string' here, but VacationRequest expects 'Date'.
+ * Lambda for listing all vacation requests from DynamoDB.
  */
 const listVacationRequestHandler: APIGatewayProxyHandler = async (event) => {
   const userId = event.queryStringParameters?.userId;
   try {
     if (userId) {
-      // NOTE: For now, we return VacationRequestModel as is, see OpenAPI spec for expected attributes.
-      const filteredVacationRequests: VacationRequestModel[] =
-        await vacationRequestService.listVacationRequests(userId);
+      const filteredVacationRequests: VacationRequest[] = (
+        await vacationRequestService.listVacationRequests(userId)
+      ).map(entityToDto);
 
       return {
         statusCode: 200,
         body: JSON.stringify(filteredVacationRequests)
       };
     }
-    const allVacationRequests: VacationRequestModel[] =
-      await vacationRequestService.listVacationRequests();
+    const allVacationRequests: VacationRequest[] = (
+      await vacationRequestService.listVacationRequests()
+    ).map(entityToDto);
 
     return {
       statusCode: 200,

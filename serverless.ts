@@ -30,6 +30,7 @@ import getResourceAllocationHandler from "src/functions/severa/get-resource-allo
 import listWorkdaysForUserHandler from "src/functions/severa/list-workdays-for-user";
 import removeOptInHandler from "src/functions/severa/remove-opt-in";
 import listUsersFlextimeHandler from "src/functions/users/flextime";
+import updateUserStatus from "src/functions/users/update-status";
 import createVacationRequestHandler from "src/functions/vacation-request/create-vacation-request";
 import deleteVacationRequestHandler from "src/functions/vacation-request/delete-vacation-request";
 import findVacationRequestHandler from "src/functions/vacation-request/find-vacation-request";
@@ -97,6 +98,7 @@ const serverlessConfiguration: AWS = {
     environment: {
       AWS_NODEJS_CONNECTION_REUSE_ENABLED: "1",
       NODE_OPTIONS: "--enable-source-maps --stack-trace-limit=1000",
+      STAGE: "${opt:stage, 'local'}",
       SEVERA_TEST_USER_EMAIL: env.SEVERA_TEST_USER_EMAIL,
       AUTH_ISSUER: env.AUTH_ISSUER,
       METATAVU_BOT_TOKEN: env.METATAVU_BOT_TOKEN,
@@ -227,6 +229,7 @@ const serverlessConfiguration: AWS = {
     getTranslatedMemoPdfHandler,
     createTranslatedMemoPdfHandler,
     addOptInHandler,
+    updateUserStatus,
     createCoachBotAnswerHandler,
     getCoachUserDetailsHandler
   },

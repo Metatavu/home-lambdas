@@ -4,11 +4,11 @@ import { CreateKeycloakApiService } from "src/database/services/keycloak-api-ser
 import type { CoachUserDetailsResponse } from "src/generated/homeLambdasModels/model/coachUserDetailsResponse";
 import {
   difficultyToEnum,
-  normalizeQuizRole,src/libs/coach-bot-utils/streak-utils
+  normalizeQuizRole,
   roleToEnum
-} from "src/libs/coach-bot-utils/coach-bot-utils";
+} from "src/libs/coach-bot-utils/coach-answer-mapper";
+import { calculateDifficulty } from "src/libs/coach-bot-utils/streak-utils";
 import { middyfy } from "src/libs/lambda";
-import { calculateDifficulty } from "src/libs/streak-utils";
 
 const getCoachUserDetailsHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
   try {

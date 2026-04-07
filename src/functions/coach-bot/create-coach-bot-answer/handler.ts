@@ -8,7 +8,7 @@ import { middyfy } from "src/libs/lambda";
  */
 const createCoachBotAnswerHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
   try {
-    const body = event.body ? JSON.parse(event.body) : null;
+    const body = event.body;
     if (!body) {
       return {
         statusCode: 400,

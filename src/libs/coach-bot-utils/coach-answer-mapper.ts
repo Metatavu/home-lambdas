@@ -9,10 +9,21 @@ type QuizRole = (typeof allowedQuizRoles)[number];
 
 type QuizDifficulty = "easy" | "medium" | "hard";
 
+/**
+ * Type guard to check if a value is a valid QuizRole.
+ * @param value The value to check
+ * @return true if the value is a QuizRole, false otherwise
+ *
+ */
 const isQuizRole = (value: string): value is QuizRole => {
   return allowedQuizRoles.includes(value as QuizRole);
 };
 
+/**
+ * Type guard to check if a value is a valid QuizDifficulty.
+ * @param value The value to check
+ * @return true if the value is a QuizDifficulty, false otherwise
+ */
 const isQuizDifficulty = (value: string): value is QuizDifficulty => {
   return ["easy", "medium", "hard"].includes(value);
 };

@@ -5,7 +5,6 @@ dotenv.config({ path: __dirname + "/.env" });
 
 import sendDailyMessage from "@functions/meta-assistant/send-daily-message";
 import sendWeeklyMessage from "@functions/meta-assistant/send-weekly-message";
-import { create } from "domain";
 import { env } from "process";
 import {
   createCoachBotAnswerHandler,

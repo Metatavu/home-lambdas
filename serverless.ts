@@ -5,11 +5,12 @@ dotenv.config({ path: __dirname + "/.env" });
 
 import sendDailyMessage from "@functions/meta-assistant/send-daily-message";
 import sendWeeklyMessage from "@functions/meta-assistant/send-weekly-message";
+import { create } from "domain";
 import { env } from "process";
 import {
-  createQuizAttemptHandler,
+  createCoachBotAnswerHandler,
+  getCoachUserDetailsHandler,
   getSlackUserAvatarHandler,
-  getUserDetailsHandler,
   listMemoPdfHandler
 } from "src/functions";
 import removeUserAttributeHanndler from "src/functions/keycloak/remove-user-attribute";
@@ -170,7 +171,7 @@ const serverlessConfiguration: AWS = {
                   "arn:aws:dynamodb:${self:provider.region}:*:table/Memos",
                   "arn:aws:dynamodb:${self:provider.region}:*:table/Memos/index/FileIdIndex",
                   "arn:aws:dynamodb:${self:provider.region}:*:table/UserStreaks",
-                  "arn:aws:dynamodb:${self:provider.region}:*:table/QuizAttempts"
+                  "arn:aws:dynamodb:${self:provider.region}:*:table/CoachAnswers"
                 ]
           }
         ]
@@ -226,8 +227,8 @@ const serverlessConfiguration: AWS = {
     getTranslatedMemoPdfHandler,
     createTranslatedMemoPdfHandler,
     addOptInHandler,
-    createQuizAttemptHandler,
-    getUserDetailsHandler
+    createCoachBotAnswerHandler,
+    getCoachUserDetailsHandler
   },
   package: { individually: true },
   custom: {
@@ -388,11 +389,11 @@ const serverlessConfiguration: AWS = {
           }
         }
       },
-      QuizAttempts: {
+      CoachAnswers: {
         Type: "AWS::DynamoDB::Table",
         DeletionPolicy: "Delete",
         Properties: {
-          TableName: "QuizAttempts",
+          TableName: "CoachAnswers",
           AttributeDefinitions: [
             { AttributeName: "slack_user_id", AttributeType: "S" },
             { AttributeName: "date", AttributeType: "S" }

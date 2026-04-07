@@ -1,24 +1,24 @@
 import type { APIGatewayProxyEvent, APIGatewayProxyHandler } from "aws-lambda";
-import { securityQuizApiService } from "src/database/services";
+import { coachBotApiService } from "src/database/services";
 import { CreateKeycloakApiService } from "src/database/services/keycloak-api-service";
-import type { QuizUserDetailsResponse } from "src/generated/homeLambdasModels/model/quizUserDetailsResponse";
+import type { CoachUserDetailsResponse } from "src/generated/homeLambdasModels/model/coachUserDetailsResponse";
+import { difficultyToEnum, normalizeQuizRole, roleToEnum } from "src/libs/coach-bot-utils";
 import { middyfy } from "src/libs/lambda";
-import { difficultyToEnum, normalizeQuizRole, roleToEnum } from "src/libs/security-quiz-utils";
 import { calculateDifficulty } from "src/libs/streak-utils";
 
-const getUserDetailsHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
+const getCoachUserDetailsHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
   try {
-    const { id } = event.pathParameters ?? {};
-    if (!id) {
+    const { userId } = event.pathParameters ?? {};
+    if (!userId) {
       return {
         statusCode: 400,
-        body: JSON.stringify({ error: "Missing path parameter: id" })
+        body: JSON.stringify({ error: "Missing path parameter: userId" })
       };
     }
 
     const keycloakApi = CreateKeycloakApiService();
 
-    const user = await keycloakApi.findUser(id);
+    const user = await keycloakApi.findUser(userId);
     if (!user) {
       return {
         statusCode: 404,
@@ -38,14 +38,14 @@ const getUserDetailsHandler: APIGatewayProxyHandler = async (event: APIGatewayPr
 
     const normalizedRole = normalizeQuizRole(role);
 
-    const streak = await securityQuizApiService.getUserStreak(slackUserId);
+    const streak = await coachBotApiService.getUserStreak(slackUserId);
 
     //Calculate difficulty based on streak and convert role and difficulty to enums for response
     const difficulty = calculateDifficulty(streak);
-    const roleEnum = roleToEnum(normalizedRole) as QuizUserDetailsResponse.RoleEnum;
-    const difficultyEnum = difficultyToEnum(difficulty) as QuizUserDetailsResponse.DifficultyEnum;
+    const roleEnum = roleToEnum(normalizedRole) as CoachUserDetailsResponse.RoleEnum;
+    const difficultyEnum = difficultyToEnum(difficulty) as CoachUserDetailsResponse.DifficultyEnum;
 
-    const responseBody: QuizUserDetailsResponse = {
+    const responseBody: CoachUserDetailsResponse = {
       slackUserId: slackUserId,
       role: roleEnum,
       difficulty: difficultyEnum
@@ -63,4 +63,4 @@ const getUserDetailsHandler: APIGatewayProxyHandler = async (event: APIGatewayPr
   }
 };
 
-export const main = middyfy(getUserDetailsHandler);
+export const main = middyfy(getCoachUserDetailsHandler);

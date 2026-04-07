@@ -1,12 +1,12 @@
 import type { APIGatewayProxyEvent, APIGatewayProxyHandler } from "aws-lambda";
+import { createCoachBotAnswer } from "src/libs/coach-bot-utils";
 import { middyfy } from "src/libs/lambda";
-import { createQuizAttempt } from "src/libs/security-quiz-utils";
-import { processQuizAttempt } from "src/libs/streak-utils";
+import { processCoachBotAnswer } from "src/libs/streak-utils";
 
 /**
- * Handler for logging a quiz attempt and updating streak
+ * Handler for logging a coach bot answer and updating streak
  */
-const createQuizAttemptHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
+const createCoachBotAnswerHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
   const body = event.body ? JSON.parse(event.body) : null;
   if (!body) {
     return {
@@ -15,10 +15,10 @@ const createQuizAttemptHandler: APIGatewayProxyHandler = async (event: APIGatewa
     };
   }
 
-  const attempt = createQuizAttempt(body);
+  const attempt = createCoachBotAnswer(body);
 
   try {
-    const result = await processQuizAttempt(attempt);
+    const result = await processCoachBotAnswer(attempt);
 
     return {
       statusCode: 200,
@@ -28,10 +28,10 @@ const createQuizAttemptHandler: APIGatewayProxyHandler = async (event: APIGatewa
     return {
       statusCode: 500,
       body: JSON.stringify({
-        error: `Failed to process quiz attempt ${error}`
+        error: `Failed to process coach bot answer ${error}`
       })
     };
   }
 };
 
-export const main = middyfy(createQuizAttemptHandler);
+export const main = middyfy(createCoachBotAnswerHandler);

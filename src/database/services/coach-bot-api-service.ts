@@ -7,13 +7,13 @@ import {
   QueryCommand,
   type QueryCommandInput
 } from "@aws-sdk/lib-dynamodb";
-import type { QuizAttempt } from "src/generated/homeLambdasModels/model/quizAttempt";
+import type { CoachAnswer } from "src/generated/homeLambdasModels/model/coachAnswer";
 import type { UserStreakRecord } from "../models/user-streak-record";
 
 const STREAK_TABLE = "UserStreaks";
-const ATTEMPTS_TABLE = "QuizAttempts";
+const ATTEMPTS_TABLE = "CoachAnswers";
 
-class SecurityQuizApiService {
+class CoachBotApiService {
   /**
    * Constructor
    * @param docClient DynamoDBDocumentClient
@@ -48,22 +48,22 @@ class SecurityQuizApiService {
   };
 
   /**
-   * Creates a quiz attempt record. Will fail if an attempt for the same user and date already exists.
-   * @throws ConditionalCheckFailedException if an attempt for the same user and date already exists
-   * @param attempt - The quiz attempt to create
+   * Creates a coach bot answer record. Will fail if an answer for the same user and date already exists.
+   * @throws ConditionalCheckFailedException if an answer for the same user and date already exists
+   * @param answer - The coach bot answer to create
    * @return void
    */
-  public createQuizAttempt = async (attempt: QuizAttempt): Promise<void> => {
+  public createCoachBotAnswer = async (answer: CoachAnswer): Promise<void> => {
     const params: PutCommandInput = {
       TableName: ATTEMPTS_TABLE,
       Item: {
-        slack_user_id: attempt.slackUserId,
-        answered_correctly: attempt.answeredCorrectly,
-        role: attempt.role,
-        topic: attempt.topic,
-        topic_key: attempt.topicKey,
-        difficulty: attempt.difficulty,
-        date: attempt.date
+        slack_user_id: answer.slackUserId,
+        answered_correctly: answer.answeredCorrectly,
+        role: answer.role,
+        topic: answer.topic,
+        topic_key: answer.topicKey,
+        difficulty: answer.difficulty,
+        date: answer.date
       },
 
       // prevents overwriting existing attempt
@@ -77,13 +77,13 @@ class SecurityQuizApiService {
   };
 
   /**
-   * Queries attempts for a user between startDate and endDate (inclusive)
+   * Queries answers for a user between startDate and endDate (inclusive)
    */
-  public queryAttemptsByUser = async (
+  public queryAnswersByUser = async (
     slackUserId: string,
     startDate: string,
     endDate: string
-  ): Promise<QuizAttempt[]> => {
+  ): Promise<CoachAnswer[]> => {
     const params: QueryCommandInput = {
       TableName: ATTEMPTS_TABLE,
       KeyConditionExpression: "#user = :user AND #date BETWEEN :start AND :end",
@@ -111,4 +111,4 @@ class SecurityQuizApiService {
   };
 }
 
-export default SecurityQuizApiService;
+export default CoachBotApiService;

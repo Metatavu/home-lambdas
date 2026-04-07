@@ -1,10 +1,10 @@
 import type { UserStreakRecord } from "src/database/models/user-streak-record";
-import { securityQuizApiService } from "src/database/services";
-import type { QuizAttempt } from "src/generated/homeLambdasModels/model/quizAttempt";
-import type { QuizAttemptResponse } from "src/generated/homeLambdasModels/model/quizAttemptResponse";
+import { coachBotApiService } from "src/database/services";
+import type { CoachAnswer } from "src/generated/homeLambdasModels/model/coachAnswer";
+import type { CoachAnswerResponse } from "src/generated/homeLambdasModels/model/coachAnswerResponse";
 
 /**
- * Utility functions for managing user streaks in the security quiz context.
+ * Utility functions for managing user streaks in the coach bot context.
  */
 const getYesterday = (date: string): string => {
   const d = new Date(date);
@@ -13,21 +13,21 @@ const getYesterday = (date: string): string => {
 };
 
 /**
- * Processes a quiz attempt by recording it, calculating the user's new streak based on their previous attempts, and updating the streak record accordingly.
- * @param attempt - The quiz attempt to process
- * @returns An object containing whether the attempt was successful and the user's new streak count
+ * Processes a coach bot answer by recording it, calculating the user's new streak based on their previous attempts, and updating the streak record accordingly.
+ * @param attempt - The coach bot answer to process
+ * @returns An object containing whether the answer was successful and the user's new streak count
  */
-export const processQuizAttempt = async (attempt: QuizAttempt): Promise<QuizAttemptResponse> => {
+export const processCoachBotAnswer = async (attempt: CoachAnswer): Promise<CoachAnswerResponse> => {
   const { slackUserId, answeredCorrectly, date } = attempt;
 
   // store attempt
-  await securityQuizApiService.createQuizAttempt(attempt);
+  await coachBotApiService.createCoachBotAnswer(attempt);
 
-  const currentStreak = await securityQuizApiService.getUserStreak(slackUserId);
+  const currentStreak = await coachBotApiService.getUserStreak(slackUserId);
 
   const yesterday = getYesterday(date);
 
-  const yesterdayAttempts = await securityQuizApiService.queryAttemptsByUser(
+  const yesterdayAnswers = await coachBotApiService.queryAnswersByUser(
     slackUserId,
     yesterday,
     yesterday
@@ -38,7 +38,7 @@ export const processQuizAttempt = async (attempt: QuizAttempt): Promise<QuizAtte
   if (!answeredCorrectly) {
     newStreak = 0;
   } else {
-    const hadYesterdaySuccess = yesterdayAttempts.some((attempt) => attempt.answeredCorrectly);
+    const hadYesterdaySuccess = yesterdayAnswers.some((answer) => answer.answeredCorrectly);
     if (hadYesterdaySuccess) {
       newStreak = currentStreak + 1;
     } else {
@@ -52,7 +52,7 @@ export const processQuizAttempt = async (attempt: QuizAttempt): Promise<QuizAtte
     last_updated: date
   };
 
-  await securityQuizApiService.putUserStreakRecord(record);
+  await coachBotApiService.putUserStreakRecord(record);
 
   return {
     success: answeredCorrectly,

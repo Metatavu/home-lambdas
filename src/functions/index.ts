@@ -1,3 +1,5 @@
+export { default as createCoachBotAnswerHandler } from "./coach-bot/create-coach-bot-answer";
+export { default as getCoachUserDetailsHandler } from "./coach-bot/get-coach-user-details";
 export { default as findUserHandler } from "./keycloak/find-user";
 export { default as listUsersHandler } from "./keycloak/list-users";
 export { default as getContentPdfHandler } from "./memo-management/drive-memos/get-content-pdf";
@@ -28,8 +30,6 @@ export { default as deleteQuestionnaireHandler } from "./questionnaire/delete-qu
 export { default as findQuestionnaireHandler } from "./questionnaire/find-questionnaire";
 export { default as listQuestionnaireHandler } from "./questionnaire/list-questionnaire";
 export { default as updateQuestionnaireHandler } from "./questionnaire/update-questionnaire";
-export { default as createQuizAttemptHandler } from "./security-quiz/create-quiz";
-export { default as getUserDetailsHandler } from "./security-quiz/get-user-details";
 export { default as addSeveraOptInHandler } from "./severa/add-opt-in";
 export { default as getContractedWorkWeekHandler } from "./severa/get-filtered-workdays";
 export { default as getWorkHoursHandler } from "./severa/get-filtered-workhours";

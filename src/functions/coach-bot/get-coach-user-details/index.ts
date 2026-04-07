@@ -5,8 +5,8 @@ export default {
   events: [
     {
       httpApi: {
-        method: "post",
-        path: "/quiz/attempt",
+        method: "get",
+        path: "/coach/user-details/{userId}",
         authorizer: {
           name: "homeKeycloakAuthorizer"
         }

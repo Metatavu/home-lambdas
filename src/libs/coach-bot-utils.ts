@@ -1,4 +1,4 @@
-import { QuizAttempt } from "src/generated/homeLambdasModels/model/quizAttempt";
+import { CoachAnswer } from "src/generated/homeLambdasModels/model/coachAnswer";
 
 /**
  * Roles accepted from external quiz-related inputs (for example Keycloak attributes).
@@ -62,14 +62,14 @@ export const normalizeDifficulty = (
  * @param role Valid internal quiz role
  * @returns Role enum value
  */
-export const roleToEnum = (role: QuizRole): QuizAttempt.RoleEnum => {
+export const roleToEnum = (role: QuizRole): CoachAnswer.RoleEnum => {
   switch (role) {
     case "devops":
-      return QuizAttempt.RoleEnum.Devops;
+      return CoachAnswer.RoleEnum.Devops;
     case "developer":
-      return QuizAttempt.RoleEnum.Developer;
+      return CoachAnswer.RoleEnum.Developer;
     case "management":
-      return QuizAttempt.RoleEnum.Management;
+      return CoachAnswer.RoleEnum.Management;
   }
 };
 
@@ -79,28 +79,28 @@ export const roleToEnum = (role: QuizRole): QuizAttempt.RoleEnum => {
  * @param difficulty Difficulty value
  * @returns Difficulty enum value
  */
-export const difficultyToEnum = (difficulty: QuizDifficulty): QuizAttempt.DifficultyEnum => {
+export const difficultyToEnum = (difficulty: QuizDifficulty): CoachAnswer.DifficultyEnum => {
   switch (difficulty) {
     case "easy":
-      return QuizAttempt.DifficultyEnum.Easy;
+      return CoachAnswer.DifficultyEnum.Easy;
     case "medium":
-      return QuizAttempt.DifficultyEnum.Medium;
+      return CoachAnswer.DifficultyEnum.Medium;
     case "hard":
-      return QuizAttempt.DifficultyEnum.Hard;
+      return CoachAnswer.DifficultyEnum.Hard;
   }
 };
 
 /**
- * Creates a normalized QuizAttempt from raw request body data.
+ * Creates a normalized CoachAnswer from raw request body data.
  *
  * This factory method handles all validation and enum conversion in one place,
  * normalizing untrusted input to safe enum values.
  *
  * @param body Raw request body object
- * @returns A fully validated and normalized QuizAttempt
+ * @returns A fully validated and normalized CoachAnswer instance
  */
-export const createQuizAttempt = (body: any): QuizAttempt => {
-  const attempt = new QuizAttempt();
+export const createCoachBotAnswer = (body: any): CoachAnswer => {
+  const attempt = new CoachAnswer();
   attempt.slackUserId = body.slack_user_id;
   attempt.answeredCorrectly = body.answered_correctly;
   attempt.role = roleToEnum(normalizeQuizRole(body.role as string));

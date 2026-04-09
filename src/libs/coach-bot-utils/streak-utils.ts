@@ -4,7 +4,9 @@ import type { CoachAnswer } from "src/generated/homeLambdasModels/model/coachAns
 import type { CoachAnswerResponse } from "src/generated/homeLambdasModels/model/coachAnswerResponse";
 
 /**
- * Utility functions for managing user streaks in the coach bot context.
+ * Helper function to get yesterday's date in YYYY-MM-DD format, used for streak calculation.
+ * @param date - The current date as an ISO string
+ * @returns The date string for yesterday in YYYY-MM-DD format
  */
 const getYesterday = (date: string): string => {
   const d = new Date(date);
@@ -29,41 +31,46 @@ export const processCoachBotAnswer = async (answer: CoachAnswer): Promise<CoachA
     throw error;
   }
 
-  const currentStreak = await coachBotApiService.getUserStreak(slackUserId);
+  try {
+    const currentStreak = await coachBotApiService.getUserStreak(slackUserId);
 
-  const yesterday = getYesterday(date);
+    const yesterday = getYesterday(date);
 
-  const yesterdayAnswers = await coachBotApiService.queryAnswersByUser(
-    slackUserId,
-    yesterday,
-    yesterday
-  );
+    const yesterdayAnswers = await coachBotApiService.queryAnswersByUser(
+      slackUserId,
+      yesterday,
+      yesterday
+    );
 
-  let newStreak = 0;
+    let newStreak = 0;
 
-  if (!answeredCorrectly) {
-    newStreak = 0;
-  } else {
-    const hadYesterdaySuccess = yesterdayAnswers.some((a) => a.answeredCorrectly);
-    if (hadYesterdaySuccess) {
-      newStreak = currentStreak + 1;
+    if (!answeredCorrectly) {
+      newStreak = 0;
     } else {
-      newStreak = 1;
+      const hadYesterdaySuccess = yesterdayAnswers.some((a) => a.answeredCorrectly);
+      if (hadYesterdaySuccess) {
+        newStreak = currentStreak + 1;
+      } else {
+        newStreak = 1;
+      }
     }
+
+    const record: UserStreakRecord = {
+      slackUserId: slackUserId,
+      streak: newStreak,
+      lastUpdated: date
+    };
+
+    await coachBotApiService.putUserStreakRecord(record);
+
+    return {
+      success: answeredCorrectly,
+      streak: newStreak
+    };
+  } catch (error) {
+    console.error("Error processing coach bot answer:", error);
+    throw error;
   }
-
-  const record: UserStreakRecord = {
-    slack_user_id: slackUserId,
-    streak: newStreak,
-    last_updated: date
-  };
-
-  await coachBotApiService.putUserStreakRecord(record);
-
-  return {
-    success: answeredCorrectly,
-    streak: newStreak
-  };
 };
 
 /**

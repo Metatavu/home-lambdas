@@ -30,7 +30,7 @@ class CoachBotApiService {
   public getUserStreak = async (slackUserId: string): Promise<number> => {
     const params: GetCommandInput = {
       TableName: STREAK_TABLE,
-      Key: { slack_user_id: slackUserId }
+      Key: { slackUserId: slackUserId }
     };
 
     const result = await this.docClient.send(new GetCommand(params));
@@ -60,17 +60,17 @@ class CoachBotApiService {
     const params: PutCommandInput = {
       TableName: ATTEMPTS_TABLE,
       Item: {
-        slack_user_id: answer.slackUserId,
-        answered_correctly: answer.answeredCorrectly,
+        slackUserId: answer.slackUserId,
+        answeredCorrectly: answer.answeredCorrectly,
         role: answer.role,
         topic: answer.topic,
-        topic_key: answer.topicKey,
+        topicKey: answer.topicKey,
         difficulty: answer.difficulty,
         date: answer.date
       },
 
       // prevents overwriting existing attempt
-      ConditionExpression: "attribute_not_exists(slack_user_id) AND attribute_not_exists(#date)",
+      ConditionExpression: "attribute_not_exists(slackUserId) AND attribute_not_exists(#date)",
       ExpressionAttributeNames: {
         "#date": "date"
       }
@@ -91,7 +91,7 @@ class CoachBotApiService {
       TableName: ATTEMPTS_TABLE,
       KeyConditionExpression: "#user = :user AND #date BETWEEN :start AND :end",
       ExpressionAttributeNames: {
-        "#user": "slack_user_id",
+        "#user": "slackUserId",
         "#date": "date"
       },
       ExpressionAttributeValues: {
@@ -103,11 +103,11 @@ class CoachBotApiService {
 
     const result = await this.docClient.send(new QueryCommand(params));
     return (result.Items || []).map((item) => ({
-      slackUserId: item.slack_user_id,
-      answeredCorrectly: item.answered_correctly,
+      slackUserId: item.slackUserId,
+      answeredCorrectly: item.answeredCorrectly,
       role: item.role,
       topic: item.topic,
-      topicKey: item.topic_key,
+      topicKey: item.topicKey,
       difficulty: item.difficulty,
       date: item.date
     }));

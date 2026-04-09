@@ -14,15 +14,14 @@ import { middyfy } from "src/libs/lambda";
  * Handler for retrieving coach bot user details, including their Slack ID, role, and difficulty level based on their streak.
  */
 const getCoachUserDetailsHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
+  const { userId } = event.pathParameters ?? {};
+  if (!userId) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ error: "Missing path parameter: userId" })
+    };
+  }
   try {
-    const { userId } = event.pathParameters ?? {};
-    if (!userId) {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ error: "Missing path parameter: userId" })
-      };
-    }
-
     const keycloakApi = CreateKeycloakApiService();
 
     const user = await keycloakApi.findUser(userId);

@@ -383,8 +383,8 @@ const serverlessConfiguration: AWS = {
         DeletionPolicy: "Delete",
         Properties: {
           TableName: "UserStreaks",
-          AttributeDefinitions: [{ AttributeName: "slack_user_id", AttributeType: "S" }],
-          KeySchema: [{ AttributeName: "slack_user_id", KeyType: "HASH" }],
+          AttributeDefinitions: [{ AttributeName: "slackUserId", AttributeType: "S" }],
+          KeySchema: [{ AttributeName: "slackUserId", KeyType: "HASH" }],
           ProvisionedThroughput: {
             ReadCapacityUnits: 1,
             WriteCapacityUnits: 1
@@ -397,11 +397,11 @@ const serverlessConfiguration: AWS = {
         Properties: {
           TableName: "CoachAnswers",
           AttributeDefinitions: [
-            { AttributeName: "slack_user_id", AttributeType: "S" },
+            { AttributeName: "slackUserId", AttributeType: "S" },
             { AttributeName: "date", AttributeType: "S" }
           ],
           KeySchema: [
-            { AttributeName: "slack_user_id", KeyType: "HASH" },
+            { AttributeName: "slackUserId", KeyType: "HASH" },
             { AttributeName: "date", KeyType: "RANGE" }
           ],
           ProvisionedThroughput: {

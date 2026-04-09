@@ -9,30 +9,29 @@ import { middyfy } from "src/libs/lambda";
 const createCoachBotAnswerHandler: ValidatedEventAPIGatewayProxyEvent<CoachAnswer> = async (
   event
 ) => {
-  try {
-    let body: CoachAnswer;
-    if (typeof event.body === "string") {
-      body = JSON.parse(event.body);
-    } else {
-      body = event.body as CoachAnswer;
-    }
-    if (!body) {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ error: "Request body is required." })
-      };
-    }
-
-    const newAnswer = {
-      slackUserId: body.slackUserId,
-      answeredCorrectly: body.answeredCorrectly,
-      role: body.role,
-      topic: body.topic,
-      topicKey: body.topicKey,
-      difficulty: body.difficulty,
-      date: body.date
+  let body: CoachAnswer;
+  if (typeof event.body === "string") {
+    body = JSON.parse(event.body);
+  } else {
+    body = event.body as CoachAnswer;
+  }
+  if (!body) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ error: "Request body is required." })
     };
+  }
 
+  const newAnswer = {
+    slackUserId: body.slackUserId,
+    answeredCorrectly: body.answeredCorrectly,
+    role: body.role,
+    topic: body.topic,
+    topicKey: body.topicKey,
+    difficulty: body.difficulty,
+    date: body.date
+  };
+  try {
     const result = await processCoachBotAnswer(newAnswer);
 
     return {

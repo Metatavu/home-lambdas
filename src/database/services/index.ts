@@ -1,6 +1,7 @@
 import VacationRequestService from "@database/services/vacation-request-api-service";
 import createDynamoDBClient from "../client";
 import ArticlesApiService from "./articles-api-service";
+import CoachBotApiService from "./coach-bot-api-service";
 import OnCallScheduleService from "./oncall-schedule-api-service";
 import QuestionnaireService from "./questionnaire-api-service";
 import SoftwareService from "./software-api-service";
@@ -12,3 +13,4 @@ export const onCallScheduleService = new OnCallScheduleService(createDynamoDBCli
 export const articlesApiService = new ArticlesApiService(createDynamoDBClient());
 export const softwareService = new SoftwareService(createDynamoDBClient());
 export const memoService = new TranslatedMemoService(createDynamoDBClient());
+export const coachBotApiService = new CoachBotApiService(createDynamoDBClient());

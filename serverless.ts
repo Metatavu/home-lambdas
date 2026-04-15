@@ -35,6 +35,8 @@ import deleteVacationRequestHandler from "src/functions/vacation-request/delete-
 import findVacationRequestHandler from "src/functions/vacation-request/find-vacation-request";
 import listVacationRequestHandler from "src/functions/vacation-request/list-vacation-request";
 import updateVacationRequestHandler from "src/functions/vacation-request/update-vacation-request";
+import listUsersSkillsHandler from "src/functions/users-skills/list-users-skills";
+import createUsersSkillsHandler from "src/functions/users-skills/create-users-skills";
 import createArticleHandler from "src/functions/wiki-documentation/create-article";
 import deleteArticleHandler from "src/functions/wiki-documentation/delete-article";
 import findArticleHandler from "src/functions/wiki-documentation/find-article";
@@ -166,6 +168,7 @@ const serverlessConfiguration: AWS = {
                   "arn:aws:dynamodb:${self:provider.region}:*:table/SoftwareRegistry",
                   "arn:aws:dynamodb:${self:provider.region}:*:table/Questionnaires",
                   "arn:aws:dynamodb:${self:provider.region}:*:table/VacationRequests",
+                  "arn:aws:dynamodb:${self:provider.region}:*:table/usersSkills",
                   "arn:aws:dynamodb:${self:provider.region}:*:table/Articles",
                   "arn:aws:dynamodb:${self:provider.region}:*:table/Articles/index/GSI_Path",
                   "arn:aws:dynamodb:${self:provider.region}:*:table/OnCallSchedule",
@@ -208,6 +211,8 @@ const serverlessConfiguration: AWS = {
     listVacationRequestHandler,
     updateVacationRequestHandler,
     getResourceAllocationHandler,
+    listUsersSkillsHandler,
+    createUsersSkillsHandler,
     getPhasesHandler,
     getWorkHoursHandler,
     listArticlesHandler,
@@ -289,6 +294,19 @@ const serverlessConfiguration: AWS = {
         DeletionPolicy: "Delete",
         Properties: {
           TableName: "VacationRequests",
+          AttributeDefinitions: [{ AttributeName: "id", AttributeType: "S" }],
+          KeySchema: [{ AttributeName: "id", KeyType: "HASH" }],
+          ProvisionedThroughput: {
+            ReadCapacityUnits: 1,
+            WriteCapacityUnits: 1
+          }
+        }
+      },
+      UsersSkills: {
+        Type: "AWS::DynamoDB::Table",
+        DeletionPolicy: "Delete",
+        Properties: {
+          TableName: "UsersSkills",
           AttributeDefinitions: [{ AttributeName: "id", AttributeType: "S" }],
           KeySchema: [{ AttributeName: "id", KeyType: "HASH" }],
           ProvisionedThroughput: {

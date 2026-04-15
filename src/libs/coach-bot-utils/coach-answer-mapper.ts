@@ -1,0 +1,102 @@
+import { CoachAnswer } from "src/generated/homeLambdasModels/model/coachAnswer";
+
+/**
+ * Roles accepted from external quiz-related inputs (for example Keycloak attributes).
+ */
+const allowedQuizRoles = ["devops", "developer", "management"] as const;
+
+type QuizRole = (typeof allowedQuizRoles)[number];
+
+type QuizDifficulty = "easy" | "medium" | "hard";
+
+/**
+ * Type guard to check if a value is a valid QuizRole.
+ * @param value The value to check
+ * @return true if the value is a QuizRole, false otherwise
+ *
+ */
+const isQuizRole = (value: string): value is QuizRole => {
+  return allowedQuizRoles.includes(value as QuizRole);
+};
+
+/**
+ * Type guard to check if a value is a valid QuizDifficulty.
+ * @param value The value to check
+ * @return true if the value is a QuizDifficulty, false otherwise
+ */
+const isQuizDifficulty = (value: string): value is QuizDifficulty => {
+  return ["easy", "medium", "hard"].includes(value);
+};
+
+/**
+ * Normalizes an optional raw role value to a known quiz role.
+ *
+ * This function acts as a boundary guard for untrusted string values coming
+ * from external systems. Unknown or missing values are mapped to a safe fallback.
+ *
+ * @param role Raw role string from external input
+ * @param fallback Role returned when input is missing or invalid (defaults to "developer")
+ * @returns A validated internal quiz role
+ */
+export const normalizeQuizRole = (
+  role: string | undefined,
+  fallback: QuizRole = "developer"
+): QuizRole => {
+  if (!role) {
+    return fallback;
+  }
+
+  return isQuizRole(role) ? role : fallback;
+};
+
+/**
+ * Normalizes a raw difficulty string to a known quiz difficulty.
+ *
+ * @param difficulty Raw difficulty value from external input
+ * @param fallback Difficulty returned when input is invalid (defaults to "medium")
+ * @returns A validated internal quiz difficulty
+ */
+export const normalizeDifficulty = (
+  difficulty: string | undefined,
+  fallback: QuizDifficulty = "medium"
+): QuizDifficulty => {
+  if (!difficulty) {
+    return fallback;
+  }
+
+  return isQuizDifficulty(difficulty) ? difficulty : fallback;
+};
+
+/**
+ * Converts a validated internal quiz role to the corresponding enum value.
+ *
+ * @param role Valid internal quiz role
+ * @returns Role enum value
+ */
+export const roleToEnum = (role: QuizRole): CoachAnswer.RoleEnum => {
+  switch (role) {
+    case "devops":
+      return CoachAnswer.RoleEnum.Devops;
+    case "developer":
+      return CoachAnswer.RoleEnum.Developer;
+    case "management":
+      return CoachAnswer.RoleEnum.Management;
+  }
+};
+
+/**
+ * Converts internal difficulty values to the corresponding enum value.
+ *
+ * @param difficulty Difficulty value
+ * @returns Difficulty enum value
+ */
+export const difficultyToEnum = (difficulty: QuizDifficulty): CoachAnswer.DifficultyEnum => {
+  switch (difficulty) {
+    case "easy":
+      return CoachAnswer.DifficultyEnum.Easy;
+    case "medium":
+      return CoachAnswer.DifficultyEnum.Medium;
+    case "hard":
+      return CoachAnswer.DifficultyEnum.Hard;
+  }
+};

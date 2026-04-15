@@ -6,7 +6,12 @@ dotenv.config({ path: __dirname + "/.env" });
 import sendDailyMessage from "@functions/meta-assistant/send-daily-message";
 import sendWeeklyMessage from "@functions/meta-assistant/send-weekly-message";
 import { env } from "process";
-import { getSlackUserAvatarHandler, listMemoPdfHandler } from "src/functions";
+import {
+  createCoachBotAnswerHandler,
+  getCoachUserDetailsHandler,
+  getSlackUserAvatarHandler,
+  listMemoPdfHandler
+} from "src/functions";
 import removeUserAttributeHanndler from "src/functions/keycloak/remove-user-attribute";
 import updateVacationHandler from "src/functions/keycloak/update-user-vacation";
 import getContentPdfHandler from "src/functions/memo-management/drive-memos/get-content-pdf";
@@ -24,6 +29,7 @@ import getResourceAllocationHandler from "src/functions/severa/get-resource-allo
 import listWorkdaysForUserHandler from "src/functions/severa/list-workdays-for-user";
 import removeOptInHandler from "src/functions/severa/remove-opt-in";
 import listUsersFlextimeHandler from "src/functions/users/flextime";
+import updateUserStatus from "src/functions/users/update-status";
 import createVacationRequestHandler from "src/functions/vacation-request/create-vacation-request";
 import deleteVacationRequestHandler from "src/functions/vacation-request/delete-vacation-request";
 import findVacationRequestHandler from "src/functions/vacation-request/find-vacation-request";
@@ -164,7 +170,9 @@ const serverlessConfiguration: AWS = {
                   "arn:aws:dynamodb:${self:provider.region}:*:table/Articles/index/GSI_Path",
                   "arn:aws:dynamodb:${self:provider.region}:*:table/OnCallSchedule",
                   "arn:aws:dynamodb:${self:provider.region}:*:table/Memos",
-                  "arn:aws:dynamodb:${self:provider.region}:*:table/Memos/index/FileIdIndex"
+                  "arn:aws:dynamodb:${self:provider.region}:*:table/Memos/index/FileIdIndex",
+                  "arn:aws:dynamodb:${self:provider.region}:*:table/UserStreaks",
+                  "arn:aws:dynamodb:${self:provider.region}:*:table/CoachAnswers"
                 ]
           }
         ]
@@ -219,7 +227,10 @@ const serverlessConfiguration: AWS = {
     getContentPdfHandler,
     getTranslatedMemoPdfHandler,
     createTranslatedMemoPdfHandler,
-    addOptInHandler
+    addOptInHandler,
+    updateUserStatus,
+    createCoachBotAnswerHandler,
+    getCoachUserDetailsHandler
   },
   package: { individually: true },
   custom: {
@@ -360,6 +371,38 @@ const serverlessConfiguration: AWS = {
                 WriteCapacityUnits: 1
               }
             }
+          ],
+          ProvisionedThroughput: {
+            ReadCapacityUnits: 1,
+            WriteCapacityUnits: 1
+          }
+        }
+      },
+      UserStreaks: {
+        Type: "AWS::DynamoDB::Table",
+        DeletionPolicy: "Delete",
+        Properties: {
+          TableName: "UserStreaks",
+          AttributeDefinitions: [{ AttributeName: "slackUserId", AttributeType: "S" }],
+          KeySchema: [{ AttributeName: "slackUserId", KeyType: "HASH" }],
+          ProvisionedThroughput: {
+            ReadCapacityUnits: 1,
+            WriteCapacityUnits: 1
+          }
+        }
+      },
+      CoachAnswers: {
+        Type: "AWS::DynamoDB::Table",
+        DeletionPolicy: "Delete",
+        Properties: {
+          TableName: "CoachAnswers",
+          AttributeDefinitions: [
+            { AttributeName: "slackUserId", AttributeType: "S" },
+            { AttributeName: "date", AttributeType: "S" }
+          ],
+          KeySchema: [
+            { AttributeName: "slackUserId", KeyType: "HASH" },
+            { AttributeName: "date", KeyType: "RANGE" }
           ],
           ProvisionedThroughput: {
             ReadCapacityUnits: 1,

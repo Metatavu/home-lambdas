@@ -1,3 +1,5 @@
+export { default as createCoachBotAnswerHandler } from "./coach-bot/create-coach-bot-answer";
+export { default as getCoachUserDetailsHandler } from "./coach-bot/get-coach-user-details";
 export { default as findUserHandler } from "./keycloak/find-user";
 export { default as listUsersHandler } from "./keycloak/list-users";
 export { default as getContentPdfHandler } from "./memo-management/drive-memos/get-content-pdf";
@@ -46,6 +48,7 @@ export { default as createArticleHandler } from "./wiki-documentation/create-art
 export { default as deleteArticleHandler } from "./wiki-documentation/delete-article";
 export { default as findArticleHandler } from "./wiki-documentation/find-article";
 export { default as findArticleByPathHandler } from "./wiki-documentation/find-article-by-path";
+export { default as importDocumentHandler } from "./wiki-documentation/import-document";
 export { default as listArticlesHandler } from "./wiki-documentation/list-articles";
 export { default as listMediaHandler } from "./wiki-documentation/list-media";
 export { default as readArticleHandler } from "./wiki-documentation/read-article";

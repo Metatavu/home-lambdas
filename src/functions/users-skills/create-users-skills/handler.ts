@@ -31,6 +31,7 @@ export const createUsersSkillsHandler: ValidatedEventAPIGatewayProxyEvent<
   }
 
   const newUsersSkillsId = uuidv4();
+  // TODO This will be added after API specs are altered to have userID
   // const api = CreateKeycloakApiService();
   // const userDetails = await api.findUser(userId);
 

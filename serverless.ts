@@ -37,6 +37,7 @@ import listVacationRequestHandler from "src/functions/vacation-request/list-vaca
 import updateVacationRequestHandler from "src/functions/vacation-request/update-vacation-request";
 import listUsersSkillsHandler from "src/functions/users-skills/list-users-skills";
 import createUsersSkillsHandler from "src/functions/users-skills/create-users-skills";
+import deleteUsersSkillsHandler from "src/functions/users-skills/delete-users-skills";
 import createArticleHandler from "src/functions/wiki-documentation/create-article";
 import deleteArticleHandler from "src/functions/wiki-documentation/delete-article";
 import findArticleHandler from "src/functions/wiki-documentation/find-article";
@@ -213,6 +214,7 @@ const serverlessConfiguration: AWS = {
     getResourceAllocationHandler,
     listUsersSkillsHandler,
     createUsersSkillsHandler,
+    deleteUsersSkillsHandler,
     getPhasesHandler,
     getWorkHoursHandler,
     listArticlesHandler,

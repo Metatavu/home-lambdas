@@ -53,7 +53,6 @@ const updateVacationHandler: APIGatewayProxyHandlerV2 = async (event) => {
      * @param value - The numeric value (e.g., vacation days)
      * @returns Formatted string "YYYY:NNN"
      */
-
     const formatValue = (year: string, value: number) =>
       `${year}:${String(value).padStart(3, "0")}`;
 
@@ -65,7 +64,6 @@ const updateVacationHandler: APIGatewayProxyHandlerV2 = async (event) => {
      * @param arr - Array of year-value strings (e.g., vacationDaysByYear)
      * @param value - The new or updated "YYYY:NNN" string
      */
-
     const updateEntry = (arr: string[], value: string) => {
       const index = arr.findIndex((v) => v.startsWith(`${value.split(":")[0]}:`));
       if (index !== -1) arr[index] = value;

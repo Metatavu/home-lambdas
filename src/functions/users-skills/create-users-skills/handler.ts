@@ -2,8 +2,7 @@ import { usersSkillsService } from "src/database/services";
 import type { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
 import { middyfy } from "src/libs/lambda";
 import type usersSkillsSchema from "src/schema/usersSkills";
-import { v4 as uuidv4 } from "uuid";
-import UsersSkillsModel from "@database/models/usersSkills";
+import type UsersSkillsModel from "@database/models/usersSkills";
 
 /**
  * Handler for creating a new users skills entry in DynamoDB.
@@ -22,7 +21,7 @@ export const createUsersSkillsHandler: ValidatedEventAPIGatewayProxyEvent<
     };
   }
 
-  const { name, skills } = body;
+  const { id, name, skills } = body;
 
   if (!name || !skills) {
     return {
@@ -31,14 +30,9 @@ export const createUsersSkillsHandler: ValidatedEventAPIGatewayProxyEvent<
     };
   }
 
-  const newUsersSkillsId = uuidv4();
-  // TODO This will be added after API specs are altered to have userID
-  // const api = CreateKeycloakApiService();
-  // const userDetails = await api.findUser(userId);
-
   try {
     const newUsersSkills: UsersSkillsModel = {
-      id: newUsersSkillsId,
+      id,
       name,
       skills
     };

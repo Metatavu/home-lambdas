@@ -6,6 +6,7 @@ import OnCallScheduleService from "./oncall-schedule-api-service";
 import QuestionnaireService from "./questionnaire-api-service";
 import SoftwareService from "./software-api-service";
 import TranslatedMemoService from "./translated-memo-api-service";
+import UsersSkillsService from "@database/services/users-skills-api-service";
 
 export const questionnaireService = new QuestionnaireService(createDynamoDBClient());
 export const vacationRequestService = new VacationRequestService(createDynamoDBClient());
@@ -14,3 +15,4 @@ export const articlesApiService = new ArticlesApiService(createDynamoDBClient())
 export const softwareService = new SoftwareService(createDynamoDBClient());
 export const memoService = new TranslatedMemoService(createDynamoDBClient());
 export const coachBotApiService = new CoachBotApiService(createDynamoDBClient());
+export const usersSkillsService = new UsersSkillsService(createDynamoDBClient());

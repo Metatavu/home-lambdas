@@ -1,16 +1,5 @@
-import type {
-  DeleteCommandInput,
-  GetCommandInput,
-  PutCommandInput,
-  ScanCommandInput
-} from "@aws-sdk/lib-dynamodb";
-import {
-  type DynamoDBDocumentClient,
-  PutCommand,
-  GetCommand,
-  ScanCommand,
-  DeleteCommand
-} from "@aws-sdk/lib-dynamodb";
+import { type DeleteCommandInput, type GetCommandInput, type PutCommandInput, type ScanCommandInput,
+    type DynamoDBDocumentClient, PutCommand, GetCommand, ScanCommand, DeleteCommand } from "@aws-sdk/lib-dynamodb";
 import type UsersSkillsModel from "@database/models/usersSkills";
 
 const TABLE_NAME = "UsersSkills";

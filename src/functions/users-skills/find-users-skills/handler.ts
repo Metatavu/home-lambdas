@@ -9,7 +9,6 @@ import { middyfy } from "src/libs/lambda";
  * @returns users skills information as object
  *
  */
-
 const findUsersSkillsHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
   const { id } = event.pathParameters || {};
 

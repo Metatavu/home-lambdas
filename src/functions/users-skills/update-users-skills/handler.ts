@@ -2,11 +2,12 @@ import type { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway";
 import { middyfy } from "@libs/lambda";
 import { usersSkillsService } from "src/database/services";
 import type usersSkillsSchema from "src/schema/usersSkills";
+import UsersSkillsModel from "@database/models/usersSkills";
 
 /**
  * Lambda function to update a users skills entry
  *
- * @param event event containing path parameters and a JSON body that matches 'vacationRequestSchema'
+ * @param event event containing path parameters and a JSON body that matches 'usersSkillsSchema'
  * @return A response object with statuscode
  */
 const updateUsersSkillsHandler: ValidatedEventAPIGatewayProxyEvent<
@@ -38,7 +39,7 @@ const updateUsersSkillsHandler: ValidatedEventAPIGatewayProxyEvent<
     };
   }
 
-  const usersSkillsUpdates = {
+  const usersSkillsUpdates: UsersSkillsModel = {
     id: id,
     name: existingUsersSkills.name,
     skills: skills

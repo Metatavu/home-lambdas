@@ -3,6 +3,7 @@ import type { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
 import { middyfy } from "src/libs/lambda";
 import type usersSkillsSchema from "src/schema/usersSkills";
 import { v4 as uuidv4 } from "uuid";
+import UsersSkillsModel from "@database/models/usersSkills";
 
 /**
  * Handler for creating a new users skills entry in DynamoDB.
@@ -36,7 +37,7 @@ export const createUsersSkillsHandler: ValidatedEventAPIGatewayProxyEvent<
   // const userDetails = await api.findUser(userId);
 
   try {
-    const newUsersSkills = {
+    const newUsersSkills: UsersSkillsModel = {
       id: newUsersSkillsId,
       name,
       skills

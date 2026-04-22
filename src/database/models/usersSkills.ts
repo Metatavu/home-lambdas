@@ -1,7 +1,7 @@
 import type { Skill } from "src/generated/homeLambdasModels/model/skill";
 
 /**
- * DynamoDB model for vacation request
+ * DynamoDB model for users skills
  */
 interface UsersSkillsModel {
   id: string;

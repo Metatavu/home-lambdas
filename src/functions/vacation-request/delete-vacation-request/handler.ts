@@ -1,8 +1,8 @@
 import type { APIGatewayProxyEvent, APIGatewayProxyHandler } from "aws-lambda";
 import { vacationRequestService } from "src/database/services";
-import { CreateKeycloakApiService } from "src/database/services/keycloak-api-service";
 import { middyfy } from "src/libs/lambda";
 import { notifyAdminsVacationDeletedAll } from "src/notifications/vacation-notifications";
+import { CreateKeycloakApiService } from "src/services/keycloak-api-service";
 
 /**
  * Lambda for deleting a vacation request entry from DynamoDB.

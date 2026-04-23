@@ -1,7 +1,7 @@
 import type { APIGatewayProxyEvent, APIGatewayProxyHandler } from "aws-lambda";
-import { CreateKeycloakApiService } from "src/database/services/keycloak-api-service";
-import { middyfy } from "src/libs/lambda";
 import type { User } from "src/generated/homeLambdasModels/model/user";
+import { middyfy } from "src/libs/lambda";
+import { CreateKeycloakApiService } from "src/services/keycloak-api-service";
 
 /**
  * Lambda for finding user
@@ -9,9 +9,7 @@ import type { User } from "src/generated/homeLambdasModels/model/user";
  * @param event event
  * @returns user information as string
  */
-const findUserHandler: APIGatewayProxyHandler = async (
-  event: APIGatewayProxyEvent
-) => {
+const findUserHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
   try {
     const { id } = event.pathParameters ?? {};
     const api = CreateKeycloakApiService();
@@ -22,7 +20,7 @@ const findUserHandler: APIGatewayProxyHandler = async (
     if (!userByIdRaw) {
       return {
         statusCode: 404,
-        body: JSON.stringify({ error: "User not found" }),
+        body: JSON.stringify({ error: "User not found" })
       };
     }
     const userById: User = {
@@ -30,16 +28,16 @@ const findUserHandler: APIGatewayProxyHandler = async (
       firstName: userByIdRaw.firstName,
       lastName: userByIdRaw.lastName,
       email: userByIdRaw.email,
-      attributes: userByIdRaw.attributes,
+      attributes: userByIdRaw.attributes
     };
     return {
       statusCode: 200,
-      body: JSON.stringify(userById),
+      body: JSON.stringify(userById)
     };
   } catch (error) {
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: error.message }),
+      body: JSON.stringify({ error: error.message })
     };
   }
 };

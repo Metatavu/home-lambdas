@@ -1,6 +1,6 @@
 import { DateTime } from "luxon";
-import { CreateKeycloakApiService } from "src/database/services/keycloak-api-service";
 import type { VacationRequestStatus } from "src/generated/homeLambdasModels/model/vacationRequestStatus";
+import { CreateKeycloakApiService } from "src/services/keycloak-api-service";
 import { CreateSeveraApiService } from "src/services/severa-api-service";
 
 /**

@@ -2,7 +2,6 @@ import type { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway";
 import { middyfy } from "@libs/lambda";
 import { entityToDto } from "src/database/dtos/vacationDtos";
 import { vacationRequestService } from "src/database/services";
-import { CreateKeycloakApiService } from "src/database/services/keycloak-api-service";
 import { VacationRequestStatuses } from "src/generated/homeLambdasModels/model/vacationRequestStatuses";
 import {
   deductVacationDaysForApproval,
@@ -16,6 +15,7 @@ import {
   notifyUserVacationStatusUpdatedAll
 } from "src/notifications/vacation-notifications";
 import type vacationRequestSchema from "src/schema/vacationRequest";
+import { CreateKeycloakApiService } from "src/services/keycloak-api-service";
 
 /**
  * Verifies user has enough vacation days and deducts them upon approval of a vacation request.

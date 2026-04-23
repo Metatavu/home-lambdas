@@ -1,6 +1,5 @@
 import { dtoToEntity, entityToDto } from "src/database/dtos/vacationDtos";
 import { vacationRequestService } from "src/database/services";
-import { CreateKeycloakApiService } from "src/database/services/keycloak-api-service";
 import type { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
 import { middyfy } from "src/libs/lambda";
 import {
@@ -10,6 +9,7 @@ import {
 } from "src/libs/vacation-utils";
 import { notifyAdminsVacationSubmittedAll } from "src/notifications/vacation-notifications";
 import type vacationRequestSchema from "src/schema/vacationRequest";
+import { CreateKeycloakApiService } from "src/services/keycloak-api-service";
 import { v4 as uuidv4 } from "uuid";
 
 /**

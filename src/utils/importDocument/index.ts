@@ -1,5 +1,5 @@
 import pdf from "pdf-parse";
-
+import { responseHeaders } from "src/libs/http/headers";
 /**
  * Converts a string into a URL-safe slug segment.
  *
@@ -18,6 +18,18 @@ export const slugify = (value: string) =>
 export const isPdfFile = (contentType: string | undefined, key: string): boolean => {
   return contentType === "application/pdf" || key.toLowerCase().endsWith(".pdf");
 };
+
+/**
+ * Creates a standardized HTTP response object.
+ * @param statusCode HTTP status code for the response
+ * @param payload Response body payload, will be JSON-stringified
+ * @returns An object representing the HTTP response, with appropriate headers and body
+ */
+export const createResponse = (statusCode: number, payload: unknown) => ({
+  statusCode,
+  headers: responseHeaders,
+  body: JSON.stringify(payload)
+});
 
 /**
  * Extracts text from PDF bytes and normalizes it into markdown.

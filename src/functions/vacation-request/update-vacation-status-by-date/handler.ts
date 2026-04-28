@@ -18,72 +18,73 @@ const updateVacationStatusByDateHandler = async (): Promise<APIGatewayProxyResul
     const vacations = await vacationRequestService.listVacationRequests();
     let ongoingUpdated = 0;
     let completedUpdated = 0;
+    const errors: string[] = [];
 
-    await Promise.allSettled(
+    const results = await Promise.allSettled(
       vacations.map(async (vacation) => {
         const latestStatus = vacation.status?.at(-1)?.status;
 
-        if (latestStatus) {
-          let nextStatus: VacationRequestStatuses = latestStatus;
-          /**
-           * If the latest status is Approved and the current date is between start and end date, set status to Ongoing.
-           */
-          if (
-            latestStatus === VacationRequestStatuses.Approved &&
-            vacation.startDate <= today &&
-            vacation.endDate >= today
-          ) {
-            nextStatus = VacationRequestStatuses.Ongoing;
-          }
-          /**
-           * If the latest status is Approved or Ongoing and the end date has passed, set status to Completed.
-           */
-          if (
-            (latestStatus === VacationRequestStatuses.Approved ||
-              latestStatus === VacationRequestStatuses.Ongoing) &&
-            vacation.endDate < today
-          ) {
-            nextStatus = VacationRequestStatuses.Completed;
-          }
-
-          const isStatusChanged = latestStatus !== nextStatus;
-
-          /**
-           * If the status has changed, update the vacation request in the database and increment the appropriate counter
-           */
-          if (isStatusChanged) {
-            const updatedVacation = {
-              ...vacation,
-              status: [
-                {
-                  status: nextStatus,
-                  createdBy: "system",
-                  updatedAt: new Date()
-                }
-              ],
-              updatedAt: new Date().toISOString()
-            };
-            await vacationRequestService.updateVacationRequest(updatedVacation);
-
-            if (nextStatus === VacationRequestStatuses.Ongoing) {
-              ongoingUpdated += 1;
-            } else if (nextStatus === VacationRequestStatuses.Completed) {
-              completedUpdated += 1;
-            }
-          }
-        } else
+        if (!latestStatus) {
           throw new Error(
-            `Vacation request with id ${vacation.id} has no status, cannot update status by date.`
+            `Vacation request ${vacation.id} has no status, cannot update status by date.`
           );
+        }
+
+        let nextStatus: VacationRequestStatuses = latestStatus;
+        const startDate = DateTime.fromISO(vacation.startDate).toISODate();
+        const endDate = DateTime.fromISO(vacation.endDate).toISODate();
+
+        if (
+          latestStatus === VacationRequestStatuses.Approved &&
+          startDate <= today &&
+          endDate >= today
+        ) {
+          nextStatus = VacationRequestStatuses.Ongoing;
+        }
+
+        if (
+          (latestStatus === VacationRequestStatuses.Approved ||
+            latestStatus === VacationRequestStatuses.Ongoing) &&
+          endDate < today
+        ) {
+          nextStatus = VacationRequestStatuses.Completed;
+        }
+
+        if (latestStatus === nextStatus) return;
+
+        await vacationRequestService.updateVacationRequest({
+          ...vacation,
+          status: [
+            {
+              status: nextStatus,
+              createdBy: "system",
+              updatedAt: new Date().toISOString() as unknown as Date
+            }
+          ],
+          updatedAt: new Date().toISOString()
+        });
+
+        return nextStatus;
       })
     );
 
+    for (const result of results) {
+      if (result.status === "rejected") {
+        errors.push(result.reason instanceof Error ? result.reason.message : String(result.reason));
+      } else if (result.value === VacationRequestStatuses.Ongoing) {
+        ongoingUpdated += 1;
+      } else if (result.value === VacationRequestStatuses.Completed) {
+        completedUpdated += 1;
+      }
+    }
+
     return {
-      statusCode: 200,
+      statusCode: errors.length > 0 ? 207 : 200,
       body: JSON.stringify({
         processedVacations: ongoingUpdated + completedUpdated,
         ongoingUpdated,
-        completedUpdated
+        completedUpdated,
+        ...(errors.length > 0 && { errors })
       })
     };
   } catch (error) {
@@ -97,4 +98,4 @@ const updateVacationStatusByDateHandler = async (): Promise<APIGatewayProxyResul
   }
 };
 
-export const main = middyfy(updateVacationStatusByDateHandler);
+export const main = updateVacationStatusByDateHandler;

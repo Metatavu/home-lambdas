@@ -163,13 +163,6 @@ const updateVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
   const statusChanged = existingLatestStatus !== newLatestStatus;
   const draftStatusChanged = existingVacationRequest.draft !== draft;
 
-  const existingDays = existingVacationRequest.days;
-  const daysChanged = existingDays !== days;
-
-  const existingStartDate = existingVacationRequest.startDate;
-  const existingEndDate = existingVacationRequest.endDate;
-  const datesChanged = existingStartDate !== startDate || existingEndDate !== endDate;
-
   const vacationRequestUpdates = {
     id: existingVacationRequest.id,
     userId: existingVacationRequest.userId,

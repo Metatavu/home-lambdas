@@ -2,7 +2,6 @@ import type { APIGatewayProxyResult } from "aws-lambda";
 import { DateTime } from "luxon";
 import { vacationRequestService } from "src/database/services";
 import { VacationRequestStatuses } from "src/generated/homeLambdasModels/model/vacationRequestStatuses";
-import { middyfy } from "src/libs/lambda";
 
 /**
  * Updates vacation request statuses by date by replacing status array contents.

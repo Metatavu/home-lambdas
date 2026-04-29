@@ -8,7 +8,8 @@ import {
   getContractedWeek,
   getLatestStatus,
   returnVacationDaysForRejection,
-  validateVacationApproval
+  validateVacationApproval,
+  validateVacationDates
 } from "src/libs/vacation-utils";
 import {
   notifyAdminsVacationSubmittedAll,
@@ -162,6 +163,13 @@ const updateVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
   const statusChanged = existingLatestStatus !== newLatestStatus;
   const draftStatusChanged = existingVacationRequest.draft !== draft;
 
+  const existingDays = existingVacationRequest.days;
+  const daysChanged = existingDays !== days;
+
+  const existingStartDate = existingVacationRequest.startDate;
+  const existingEndDate = existingVacationRequest.endDate;
+  const datesChanged = existingStartDate !== startDate || existingEndDate !== endDate;
+
   const vacationRequestUpdates = {
     id: existingVacationRequest.id,
     userId: existingVacationRequest.userId,
@@ -201,30 +209,40 @@ const updateVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
   };
 
   try {
-    if (currentStatus === VacationRequestStatuses.Approved && statusChanged) {
-      return await handleApproval(
-        userId,
-        startDate,
-        endDate,
-        contractedWeek,
-        vacationRequestUpdates,
-        sendNotifications
-      );
-    }
+    const checkedDates = await validateVacationDates(startDate, endDate);
+    if (checkedDates) {
+      if (currentStatus === VacationRequestStatuses.Approved && statusChanged) {
+        return await handleApproval(
+          userId,
+          startDate,
+          endDate,
+          contractedWeek,
+          vacationRequestUpdates,
+          sendNotifications
+        );
+      }
 
-    if (
-      existingLatestStatus === VacationRequestStatuses.Approved &&
-      statusChanged &&
-      currentStatus !== VacationRequestStatuses.Approved
-    ) {
-      return await handleRejection(
-        userId,
-        existingVacationRequest.startDate,
-        existingVacationRequest.endDate,
-        contractedWeek,
-        vacationRequestUpdates,
-        sendNotifications
-      );
+      if (
+        existingLatestStatus === VacationRequestStatuses.Approved &&
+        statusChanged &&
+        currentStatus !== VacationRequestStatuses.Approved
+      ) {
+        return await handleRejection(
+          userId,
+          existingVacationRequest.startDate,
+          existingVacationRequest.endDate,
+          contractedWeek,
+          vacationRequestUpdates,
+          sendNotifications
+        );
+      }
+    } else {
+      return {
+        statusCode: 409,
+        body: JSON.stringify({
+          message: `Cannot update request: Start and end dates are not valid. Please ensure that the start date is before the end date and that both dates are in the future.`
+        })
+      };
     }
 
     const updatedVacationRequest =

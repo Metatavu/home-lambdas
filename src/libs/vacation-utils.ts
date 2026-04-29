@@ -109,7 +109,22 @@ export const validateVacationDays = async (
 
   return currentValue >= daysNeeded;
 };
+/**
+ * Checks if the start and end dates of a vacation request are valid (not in the past, start before end).
+ * @param startDate
+ * @param endDate
+ * @returns
+ */
+export const validateVacationDates = async (
+  startDate: string,
+  endDate: string
+): Promise<boolean> => {
+  const start = DateTime.fromISO(startDate).startOf("day");
+  const end = DateTime.fromISO(endDate).startOf("day");
+  const today = DateTime.now().startOf("day");
 
+  return start >= today && end >= today && start <= end;
+};
 /**
  * Deducts vacation days from Keycloak user.
  * @param userId - The ID of the user whose vacation days are being deducted.

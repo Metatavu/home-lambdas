@@ -30,8 +30,20 @@ const updateVacationStatusByDateHandler = async (): Promise<APIGatewayProxyResul
         }
 
         let nextStatus: VacationRequestStatuses = latestStatus;
-        const startDate = DateTime.fromISO(vacation.startDate).toISODate();
-        const endDate = DateTime.fromISO(vacation.endDate).toISODate();
+        const parsedStartDate = DateTime.fromISO(vacation.startDate);
+        const parsedEndDate = DateTime.fromISO(vacation.endDate);
+        if (!parsedStartDate.isValid || !parsedEndDate.isValid) {
+          throw new Error(
+            `Vacation request ${vacation.id} has invalid date values: startDate="${vacation.startDate}", endDate="${vacation.endDate}".`
+          );
+        }
+        const startDate = parsedStartDate.toISODate();
+        const endDate = parsedEndDate.toISODate();
+        if (!startDate || !endDate) {
+          throw new Error(
+            `Vacation request ${vacation.id} could not be converted to ISO dates: startDate="${vacation.startDate}", endDate="${vacation.endDate}".`
+          );
+        }
 
         if (
           latestStatus === VacationRequestStatuses.Approved &&
@@ -50,17 +62,17 @@ const updateVacationStatusByDateHandler = async (): Promise<APIGatewayProxyResul
         }
 
         if (latestStatus === nextStatus) return;
-
+        const updatedAt = new Date();
         await vacationRequestService.updateVacationRequest({
           ...vacation,
           status: [
             {
               status: nextStatus,
               createdBy: "system",
-              updatedAt: new Date().toISOString() as unknown as Date
+              updatedAt
             }
           ],
-          updatedAt: new Date().toISOString()
+          updatedAt: updatedAt.toISOString()
         });
 
         return nextStatus;

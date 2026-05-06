@@ -1,4 +1,4 @@
-import { handlerPath } from "src/libs/handler-resolver";
+import { handlerPath } from "@libs/handler-resolver";
 
 const { DAILY_SCHEDULE_TIMER } = process.env;
 

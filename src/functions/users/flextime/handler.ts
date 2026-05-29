@@ -49,11 +49,13 @@ export const listUsersFlextimeHandler: APIGatewayProxyHandler = async () => {
           const keycloakUser = keycloakUsers.find(
             (user) => user.attributes?.severaUserId?.[0] === severaUser.guid
           );
-          const isActive = keycloakUser?.attributes?.isActive?.[0] === "Active";
+          const isActiveAttr = keycloakUser?.attributes?.isActive?.[0];
+
+          const isActive = isActiveAttr === "Active" || isActiveAttr === "true";
 
           return {
             user: {
-              id: severaUser.guid,
+              id: keycloakUser?.id || severaUser.guid,
               firstName: severaUser.firstName || "",
               lastName: severaUser.lastName || "",
               email: severaUser.email || "",

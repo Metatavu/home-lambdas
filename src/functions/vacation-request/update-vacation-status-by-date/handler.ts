@@ -14,15 +14,17 @@ const updateVacationStatusByDateHandler = async (): Promise<APIGatewayProxyResul
       throw new Error("Could not resolve current date");
     }
 
-    const vacations = await vacationRequestService.listVacationRequests();
+    const vacations = await vacationRequestService.listVacationRequests(undefined, today);
     let ongoingUpdated = 0;
     let completedUpdated = 0;
     const errors: string[] = [];
 
     const results = await Promise.allSettled(
       vacations.map(async (vacation) => {
+        // Get the latest status from the vacation request history
         const latestStatus = vacation.status?.at(-1)?.status;
 
+        // A vacation request must always have at least one status entry
         if (!latestStatus) {
           throw new Error(
             `Vacation request ${vacation.id} has no status, cannot update status by date.`
@@ -32,6 +34,8 @@ const updateVacationStatusByDateHandler = async (): Promise<APIGatewayProxyResul
         let nextStatus: VacationRequestStatuses = latestStatus;
         const parsedStartDate = DateTime.fromISO(vacation.startDate);
         const parsedEndDate = DateTime.fromISO(vacation.endDate);
+
+        // Ensure both dates are valid before continuing
         if (!parsedStartDate.isValid || !parsedEndDate.isValid) {
           throw new Error(
             `Vacation request ${vacation.id} has invalid date values: startDate="${vacation.startDate}", endDate="${vacation.endDate}".`
@@ -45,6 +49,8 @@ const updateVacationStatusByDateHandler = async (): Promise<APIGatewayProxyResul
           );
         }
 
+        // Move from Approved to Ongoing when today's date falls
+        // within the vacation period
         if (
           latestStatus === VacationRequestStatuses.Approved &&
           startDate <= today &&
@@ -53,6 +59,7 @@ const updateVacationStatusByDateHandler = async (): Promise<APIGatewayProxyResul
           nextStatus = VacationRequestStatuses.Ongoing;
         }
 
+        // Move to Completed once the vacation end date has passed
         if (
           (latestStatus === VacationRequestStatuses.Approved ||
             latestStatus === VacationRequestStatuses.Ongoing) &&
@@ -61,8 +68,11 @@ const updateVacationStatusByDateHandler = async (): Promise<APIGatewayProxyResul
           nextStatus = VacationRequestStatuses.Completed;
         }
 
+        // Skip the update if the status remains unchanged
         if (latestStatus === nextStatus) return;
         const updatedAt = new Date();
+
+        // Persist the new status as a system-generated status update
         await vacationRequestService.updateVacationRequest({
           ...vacation,
           status: [
@@ -80,10 +90,13 @@ const updateVacationStatusByDateHandler = async (): Promise<APIGatewayProxyResul
     );
 
     for (const result of results) {
+      // Collect any errors from failed update operations
       if (result.status === "rejected") {
         errors.push(result.reason instanceof Error ? result.reason.message : String(result.reason));
+        // Count vacation requests that were transitioned to Ongoing
       } else if (result.value === VacationRequestStatuses.Ongoing) {
         ongoingUpdated += 1;
+        // Count vacation requests that were transitioned to Completed
       } else if (result.value === VacationRequestStatuses.Completed) {
         completedUpdated += 1;
       }

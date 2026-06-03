@@ -58,6 +58,7 @@ const uploadFileHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyE
     console.error("JSON parsing failed:", error);
     return {
       statusCode: 400,
+      headers: responseHeaders,
       body: JSON.stringify({
         code: 400,
         message: "Invalid JSON body."
@@ -69,6 +70,7 @@ const uploadFileHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyE
     console.warn("Missing path");
     return {
       statusCode: 400,
+      headers: responseHeaders,
       body: JSON.stringify({
         code: 400,
         message: "Invalid request body."
@@ -81,6 +83,7 @@ const uploadFileHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyE
   if (!isImage && !isPdf) {
     return {
       statusCode: 400,
+      headers: responseHeaders,
       body: JSON.stringify({
         code: 400,
         message: "Invalid file type."
@@ -91,6 +94,7 @@ const uploadFileHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyE
   if (isPdf && !isAdminUser(event)) {
     return {
       statusCode: 403,
+      headers: responseHeaders,
       body: JSON.stringify({
         code: 403,
         message: "Only admin can upload PDF files."
@@ -101,6 +105,7 @@ const uploadFileHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyE
   if (!HOME_BUCKET_NAME || !HOME_BUCKET_REGION) {
     return {
       statusCode: 500,
+      headers: responseHeaders,
       body: JSON.stringify({
         code: 500,
         message: "Invalid lambda environment variables"

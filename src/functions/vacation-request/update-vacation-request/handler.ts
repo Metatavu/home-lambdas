@@ -203,39 +203,39 @@ const updateVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
 
   try {
     const checkedDates = await validateVacationDates(startDate, endDate);
-    if (checkedDates) {
-      if (currentStatus === VacationRequestStatuses.Approved && statusChanged) {
-        return await handleApproval(
-          userId,
-          startDate,
-          endDate,
-          contractedWeek,
-          vacationRequestUpdates,
-          sendNotifications
-        );
-      }
-
-      if (
-        existingLatestStatus === VacationRequestStatuses.Approved &&
-        statusChanged &&
-        currentStatus !== VacationRequestStatuses.Approved
-      ) {
-        return await handleRejection(
-          userId,
-          existingVacationRequest.startDate,
-          existingVacationRequest.endDate,
-          contractedWeek,
-          vacationRequestUpdates,
-          sendNotifications
-        );
-      }
-    } else {
+    if (!checkedDates) {
       return {
         statusCode: 409,
         body: JSON.stringify({
           message: `Cannot update request: Start and end dates are not valid. Please ensure that the start date is before the end date and that both dates are in the future.`
         })
       };
+    }
+
+    if (currentStatus === VacationRequestStatuses.Approved && statusChanged) {
+      return await handleApproval(
+        userId,
+        startDate,
+        endDate,
+        contractedWeek,
+        vacationRequestUpdates,
+        sendNotifications
+      );
+    }
+
+    const statusChangeToRejected =
+      existingLatestStatus === VacationRequestStatuses.Approved &&
+      statusChanged &&
+      currentStatus !== VacationRequestStatuses.Approved;
+    if (statusChangeToRejected) {
+      return await handleRejection(
+        userId,
+        existingVacationRequest.startDate,
+        existingVacationRequest.endDate,
+        contractedWeek,
+        vacationRequestUpdates,
+        sendNotifications
+      );
     }
 
     const updatedVacationRequest =

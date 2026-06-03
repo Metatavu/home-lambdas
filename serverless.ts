@@ -30,16 +30,17 @@ import listWorkdaysForUserHandler from "src/functions/severa/list-workdays-for-u
 import removeOptInHandler from "src/functions/severa/remove-opt-in";
 import listUsersFlextimeHandler from "src/functions/users/flextime";
 import updateUserStatus from "src/functions/users/update-status";
+import createUsersSkillsHandler from "src/functions/users-skills/create-users-skills";
+import deleteUsersSkillsHandler from "src/functions/users-skills/delete-users-skills";
+import findUsersSkillsHandler from "src/functions/users-skills/find-users-skills";
+import listUsersSkillsHandler from "src/functions/users-skills/list-users-skills";
+import updateUsersSkillsHandler from "src/functions/users-skills/update-users-skills";
 import createVacationRequestHandler from "src/functions/vacation-request/create-vacation-request";
 import deleteVacationRequestHandler from "src/functions/vacation-request/delete-vacation-request";
 import findVacationRequestHandler from "src/functions/vacation-request/find-vacation-request";
 import listVacationRequestHandler from "src/functions/vacation-request/list-vacation-request";
 import updateVacationRequestHandler from "src/functions/vacation-request/update-vacation-request";
-import listUsersSkillsHandler from "src/functions/users-skills/list-users-skills";
-import createUsersSkillsHandler from "src/functions/users-skills/create-users-skills";
-import deleteUsersSkillsHandler from "src/functions/users-skills/delete-users-skills";
-import updateUsersSkillsHandler from "src/functions/users-skills/update-users-skills";
-import findUsersSkillsHandler from "src/functions/users-skills/find-users-skills";
+import updateVacationStatusByDateHandler from "src/functions/vacation-request/update-vacation-status-by-date";
 import createArticleHandler from "src/functions/wiki-documentation/create-article";
 import deleteArticleHandler from "src/functions/wiki-documentation/delete-article";
 import findArticleHandler from "src/functions/wiki-documentation/find-article";
@@ -212,6 +213,7 @@ const serverlessConfiguration: AWS = {
     deleteVacationRequestHandler,
     findVacationRequestHandler,
     listVacationRequestHandler,
+    updateVacationStatusByDateHandler,
     updateVacationRequestHandler,
     getResourceAllocationHandler,
     listUsersSkillsHandler,

@@ -1,7 +1,7 @@
 import { middyfy } from "@libs/lambda";
 import type { APIGatewayProxyHandler } from "aws-lambda";
-import { CreateKeycloakApiService } from "src/database/services/keycloak-api-service";
-import { User } from "src/generated/homeLambdasModels/model/user";
+import type { User } from "src/generated/homeLambdasModels/model/user";
+import { CreateKeycloakApiService } from "src/services/keycloak-api-service";
 
 /**
  * Lambda for listing users
@@ -11,23 +11,23 @@ const listUsersHandler: APIGatewayProxyHandler = async () => {
     const api = CreateKeycloakApiService();
     const usersRaw = await api.getUsers();
 
-    const users: User [] = usersRaw.map((u: any) => ({
+    const users: User[] = usersRaw.map((u: any) => ({
       id: u.id,
       firstName: u.firstName,
       lastName: u.lastName,
       email: u.email,
-      attributes: u.attributes,
+      attributes: u.attributes
     }));
 
     return {
       statusCode: 200,
-      body: JSON.stringify(users),
+      body: JSON.stringify(users)
     };
   } catch (error) {
     console.error(error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ message: "Error when listing users" }),
+      body: JSON.stringify({ message: "Error when listing users" })
     };
   }
 };

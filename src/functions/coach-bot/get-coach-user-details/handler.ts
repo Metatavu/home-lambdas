@@ -1,6 +1,5 @@
 import type { APIGatewayProxyEvent, APIGatewayProxyHandler } from "aws-lambda";
 import { coachBotApiService } from "src/database/services";
-import { CreateKeycloakApiService } from "src/database/services/keycloak-api-service";
 import type { CoachUserDetailsResponse } from "src/generated/homeLambdasModels/model/coachUserDetailsResponse";
 import {
   difficultyToEnum,
@@ -9,6 +8,7 @@ import {
 } from "src/libs/coach-bot-utils/coach-answer-mapper";
 import { calculateDifficulty } from "src/libs/coach-bot-utils/streak-utils";
 import { middyfy } from "src/libs/lambda";
+import { CreateKeycloakApiService } from "src/services/keycloak-api-service";
 
 /**
  * Handler for retrieving coach bot user details, including their Slack ID, role, and difficulty level based on their streak.

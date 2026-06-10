@@ -1,6 +1,6 @@
 import { DateTime } from "luxon";
-import { CreateKeycloakApiService } from "src/database/services/keycloak-api-service";
 import type { VacationRequestStatus } from "src/generated/homeLambdasModels/model/vacationRequestStatus";
+import { CreateKeycloakApiService } from "src/services/keycloak-api-service";
 import { CreateSeveraApiService } from "src/services/severa-api-service";
 
 /**
@@ -108,6 +108,20 @@ export const validateVacationDays = async (
   const currentValue = currentEntry ? Number(currentEntry.split(":")[1]) : 0;
 
   return currentValue >= daysNeeded;
+};
+
+/**
+ * Checks if the start and end dates of a vacation request are valid (not in the past, start before end).
+ *
+ * @param startDate string
+ * @param endDate string
+ */
+export const validateVacationDates = (startDate: string, endDate: string): boolean => {
+  const start = DateTime.fromISO(startDate).startOf("day");
+  const end = DateTime.fromISO(endDate).startOf("day");
+  const today = DateTime.now().startOf("day");
+
+  return start >= today && end >= today && start <= end;
 };
 
 /**

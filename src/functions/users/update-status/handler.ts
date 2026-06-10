@@ -1,6 +1,6 @@
 import type { APIGatewayProxyHandler } from "aws-lambda";
-import { CreateKeycloakApiService } from "src/database/services/keycloak-api-service";
 import { middyfy } from "src/libs/lambda";
+import { CreateKeycloakApiService } from "src/services/keycloak-api-service";
 
 /**
  *
@@ -36,12 +36,12 @@ export const updateUserStatusHandler: APIGatewayProxyHandler = async (event) => 
       body: JSON.stringify({ message: "User status updated" })
     };
   } catch (error) {
-    console.error(error);
+    console.error("Update user status failed:", error);
 
     return {
       statusCode: 500,
       body: JSON.stringify({
-        message: "Error updating user"
+        message: error?.message || "Error updating user"
       })
     };
   }

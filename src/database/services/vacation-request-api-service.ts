@@ -1,6 +1,15 @@
+import {
+  DeleteCommand,
+  type DeleteCommandInput,
+  type DynamoDBDocumentClient,
+  GetCommand,
+  type GetCommandInput,
+  PutCommand,
+  type PutCommandInput,
+  ScanCommand,
+  type ScanCommandInput
+} from "@aws-sdk/lib-dynamodb";
 import type VacationRequestModel from "@database/models/vacationRequest";
-import { DynamoDBDocumentClient, PutCommand, GetCommand, ScanCommand, DeleteCommand } from "@aws-sdk/lib-dynamodb";
-import { PutCommandInput, GetCommandInput, ScanCommandInput, DeleteCommandInput } from "@aws-sdk/lib-dynamodb";
 
 const TABLE_NAME = "VacationRequests";
 
@@ -51,16 +60,31 @@ class VacationRequestService {
    *
    * @returns list of vacation requests
    */
-  public listVacationRequests = async (userId?: string): Promise<VacationRequestModel[]> => {
+  public listVacationRequests = async (
+    userId?: string,
+    startDate?: string
+  ): Promise<VacationRequestModel[]> => {
     const params: ScanCommandInput = {
       TableName: TABLE_NAME
     };
+    const filterExpressions: string[] = [];
+    const expressionAttributeValues: Record<string, any> = {};
+
     if (userId) {
-      params.FilterExpression = "userId = :userId";
-      params.ExpressionAttributeValues = {
-        ":userId": userId
-      };
+      filterExpressions.push("userId = :userId");
+      expressionAttributeValues[":userId"] = userId;
     }
+
+    if (startDate) {
+      filterExpressions.push("startDate = :startDate");
+      expressionAttributeValues[":startDate"] = startDate;
+    }
+
+    if (filterExpressions.length > 0) {
+      params.FilterExpression = filterExpressions.join(" AND ");
+      params.ExpressionAttributeValues = expressionAttributeValues;
+    }
+
     const result = await this.docClient.send(new ScanCommand(params));
     return result.Items as VacationRequestModel[];
   };

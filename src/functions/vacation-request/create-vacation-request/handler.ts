@@ -1,15 +1,16 @@
 import { dtoToEntity, entityToDto } from "src/database/dtos/vacationDtos";
 import { vacationRequestService } from "src/database/services";
-import { CreateKeycloakApiService } from "src/database/services/keycloak-api-service";
 import type { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
 import { middyfy } from "src/libs/lambda";
 import {
   getContractedWeek,
   splitVacationDaysByYear,
+  validateVacationDates,
   validateVacationDays
 } from "src/libs/vacation-utils";
 import { notifyAdminsVacationSubmittedAll } from "src/notifications/vacation-notifications";
 import type vacationRequestSchema from "src/schema/vacationRequest";
+import { CreateKeycloakApiService } from "src/services/keycloak-api-service";
 import { v4 as uuidv4 } from "uuid";
 
 /**
@@ -70,6 +71,15 @@ export const createVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
     const daysByYear = splitVacationDaysByYear(startDate, endDate, contractedWeek);
 
     for (const [year, daysInYear] of Object.entries(daysByYear)) {
+      const checkedDates = await validateVacationDates(startDate, endDate);
+      if (!checkedDates) {
+        return {
+          statusCode: 409,
+          body: JSON.stringify({
+            message: `Cannot create request: Start and end dates are not valid. Please ensure that the start date is before the end date and that both dates are in the future.`
+          })
+        };
+      }
       const hasEnoughDays = await validateVacationDays(userId, daysInYear, year);
       if (!hasEnoughDays) {
         return {

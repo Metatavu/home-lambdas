@@ -2,20 +2,21 @@ import type { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway";
 import { middyfy } from "@libs/lambda";
 import { entityToDto } from "src/database/dtos/vacationDtos";
 import { vacationRequestService } from "src/database/services";
-import { CreateKeycloakApiService } from "src/database/services/keycloak-api-service";
 import { VacationRequestStatuses } from "src/generated/homeLambdasModels/model/vacationRequestStatuses";
 import {
   deductVacationDaysForApproval,
   getContractedWeek,
   getLatestStatus,
   returnVacationDaysForRejection,
-  validateVacationApproval
+  validateVacationApproval,
+  validateVacationDates
 } from "src/libs/vacation-utils";
 import {
   notifyAdminsVacationSubmittedAll,
   notifyUserVacationStatusUpdatedAll
 } from "src/notifications/vacation-notifications";
 import type vacationRequestSchema from "src/schema/vacationRequest";
+import { CreateKeycloakApiService } from "src/services/keycloak-api-service";
 
 /**
  * Verifies user has enough vacation days and deducts them upon approval of a vacation request.
@@ -201,6 +202,16 @@ const updateVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
   };
 
   try {
+    const checkedDates = await validateVacationDates(startDate, endDate);
+    if (!checkedDates) {
+      return {
+        statusCode: 409,
+        body: JSON.stringify({
+          message: `Cannot update request: Start and end dates are not valid. Please ensure that the start date is before the end date and that both dates are in the future.`
+        })
+      };
+    }
+
     if (currentStatus === VacationRequestStatuses.Approved && statusChanged) {
       return await handleApproval(
         userId,
@@ -212,11 +223,11 @@ const updateVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
       );
     }
 
-    if (
+    const statusChangeToRejected =
       existingLatestStatus === VacationRequestStatuses.Approved &&
       statusChanged &&
-      currentStatus !== VacationRequestStatuses.Approved
-    ) {
+      currentStatus !== VacationRequestStatuses.Approved;
+    if (statusChangeToRejected) {
       return await handleRejection(
         userId,
         existingVacationRequest.startDate,

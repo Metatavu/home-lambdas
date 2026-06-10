@@ -3,6 +3,7 @@ import { middyfy } from "@libs/lambda";
 import type { APIGatewayProxyEvent, APIGatewayProxyHandler } from "aws-lambda";
 import { articlesApiService } from "src/database/services";
 import { getAuthDataFromToken } from "src/libs/auth-utils";
+import { responseHeaders } from "src/libs/http/headers";
 import { extractMarkdownFromPdf, isPdfFile, slugify } from "src/utils/importDocument";
 import { v4 as uuidv4 } from "uuid";
 
@@ -24,6 +25,7 @@ const MAX_ARTICLE_CONTENT_LENGTH = 200_000;
 const importDocumentHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
   if (!event.body) {
     return {
+      headers: responseHeaders,
       statusCode: 400,
       body: JSON.stringify({ message: "Body required" })
     };
@@ -35,6 +37,7 @@ const importDocumentHandler: APIGatewayProxyHandler = async (event: APIGatewayPr
   if (!HOME_BUCKET_NAME || !HOME_BUCKET_REGION) {
     return {
       statusCode: 500,
+      headers: responseHeaders,
       body: JSON.stringify({
         code: 500,
         message: "Invalid lambda environment variables"
@@ -48,6 +51,7 @@ const importDocumentHandler: APIGatewayProxyHandler = async (event: APIGatewayPr
       payload = JSON.parse(event.body);
     } catch {
       return {
+        headers: responseHeaders,
         statusCode: 400,
         body: JSON.stringify({ message: "Invalid JSON" })
       };
@@ -60,6 +64,7 @@ const importDocumentHandler: APIGatewayProxyHandler = async (event: APIGatewayPr
 
   if (!path || !documentTitle) {
     return {
+      headers: responseHeaders,
       statusCode: 400,
       body: JSON.stringify({ message: "path and documentTitle required" })
     };
@@ -77,6 +82,7 @@ const importDocumentHandler: APIGatewayProxyHandler = async (event: APIGatewayPr
 
     if (!isPdfFile(file.ContentType, path)) {
       return {
+        headers: responseHeaders,
         statusCode: 400,
         body: JSON.stringify({ message: "Only PDF files are allowed" })
       };
@@ -84,6 +90,7 @@ const importDocumentHandler: APIGatewayProxyHandler = async (event: APIGatewayPr
 
     if (!file.ContentLength || file.ContentLength === 0) {
       return {
+        headers: responseHeaders,
         statusCode: 422,
         body: JSON.stringify({ message: "PDF is empty" })
       };
@@ -91,6 +98,7 @@ const importDocumentHandler: APIGatewayProxyHandler = async (event: APIGatewayPr
 
     if (file.ContentLength > MAX_PDF_SIZE_BYTES) {
       return {
+        headers: responseHeaders,
         statusCode: 413,
         body: JSON.stringify({
           message: `PDF too large. Maximum supported size is ${MAX_PDF_SIZE_BYTES / 1024 / 1024} MB`
@@ -108,6 +116,7 @@ const importDocumentHandler: APIGatewayProxyHandler = async (event: APIGatewayPr
     const bytes = await file.Body?.transformToByteArray();
     if (!bytes) {
       return {
+        headers: responseHeaders,
         statusCode: 422,
         body: JSON.stringify({ message: "PDF is empty" })
       };
@@ -116,6 +125,7 @@ const importDocumentHandler: APIGatewayProxyHandler = async (event: APIGatewayPr
     const markdown = await extractMarkdownFromPdf(bytes);
     if (!markdown) {
       return {
+        headers: responseHeaders,
         statusCode: 422,
         body: JSON.stringify({ message: "No content extracted" })
       };
@@ -129,6 +139,7 @@ const importDocumentHandler: APIGatewayProxyHandler = async (event: APIGatewayPr
     const authData = getAuthDataFromToken(event);
     if (!authData?.sub) {
       return {
+        headers: responseHeaders,
         statusCode: 403,
         body: JSON.stringify({ message: "Forbidden" })
       };
@@ -158,12 +169,14 @@ const importDocumentHandler: APIGatewayProxyHandler = async (event: APIGatewayPr
     await articlesApiService.createArticle(article);
 
     return {
+      headers: responseHeaders,
       statusCode: 200,
       body: JSON.stringify({ path: basePath })
     };
   } catch (error) {
     console.error("Error importing document", error);
     return {
+      headers: responseHeaders,
       statusCode: 500,
       body: JSON.stringify({
         code: "IMPORT_DOCUMENT_ERROR",

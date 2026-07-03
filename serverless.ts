@@ -14,6 +14,7 @@ import {
 } from "src/functions";
 import removeUserAttributeHanndler from "src/functions/keycloak/remove-user-attribute";
 import updateVacationHandler from "src/functions/keycloak/update-user-vacation";
+import updateUserVacationYearHandler from "src/functions/keycloak/update-user-vacation-year";
 import getContentPdfHandler from "src/functions/memo-management/drive-memos/get-content-pdf";
 import onCallImportFromJsonHandler from "src/functions/on-call/create-on-call-data-from-json";
 import onCallListDataHandler from "src/functions/on-call/list-on-call-data";
@@ -118,6 +119,7 @@ const serverlessConfiguration: AWS = {
       SLACK_USER_OVERRIDE: env.SLACK_USER_OVERRIDE,
       DAILY_SCHEDULE_TIMER: env.DAILY_SCHEDULE_TIMER,
       WEEKLY_SCHEDULE_TIMER: env.WEEKLY_SCHEDULE_TIMER,
+      YEARLY_SCHEDULE_TIMER: env.YEARLY_SCHEDULE_TIMER,
       SPLUNK_API_ID: env.SPLUNK_API_ID,
       SPLUNK_API_KEY: env.SPLUNK_API_KEY,
       SPLUNK_SCHEDULE_POLICY_NAME: env.SPLUNK_SCHEDULE_POLICY_NAME,
@@ -203,6 +205,7 @@ const serverlessConfiguration: AWS = {
     findUserHandler,
     removeUserAttributeHanndler,
     updateVacationHandler,
+    updateUserVacationYearHandler,
     createQuestionnaireHandler,
     findQuestionnaireHandler,
     deleteQuestionnaireHandler,

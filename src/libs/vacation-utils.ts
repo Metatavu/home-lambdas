@@ -3,7 +3,8 @@ import type { VacationRequestStatus } from "src/generated/homeLambdasModels/mode
 import { CreateKeycloakApiService } from "src/services/keycloak-api-service";
 import { CreateSeveraApiService } from "src/services/severa-api-service";
 
-/**
+/**TODO: This is not used, should it be removed?
+ *
  * Fetches the contracted work week for a given user from Severa.
  *
  * @param userId - Employee ID to get contracted week for.
@@ -41,38 +42,18 @@ export const getContractedWeek = async (userId: string): Promise<number[]> => {
 };
 
 /**
- * Splits a vacation period into the number of vacation days per year. Uses Severa as the source of truth.
- * Calculates the number of vacation days using 6 day work week logic.
+ * Gets a correct vacation year for the vacation and formats it to include the year and vacation days.
  *
  * @param startDate - The start date of the vacation in ISO format (YYYY-MM-DD).
- * @param endDate - The end date of the vacation in ISO format (YYYY-MM-DD).
- * @param contractedWeek - An array of numbers representing the user's contracted work week (1 = Monday, 7 = Sunday).
+ * @param daysConsumed - Number of days the vacation consumes.
  *
  * @returns An object where the keys are years and the values are the number of vacation days in that year.
  */
 export const splitVacationDaysByYear = (
   startDate: string,
-  endDate: string,
-  contractedWeek: number[]
+  daysConsumed: number
 ): Record<string, number> => {
   const startDateObj = DateTime.fromISO(startDate);
-  const endDateObj = DateTime.fromISO(endDate);
-  const workDays = contractedWeek.length;
-
-  let workDaysInRange = 0;
-  let currentDate = startDateObj;
-
-  while (currentDate <= endDateObj) {
-    if (contractedWeek.includes(currentDate.weekday)) {
-      workDaysInRange++;
-    }
-    currentDate = currentDate.plus({ days: 1 });
-  }
-
-  // Calculate weeks & days of request for 6 day work week logic
-  const fullWeeks = Math.floor(workDaysInRange / workDays);
-  const extraDays = workDaysInRange % workDays;
-  const totalDays = fullWeeks * 6 + extraDays;
 
   // Assumes vacation year runs 01/04/YYYY → 31/03/(YYYY+1)
   const getVacationYear = (date: DateTime): string => {
@@ -82,7 +63,7 @@ export const splitVacationDaysByYear = (
   // Assign totalDays to the correct vacation year
   const vacationYear = getVacationYear(startDateObj);
   const daysByYear: Record<string, number> = {};
-  daysByYear[vacationYear] = totalDays;
+  daysByYear[vacationYear] = daysConsumed;
 
   return daysByYear;
 };
@@ -107,7 +88,7 @@ export const validateVacationDays = async (
   const currentEntry = unspentVacationDaysByYear.find((s) => s.startsWith(`${year}:`));
   const currentValue = currentEntry ? Number(currentEntry.split(":")[1]) : 0;
 
-  return currentValue >= daysNeeded;
+  return currentValue >= Math.max(daysNeeded, 0);
 };
 
 /**
@@ -206,19 +187,16 @@ export const getLatestStatus = (statusArray: VacationRequestStatus[] | undefined
  *
  * @param userId - The ID of the user.
  * @param startDate - The start date of the vacation.
- * @param endDate - The end date of the vacation.
- * @param contractedWeek - The user's contracted work week.
+ * @param daysConsumed - Number of days vacation consumes.
  *
  * @returns Error object if validation fails, null if passes.
  */
 export const validateVacationApproval = async (
   userId: string,
   startDate: string,
-  endDate: string,
-  contractedWeek: number[]
+  daysConsumed: number
 ): Promise<{ statusCode: number; body: string } | null> => {
-  const daysByYear = splitVacationDaysByYear(startDate, endDate, contractedWeek);
-
+  const daysByYear = splitVacationDaysByYear(startDate, daysConsumed);
   for (const [year, daysInYear] of Object.entries(daysByYear)) {
     const hasEnoughDays = await validateVacationDays(userId, daysInYear, year);
     if (!hasEnoughDays) {
@@ -240,16 +218,14 @@ export const validateVacationApproval = async (
  *
  * @param userId - The ID of the user.
  * @param startDate - The start date of the vacation.
- * @param endDate - The end date of the vacation.
- * @param contractedWeek - The user's contracted work week.
+ * @param daysConsumed - Number of days vacation consumes.
  */
 export const deductVacationDaysForApproval = async (
   userId: string,
   startDate: string,
-  endDate: string,
-  contractedWeek: number[]
+  daysConsumed: number
 ): Promise<void> => {
-  const daysByYear = splitVacationDaysByYear(startDate, endDate, contractedWeek);
+  const daysByYear = splitVacationDaysByYear(startDate, daysConsumed);
   for (const [year, daysInYear] of Object.entries(daysByYear)) {
     await deductVacationDays(userId, daysInYear, year);
   }
@@ -262,16 +238,14 @@ export const deductVacationDaysForApproval = async (
  *
  * @param userId - The ID of the user.
  * @param startDate - The start date of the vacation.
- * @param endDate - The end date of the vacation.
- * @param contractedWeek - The user's contracted work week.
+ * @param daysConsumed - Number of days to return to user.
  */
 export const returnVacationDaysForRejection = async (
   userId: string,
   startDate: string,
-  endDate: string,
-  contractedWeek: number[]
+  daysConsumed: number
 ): Promise<void> => {
-  const daysByYear = splitVacationDaysByYear(startDate, endDate, contractedWeek);
+  const daysByYear = splitVacationDaysByYear(startDate, daysConsumed);
   for (const [year, daysInYear] of Object.entries(daysByYear)) {
     await returnVacationDays(userId, daysInYear, year);
   }

@@ -1,6 +1,6 @@
 import type { APIGatewayProxyEvent, APIGatewayProxyHandler } from "aws-lambda";
-import { CreateKeycloakApiService } from "src/database/services/keycloak-api-service";
 import { middyfy } from "src/libs/lambda";
+import { CreateKeycloakApiService } from "src/services/keycloak-api-service";
 
 const getUserRolesHandler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
   try {

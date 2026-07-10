@@ -12,7 +12,9 @@ import {
   getSlackUserAvatarHandler,
   listMemoPdfHandler
 } from "src/functions";
+import getUserRolesHandler from "src/functions/keycloak/get-user-roles";
 import removeUserAttributeHanndler from "src/functions/keycloak/remove-user-attribute";
+import updateUserRolesHandler from "src/functions/keycloak/update-user-roles";
 import updateVacationHandler from "src/functions/keycloak/update-user-vacation";
 import getContentPdfHandler from "src/functions/memo-management/drive-memos/get-content-pdf";
 import onCallImportFromJsonHandler from "src/functions/on-call/create-on-call-data-from-json";
@@ -199,6 +201,8 @@ const serverlessConfiguration: AWS = {
     updateSoftwareHandler,
     deleteSoftwareHandler,
     listUsersHandler,
+    getUserRolesHandler,
+    updateUserRolesHandler,
     listUsersFlextimeHandler,
     findUserHandler,
     removeUserAttributeHanndler,

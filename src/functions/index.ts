@@ -1,7 +1,9 @@
 export { default as createCoachBotAnswerHandler } from "./coach-bot/create-coach-bot-answer";
 export { default as getCoachUserDetailsHandler } from "./coach-bot/get-coach-user-details";
 export { default as findUserHandler } from "./keycloak/find-user";
+export { default as getUserRolesHandler } from "./keycloak/get-user-roles";
 export { default as listUsersHandler } from "./keycloak/list-users";
+export { default as updateUserRolesHandler } from "./keycloak/update-user-roles";
 export { default as getContentPdfHandler } from "./memo-management/drive-memos/get-content-pdf";
 export { default as listMemoPdfHandler } from "./memo-management/drive-memos/get-memos-pdf";
 export { default as getSummaryMemoPdfHandler } from "./memo-management/drive-memos/get-summary-memo-pdf";

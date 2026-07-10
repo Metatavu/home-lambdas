@@ -31,6 +31,8 @@ export interface KeycloakApiService {
   ) => Promise<{ updatedFields: Record<string, string[]> }>;
   removeUserAttribute: (id: string, attributeName: string) => Promise<void>;
   getUserAttributes: (id: string) => Promise<Record<string, string[]>>;
+  getUserRoles: (id: string) => Promise<string[]>;
+  updateUserRoles: (id: string, roles: string[]) => Promise<void>;
 }
 
 /**
@@ -249,6 +251,54 @@ export const CreateKeycloakApiService = (): KeycloakApiService => {
             error instanceof Error ? error.message : "Unknown error"
           }`
         );
+      }
+    },
+    getUserRoles: async (id: string): Promise<string[]> => {
+      const response = await fetch(
+        `${baseUrl}/admin/realms/${realm}/users/${id}/role-mappings/realm`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${await getAccessToken()}`
+          }
+        }
+      );
+      if (!response.ok) {
+        throw new Error(`Failed to fetch roles for user ${id}`);
+      }
+      const roles = await response.json();
+      return roles.map((role: any) => role.name);
+    },
+    updateUserRoles: async (id: string, roles: string[]): Promise<void> => {
+      const restrictedRoles = ["admin"];
+      if (roles.some((role) => restrictedRoles.includes(role))) {
+        throw new Error("Cannot assign restricted roles");
+      }
+      const token = await getAccessToken();
+      const allRolesResponse = await fetch(`${baseUrl}/admin/realms/${realm}/roles`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      if (!allRolesResponse.ok) {
+        throw new Error("Failed to fetch realm roles");
+      }
+      const allRoles = await allRolesResponse.json();
+      const selectedRoles = allRoles.filter((role: any) => roles.includes(role.name));
+      const response = await fetch(
+        `${baseUrl}/admin/realms/${realm}/users/${id}/role-mappings/realm`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(selectedRoles)
+        }
+      );
+      if (!response.ok) {
+        throw new Error(`Failed to update roles for user ${id}`);
       }
     }
   };

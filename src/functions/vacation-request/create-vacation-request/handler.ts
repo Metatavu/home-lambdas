@@ -3,7 +3,6 @@ import { vacationRequestService } from "src/database/services";
 import type { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
 import { middyfy } from "src/libs/lambda";
 import {
-  getContractedWeek,
   splitVacationDaysByYear,
   validateVacationDates,
   validateVacationDays
@@ -67,8 +66,7 @@ export const createVacationRequestHandler: ValidatedEventAPIGatewayProxyEvent<
   const userDetails = await api.findUser(userId);
 
   try {
-    const contractedWeek = await getContractedWeek(userId);
-    const daysByYear = splitVacationDaysByYear(startDate, endDate, contractedWeek);
+    const daysByYear = splitVacationDaysByYear(startDate, days);
 
     for (const [year, daysInYear] of Object.entries(daysByYear)) {
       const checkedDates = await validateVacationDates(startDate, endDate);

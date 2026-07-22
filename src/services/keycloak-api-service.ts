@@ -32,7 +32,7 @@ export interface KeycloakApiService {
   removeUserAttribute: (id: string, attributeName: string) => Promise<void>;
   getUserAttributes: (id: string) => Promise<Record<string, string[]>>;
   getUserRoles: (id: string) => Promise<string[]>;
-  updateUserRoles: (id: string, roles: string[]) => Promise<void>;
+  updateUserRoles: (id: string, roles: string[], rolesToDelete: string[]) => Promise<void>;
 }
 
 /**
@@ -269,7 +269,11 @@ export const CreateKeycloakApiService = (): KeycloakApiService => {
       const roles = await response.json();
       return roles.map((role: any) => role.name);
     },
-    updateUserRoles: async (id: string, roles: string[]): Promise<void> => {
+    updateUserRoles: async (
+      id: string,
+      roles: string[],
+      rolesToDelete: string[]
+    ): Promise<void> => {
       const restrictedRoles = ["admin"];
       if (roles.some((role) => restrictedRoles.includes(role))) {
         throw new Error("Cannot assign restricted roles");
@@ -286,18 +290,25 @@ export const CreateKeycloakApiService = (): KeycloakApiService => {
       }
       const allRoles = await allRolesResponse.json();
       const selectedRoles = allRoles.filter((role: any) => roles.includes(role.name));
-      const response = await fetch(
-        `${baseUrl}/admin/realms/${realm}/users/${id}/role-mappings/realm`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify(selectedRoles)
-        }
-      );
-      if (!response.ok) {
+      const url = `${baseUrl}/admin/realms/${realm}/users/${id}/role-mappings/realm`;
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(selectedRoles)
+      });
+      const deletedRoles = allRoles.filter((role: any) => rolesToDelete.includes(role.name));
+      const deleteResponse = await fetch(url, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(deletedRoles)
+      });
+      if (!deleteResponse.ok || !response.ok) {
         throw new Error(`Failed to update roles for user ${id}`);
       }
     }

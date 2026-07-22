@@ -19,7 +19,14 @@ const updateUserRolesHandler: APIGatewayProxyHandler = async (event: APIGatewayP
 
     const api = CreateKeycloakApiService();
 
-    await api.updateUserRoles(userId, body.roles);
+    const deleatableRoles = ["developer", "designer", "architect", "management", "trainee"];
+
+    const currentRoles = await api.getUserRoles(userId);
+    const rolesToDelete = currentRoles
+      .filter((role) => !body.roles.includes(role))
+      .filter((role) => deleatableRoles.includes(role));
+
+    await api.updateUserRoles(userId, body.roles, rolesToDelete);
     return {
       statusCode: 200,
       body: JSON.stringify({

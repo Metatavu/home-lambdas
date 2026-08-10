@@ -4,7 +4,7 @@ import type {
   APIGatewayProxyHandlerV2,
   APIGatewayProxyStructuredResultV2
 } from "aws-lambda";
-import type { MemoInput } from "src/database/models/memo-record";
+import type { MemoRecord } from "src/database/models/memo-record";
 import { memoService } from "src/database/services";
 import { middyfy } from "src/libs/lambda";
 
@@ -40,11 +40,13 @@ const createTranslatedMemoPdfHandler: APIGatewayProxyHandlerV2 = async (
 
     // Placeholder: default original language, detection can be added later
     const originalLanguage = "fi";
-    const existingFi = await memoService.getByFileIdAndLanguage(fileId, originalLanguage);
-    let storedMemo: MemoInput;
+    const existingFiId = await memoService.getByFileIdAndLanguage(fileId, originalLanguage);
+    let memoId: string | null;
+    let message: string;
 
-    if (existingFi) {
-      storedMemo = existingFi;
+    if (existingFiId) {
+      memoId = existingFiId;
+      message = "Translated memo record already exists";
     } else {
       const pdfFile = await getFileContentPdf(file);
       if (!pdfFile?.content) {
@@ -53,7 +55,7 @@ const createTranslatedMemoPdfHandler: APIGatewayProxyHandlerV2 = async (
 
       const originalBase64 = pdfFile.content.toString("base64");
 
-      storedMemo = await memoService.storeMemoRecord(
+      const storedMemo: MemoRecord = await memoService.storeMemoRecord(
         {
           fileId: file.id,
           fileName: file.name,
@@ -62,6 +64,8 @@ const createTranslatedMemoPdfHandler: APIGatewayProxyHandlerV2 = async (
         },
         true
       );
+      memoId = storedMemo.id;
+      message = "Translated memo record created successfully";
     }
     // TODO: Translate PDF and store translated version
     // Uncomment and implement proper logic when translation service is ready
@@ -86,10 +90,8 @@ const createTranslatedMemoPdfHandler: APIGatewayProxyHandlerV2 = async (
     return {
       statusCode: 200,
       body: JSON.stringify({
-        message: existingFi
-          ? "Translated memo record already exists"
-          : "Translated memo record created successfully",
-        id: storedMemo.id
+        message,
+        id: memoId
       })
     };
   } catch (error) {

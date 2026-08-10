@@ -1,3 +1,4 @@
+import { dtoToEntity, entityToDto } from "src/database/dtos/softwareRegistryDtos";
 import { softwareService } from "src/database/services";
 import type { SoftwareRegistry } from "src/generated/homeLambdasModels/model/softwareRegistry";
 import type { ValidatedEventAPIGatewayProxyEvent } from "src/libs/api-gateway";
@@ -48,24 +49,30 @@ export const createSoftwareHandler: ValidatedEventAPIGatewayProxyEvent<SoftwareR
 
     const loggedUserId = authData.sub;
 
+    const now = new Date();
+
     const newSoftware = {
       name: data.name,
       url: data.url,
       image: data.image,
       description: data.description,
       review: data.review ?? "",
+      lastUpdatedAt: now,
+      createdAt: now,
       recommend: data.recommend,
-      tags: data.tags,
-      users: data.users,
       createdBy: loggedUserId,
-      lastUpdatedBy: loggedUserId
+      lastUpdatedBy: loggedUserId,
+      tags: data.tags,
+      users: data.users
     };
 
-    const createdSoftware = await softwareService.createSoftware(newSoftware);
+    const softwareEntity = dtoToEntity(newSoftware);
+
+    const createdSoftware = await softwareService.createSoftware(softwareEntity);
 
     return {
       statusCode: 201,
-      body: JSON.stringify(createdSoftware)
+      body: JSON.stringify(entityToDto(createdSoftware))
     };
   } catch (error) {
     console.error("Error creating software:", error);
